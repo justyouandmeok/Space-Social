@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "75598117075",
+    "project_id": "com-spacesocial-app",
+    "storage_bucket": "com-spacesocial-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:75598117075:android:0655d6f5d9a5fa6c817c26",
+        "android_client_info": {
+          "package_name": "com.spacesocial.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "75598117075-u1s1k8la62rh2403ufklsgl40lima2ei.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.spacesocial.app",
+            "certificate_hash": "47cabe2c7b4a01b6e4d79b3b2dea73f187a6b80f"
+          }
+        },
+        {
+          "client_id": "75598117075-uestulli76edrubopd5an127pjtf74e7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZynbCkZR0t1Lhu0EJWdTy8QQwbCne4_w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "75598117075-uestulli76edrubopd5an127pjtf74e7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

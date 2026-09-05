@@ -1,0 +1,491 @@
+import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:path/path.dart' as p;
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'config.dart';
+import 'models.dart';
+import 'store.dart';
+
+class ChatMessage {
+  const ChatMessage({
+    required this.id,
+    required this.fromId,
+    required this.toId,
+    required this.text,
+    required this.createdAt,
+    this.read = false,
+  });
+
+  final String id;
+  final String fromId;
+  final String toId;
+  final String text;
+  final DateTime createdAt;
+  final bool read;
+
+  factory ChatMessage.fromJson(Map<String, dynamic> j) => ChatMessage(
+        id: j['id'] as String,
+        fromId: j['fromId'] as String,
+        toId: j['toId'] as String,
+        text: j['text'] as String,
+        createdAt: DateTime.tryParse(j['createdAt'] as String? ?? '') ?? DateTime.now(),
+        read: j['read'] as bool? ?? false,
+      );
+}
+
+class AppState extends ChangeNotifier {
+  final _auth = FirebaseAuth.instance;
+  final _db = FirebaseFirestore.instance;
+  final _sb = Supabase.instance.client;
+
+  bool ready = false;
+  String? currentUserId;
+  List<UserAccount> users = [];
+  List<Post> posts = [];
+  Map<String, List<String>> following = {};
+  List<ActivityItem> activity = [];
+  List<ChatMessage> messages = [];
+  String query = '';
+  String? lastError;
+
+  bool get isLoggedIn => currentUserId != null && users.any((u) => u.id == currentUserId);
+  UserAccount get me => users.firstWhere((u) => u.id == currentUserId);
+  UserAccount userById(String id) => users.firstWhere((u) => u.id == id);
+
+  UserAccount? tryUser(String id) {
+    for (final u in users) {
+      if (u.id == id) return u;
+    }
+    return null;
+  }
+
+  List<Post> postsOf(String userId) =>
+      posts.where((p) => p.userId == userId).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+  List<Post> get feed {
+    if (!isLoggedIn) return [];
+    final ids = <String>{currentUserId!, ...followingOf(currentUserId!)};
+    return posts.where((p) => ids.contains(p.userId)).toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  }
+
+  List<Post> get explorePosts =>
+      List<Post>.from(posts)..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+  List<String> followingOf(String userId) => List<String>.from(following[userId] ?? const []);
+
+  List<String> followersOf(String userId) {
+    final out = <String>[];
+    following.forEach((uid, list) {
+      if (list.contains(userId)) out.add(uid);
+    });
+    return out;
+  }
+
+  bool isFollowing(String userId) => isLoggedIn && followingOf(currentUserId!).contains(userId);
+
+  List<UserAccount> get searchUsers {
+    final q = query.trim().toLowerCase();
+    final list = users.where((u) => !isLoggedIn || u.id != currentUserId).toList();
+    if (q.isEmpty) return list;
+    return list
+        .where((u) => u.username.toLowerCase().contains(q) || u.name.toLowerCase().contains(q))
+        .toList();
+  }
+
+  List<ActivityItem> get myActivity {
+    if (!isLoggedIn) return [];
+    final mine = postsOf(me.id).map((p) => p.id).toSet();
+    return activity.where((a) {
+      if (a.actorId == currentUserId) return false;
+      if (a.isFollow) return true;
+      return a.postId != null && mine.contains(a.postId);
+    }).toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  }
+
+  List<UserAccount> conversationPartners() {
+    if (!isLoggedIn) return [];
+    final ids = <String>{};
+    for (final m in messages) {
+      if (m.fromId == currentUserId) ids.add(m.toId);
+      if (m.toId == currentUserId) ids.add(m.fromId);
+    }
+    return ids.map(tryUser).whereType<UserAccount>().toList();
+  }
+
+  List<ChatMessage> threadWith(String otherId) {
+    return messages
+        .where((m) =>
+            (m.fromId == currentUserId && m.toId == otherId) ||
+            (m.fromId == otherId && m.toId == currentUserId))
+        .toList()
+      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+  }
+
+  Future<void> load() async {
+    _auth.authStateChanges().listen((user) async {
+      currentUserId = user?.uid;
+      await _refresh();
+      ready = true;
+      notifyListeners();
+    });
+    currentUserId = _auth.currentUser?.uid;
+    await _refresh();
+    ready = true;
+    notifyListeners();
+  }
+
+  Future<void> _refresh() async {
+    final usersSnap = await _db.collection('users').get();
+    users = usersSnap.docs.map((d) => UserAccount.fromJson({...d.data(), 'id': d.id})).toList();
+
+    final postsSnap = await _db.collection('posts').get();
+    posts = postsSnap.docs.map((d) {
+      final j = Map<String, dynamic>.from(d.data());
+      j['id'] = d.id;
+      return Post.fromJson(j);
+    }).toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    final followSnap = await _db.collection('follows').get();
+    following = {};
+    for (final d in followSnap.docs) {
+      final data = d.data();
+      final from = data['from'] as String? ?? '';
+      final to = data['to'] as String? ?? '';
+      if (from.isEmpty || to.isEmpty) continue;
+      following.putIfAbsent(from, () => []);
+      if (!following[from]!.contains(to)) following[from]!.add(to);
+    }
+
+    final actSnap = await _db.collection('activity').get();
+    activity = actSnap.docs.map((d) => ActivityItem.fromJson(d.data())).toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    if (currentUserId != null) {
+      final a = await _db.collection('messages').where('fromId', isEqualTo: currentUserId).get();
+      final b = await _db.collection('messages').where('toId', isEqualTo: currentUserId).get();
+      final map = <String, ChatMessage>{};
+      for (final d in [...a.docs, ...b.docs]) {
+        map[d.id] = ChatMessage.fromJson({...d.data(), 'id': d.id});
+      }
+      messages = map.values.toList();
+    } else {
+      messages = [];
+    }
+  }
+
+  void setQuery(String value) {
+    query = value;
+    notifyListeners();
+  }
+
+  Future<String> _upload(File file, String bucket, String prefix) async {
+    final ext = p.extension(file.path).isEmpty ? '.jpg' : p.extension(file.path);
+    final path = '$prefix/${DateTime.now().millisecondsSinceEpoch}$ext';
+    await _sb.storage.from(bucket).upload(path, file);
+    return _sb.storage.from(bucket).getPublicUrl(path);
+  }
+
+  Future<bool> register({
+    required String email,
+    required String username,
+    required String name,
+    required String password,
+    File? avatar,
+  }) async {
+    lastError = null;
+    final e = email.trim().toLowerCase();
+    final u = username.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9._]'), '');
+    if (e.isEmpty || !e.contains('@')) {
+      lastError = 'Ingresá un email válido.';
+      notifyListeners();
+      return false;
+    }
+    if (u.length < 3) {
+      lastError = 'El usuario tiene que tener al menos 3 caracteres.';
+      notifyListeners();
+      return false;
+    }
+    if (name.trim().length < 2) {
+      lastError = 'Ingresá tu nombre.';
+      notifyListeners();
+      return false;
+    }
+    if (password.length < 6) {
+      lastError = 'La contraseña tiene que tener al menos 6 caracteres.';
+      notifyListeners();
+      return false;
+    }
+    try {
+      final taken = await _db.collection('users').where('username', isEqualTo: u).limit(1).get();
+      if (taken.docs.isNotEmpty) {
+        lastError = 'Ese usuario ya existe.';
+        notifyListeners();
+        return false;
+      }
+      final cred = await _auth.createUserWithEmailAndPassword(email: e, password: password);
+      var avatarPath = '';
+      if (avatar != null) {
+        avatarPath = await _upload(avatar, SpaceConfig.avatarsBucket, cred.user!.uid);
+      }
+      await _db.collection('users').doc(cred.user!.uid).set({
+        'id': cred.user!.uid,
+        'email': e,
+        'username': u,
+        'name': name.trim(),
+        'passwordHash': '',
+        'salt': '',
+        'avatarPath': avatarPath,
+        'bio': '',
+        'website': '',
+        'createdAt': DateTime.now().toIso8601String(),
+      });
+      currentUserId = cred.user!.uid;
+      await _refresh();
+      notifyListeners();
+      return true;
+    } on FirebaseAuthException catch (err) {
+      lastError = err.code == 'email-already-in-use'
+          ? 'Ese email ya tiene una cuenta.'
+          : (err.message ?? 'No se pudo registrar.');
+      notifyListeners();
+      return false;
+    } catch (_) {
+      lastError = 'No se pudo registrar. Revisá Firestore y los buckets de Supabase.';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> login({required String userOrEmail, required String password}) async {
+    lastError = null;
+    try {
+      var email = userOrEmail.trim().toLowerCase();
+      if (!email.contains('@')) {
+        final snap = await _db.collection('users').where('username', isEqualTo: email).limit(1).get();
+        if (snap.docs.isEmpty) {
+          lastError = 'Usuario o contraseña incorrectos.';
+          notifyListeners();
+          return false;
+        }
+        email = snap.docs.first.data()['email'] as String? ?? email;
+      }
+      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      currentUserId = _auth.currentUser?.uid;
+      await _refresh();
+      notifyListeners();
+      return true;
+    } on FirebaseAuthException {
+      lastError = 'Usuario o contraseña incorrectos.';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> loginWithGoogle() async {
+    lastError = null;
+    try {
+      final googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) return false;
+      final googleAuth = await googleUser.authentication;
+      final cred = await _auth.signInWithCredential(
+        GoogleAuthProvider.credential(
+          idToken: googleAuth.idToken,
+          accessToken: googleAuth.accessToken,
+        ),
+      );
+      final user = cred.user!;
+      final existing = await _db.collection('users').doc(user.uid).get();
+      if (!existing.exists) {
+        final raw = (user.email ?? 'user').split('@').first.toLowerCase().replaceAll(RegExp(r'[^a-z0-9._]'), '');
+        var username = raw.length >= 3 ? raw : 'user${user.uid.substring(0, 6)}';
+        final clash = await _db.collection('users').where('username', isEqualTo: username).limit(1).get();
+        if (clash.docs.isNotEmpty) username = '$username${user.uid.substring(0, 4)}';
+        await _db.collection('users').doc(user.uid).set({
+          'id': user.uid,
+          'email': user.email ?? '',
+          'username': username,
+          'name': user.displayName ?? username,
+          'passwordHash': '',
+          'salt': '',
+          'avatarPath': user.photoURL ?? '',
+          'bio': '',
+          'website': '',
+          'createdAt': DateTime.now().toIso8601String(),
+        });
+      }
+      currentUserId = user.uid;
+      await _refresh();
+      notifyListeners();
+      return true;
+    } catch (_) {
+      lastError = 'No se pudo entrar con Google.';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<void> logout() async {
+    await _auth.signOut();
+    currentUserId = null;
+    notifyListeners();
+  }
+
+  Future<void> switchUser(String userId) async {}
+
+  Future<void> updateProfile({String? name, String? bio, String? website, File? avatar}) async {
+    if (!isLoggedIn) return;
+    var path = me.avatarPath;
+    if (avatar != null) path = await _upload(avatar, SpaceConfig.avatarsBucket, me.id);
+    await _db.collection('users').doc(me.id).update({
+      'name': name?.trim() ?? me.name,
+      'bio': bio ?? me.bio,
+      'website': website ?? me.website,
+      'avatarPath': path,
+    });
+    await _refresh();
+    notifyListeners();
+  }
+
+  Future<void> publishPost({required File image, required String caption, String location = ''}) async {
+    if (!isLoggedIn) return;
+    final url = await _upload(image, SpaceConfig.postsBucket, me.id);
+    final id = newId();
+    await _db.collection('posts').doc(id).set({
+      'id': id,
+      'userId': me.id,
+      'imagePath': url,
+      'caption': caption.trim(),
+      'location': location.trim(),
+      'createdAt': DateTime.now().toIso8601String(),
+      'likes': <String>[],
+      'comments': <Map<String, dynamic>>[],
+      'savedBy': <String>[],
+    });
+    await _refresh();
+    notifyListeners();
+  }
+
+  Future<void> deletePost(String postId) async {
+    if (!isLoggedIn) return;
+    final found = posts.where((p) => p.id == postId);
+    if (found.isEmpty || found.first.userId != me.id) return;
+    await _db.collection('posts').doc(postId).delete();
+    await _refresh();
+    notifyListeners();
+  }
+
+  Future<void> toggleLike(String postId) async {
+    if (!isLoggedIn) return;
+    final ref = _db.collection('posts').doc(postId);
+    await _db.runTransaction((tx) async {
+      final snap = await tx.get(ref);
+      if (!snap.exists) return;
+      final likes = List<String>.from((snap.data()?['likes'] as List?) ?? const []);
+      if (likes.contains(me.id)) {
+        likes.remove(me.id);
+      } else {
+        likes.add(me.id);
+        final owner = snap.data()?['userId'] as String?;
+        if (owner != null && owner != me.id) {
+          tx.set(_db.collection('activity').doc(), {
+            'actorId': me.id,
+            'text': 'le gustó tu publicación.',
+            'createdAt': DateTime.now().toIso8601String(),
+            'postId': postId,
+            'isFollow': false,
+          });
+        }
+      }
+      tx.update(ref, {'likes': likes});
+    });
+    await _refresh();
+    notifyListeners();
+  }
+
+  Future<void> toggleSave(String postId) async {
+    if (!isLoggedIn) return;
+    final ref = _db.collection('posts').doc(postId);
+    await _db.runTransaction((tx) async {
+      final snap = await tx.get(ref);
+      if (!snap.exists) return;
+      final saved = List<String>.from((snap.data()?['savedBy'] as List?) ?? const []);
+      if (saved.contains(me.id)) {
+        saved.remove(me.id);
+      } else {
+        saved.add(me.id);
+      }
+      tx.update(ref, {'savedBy': saved});
+    });
+    await _refresh();
+    notifyListeners();
+  }
+
+  Future<void> addComment(String postId, String text) async {
+    if (!isLoggedIn || text.trim().isEmpty) return;
+    final ref = _db.collection('posts').doc(postId);
+    await _db.runTransaction((tx) async {
+      final snap = await tx.get(ref);
+      if (!snap.exists) return;
+      final comments = List<Map<String, dynamic>>.from(
+        ((snap.data()?['comments'] as List?) ?? const []).map((e) => Map<String, dynamic>.from(e as Map)),
+      );
+      comments.add({
+        'userId': me.id,
+        'text': text.trim(),
+        'createdAt': DateTime.now().toIso8601String(),
+      });
+      tx.update(ref, {'comments': comments});
+      final owner = snap.data()?['userId'] as String?;
+      if (owner != null && owner != me.id) {
+        tx.set(_db.collection('activity').doc(), {
+          'actorId': me.id,
+          'text': 'comentó: “${text.trim()}”',
+          'createdAt': DateTime.now().toIso8601String(),
+          'postId': postId,
+          'isFollow': false,
+        });
+      }
+    });
+    await _refresh();
+    notifyListeners();
+  }
+
+  Future<void> toggleFollow(String userId) async {
+    if (!isLoggedIn || userId == me.id) return;
+    final id = '${me.id}_$userId';
+    final ref = _db.collection('follows').doc(id);
+    final snap = await ref.get();
+    if (snap.exists) {
+      await ref.delete();
+    } else {
+      await ref.set({'from': me.id, 'to': userId});
+      await _db.collection('activity').add({
+        'actorId': me.id,
+        'text': 'empezó a seguirte.',
+        'createdAt': DateTime.now().toIso8601String(),
+        'isFollow': true,
+      });
+    }
+    await _refresh();
+    notifyListeners();
+  }
+
+  Future<void> sendMessage(String toId, String text) async {
+    if (!isLoggedIn || text.trim().isEmpty || toId == me.id) return;
+    await _db.collection('messages').add({
+      'fromId': me.id,
+      'toId': toId,
+      'text': text.trim(),
+      'createdAt': DateTime.now().toIso8601String(),
+      'read': false,
+    });
+    await _refresh();
+    notifyListeners();
+  }
+}
