@@ -412,8 +412,9 @@ class AppState extends ChangeNotifier {
         }
         rethrow;
       }
-      await _adoptGoogleUser(cred.user!, photo: googleUser.photoUrl, displayName: googleUser.displayName);
       currentUserId = cred.user!.uid;
+      await _refresh();
+      await _adoptGoogleUser(cred.user!, photo: googleUser.photoUrl, displayName: googleUser.displayName);
       await _refresh();
       await _saveCache();
       notifyListeners();
@@ -427,47 +428,64 @@ class AppState extends ChangeNotifier {
 
   Future<void> _adoptGoogleUser(User user, {String? photo, String? displayName}) async {
     final email = (user.email ?? '').trim().toLowerCase();
-    final byId = await _db.collection('users').doc(user.uid).get();
-    QuerySnapshot<Map<String, dynamic>>? byEmail;
-    if (email.isNotEmpty) {
-      byEmail = await _db.collection('users').where('email', isEqualTo: email).limit(5).get();
+    if (email.isEmpty) return;
+    UserAccount? oldUser;
+    for (final u in users) {
+      if (u.id != user.uid && u.email.trim().toLowerCase() == email) {
+        oldUser = u;
+        break;
+      }
     }
-    final others = byEmail?.docs.where((d) => d.id != user.uid).toList() ?? const [];
-    if (byId.exists && others.isEmpty) return;
-    if (others.isNotEmpty) {
-      final old = others.first;
-      final data = Map<String, dynamic>.from(old.data());
-      data['id'] = user.uid;
-      data['email'] = email.isEmpty ? (data['email'] ?? '') : email;
-      if ((data['avatarPath'] as String? ?? '').isEmpty && (photo ?? '').isNotEmpty) {
-        data['avatarPath'] = photo;
+    if (oldUser == null) {
+      try {
+        final byEmail = await _db.collection('users').where('email', isEqualTo: email).limit(8).get();
+        for (final d in byEmail.docs) {
+          if (d.id != user.uid) {
+            oldUser = UserAccount.fromJson({...d.data(), 'id': d.id});
+            break;
+          }
+        }
+      } catch (_) {}
+    }
+    if (oldUser == null) {
+      final byId = await _db.collection('users').doc(user.uid).get();
+      if (!byId.exists) {
+        final raw = email.split('@').first.replaceAll(RegExp(r'[^a-z0-9._]'), '');
+        var username = raw.length >= 3 ? raw : 'user${user.uid.substring(0, 6)}';
+        final clash = await _db.collection('users').where('username', isEqualTo: username).limit(1).get();
+        if (clash.docs.any((d) => d.id != user.uid)) username = '$username${user.uid.substring(0, 4)}';
+        await _db.collection('users').doc(user.uid).set({
+          'id': user.uid,
+          'email': email,
+          'username': username,
+          'name': displayName ?? username,
+          'passwordHash': '',
+          'salt': '',
+          'avatarPath': photo ?? '',
+          'bio': '',
+          'website': '',
+          'createdAt': DateTime.now().toIso8601String(),
+        });
       }
-      if ((data['name'] as String? ?? '').trim().isEmpty && (displayName ?? '').isNotEmpty) {
-        data['name'] = displayName;
-      }
-      await _db.collection('users').doc(user.uid).set(data, SetOptions(merge: true));
-      await _repointUser(old.id, user.uid);
-      await old.reference.delete();
       return;
     }
-    if (!byId.exists) {
-      final raw = (email.isEmpty ? 'user' : email.split('@').first).replaceAll(RegExp(r'[^a-z0-9._]'), '');
-      var username = raw.length >= 3 ? raw : 'user${user.uid.substring(0, 6)}';
-      final clash = await _db.collection('users').where('username', isEqualTo: username).limit(1).get();
-      if (clash.docs.isNotEmpty) username = '$username${user.uid.substring(0, 4)}';
-      await _db.collection('users').doc(user.uid).set({
-        'id': user.uid,
-        'email': email,
-        'username': username,
-        'name': displayName ?? username,
-        'passwordHash': '',
-        'salt': '',
-        'avatarPath': photo ?? '',
-        'bio': '',
-        'website': '',
-        'createdAt': DateTime.now().toIso8601String(),
-      });
-    }
+    final data = {
+      'id': user.uid,
+      'email': email,
+      'username': oldUser.username,
+      'name': oldUser.name.isNotEmpty ? oldUser.name : (displayName ?? oldUser.username),
+      'passwordHash': '',
+      'salt': '',
+      'avatarPath': oldUser.avatarPath.isNotEmpty ? oldUser.avatarPath : (photo ?? ''),
+      'bio': oldUser.bio,
+      'website': oldUser.website,
+      'createdAt': (oldUser.createdAt ?? DateTime.now()).toIso8601String(),
+    };
+    await _db.collection('users').doc(user.uid).set(data, SetOptions(merge: true));
+    await _repointUser(oldUser.id, user.uid);
+    try {
+      await _db.collection('users').doc(oldUser.id).delete();
+    } catch (_) {}
   }
 
   Future<void> _repointUser(String from, String to) async {
