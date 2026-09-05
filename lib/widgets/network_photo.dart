@@ -21,6 +21,10 @@ class NetworkPhoto extends StatelessWidget {
         url,
         fit: fit,
         gaplessPlayback: true,
+        loadingBuilder: (context, child, progress) {
+          if (progress == null) return child;
+          return Container(color: const Color(0xFFF2F2F2));
+        },
         errorBuilder: (_, __, ___) => _err(),
       );
     }

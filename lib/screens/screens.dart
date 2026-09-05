@@ -95,13 +95,13 @@ class _AuthScreenState extends State<AuthScreen> {
             _field(pass, 'Contraseña', obscure: true),
             const SizedBox(height: 12),
             SizedBox(
-              height: 44,
+              height: 46,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: LumaColors.blue,
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
                 onPressed: busy ? null : _submit,
                 child: busy
@@ -109,10 +109,21 @@ class _AuthScreenState extends State<AuthScreen> {
                     : Text(register ? 'Registrarme' : 'Entrar', style: const TextStyle(fontWeight: FontWeight.w700)),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 14),
+            const Row(children: [
+              Expanded(child: Divider()),
+              Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('o', style: TextStyle(color: LumaColors.textSecondary))),
+              Expanded(child: Divider()),
+            ]),
+            const SizedBox(height: 14),
             SizedBox(
-              height: 44,
-              child: OutlinedButton(
+              height: 46,
+              child: OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  side: const BorderSide(color: LumaColors.hairline),
+                ),
+                icon: const Icon(Icons.g_mobiledata, size: 28, color: LumaColors.text),
                 onPressed: busy
                     ? null
                     : () async {
@@ -123,7 +134,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(widget.state.lastError!)));
                         }
                       },
-                child: const Text('Continuar con Google', style: TextStyle(fontWeight: FontWeight.w700)),
+                label: const Text('Continuar con Google', style: TextStyle(fontWeight: FontWeight.w700, color: LumaColors.text)),
               ),
             ),
             TextButton(
@@ -666,6 +677,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late final bio = TextEditingController(text: widget.state.me.bio);
   late final web = TextEditingController(text: widget.state.me.website);
   File? avatar;
+  bool busy = false;
 
   @override
   void dispose() {
@@ -675,19 +687,39 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     super.dispose();
   }
 
+  Future<void> _save() async {
+    if (busy) return;
+    setState(() => busy = true);
+    final ok = await widget.state.updateProfile(
+      name: name.text,
+      bio: bio.text,
+      website: web.text,
+      avatar: avatar,
+    );
+    if (!mounted) return;
+    setState(() => busy = false);
+    if (!ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(widget.state.lastError ?? 'No se pudo guardar')),
+      );
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Perfil actualizado')));
+    widget.onClose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(onPressed: widget.onClose, icon: CustomPaint(size: const Size.square(22), painter: BackPainter(LumaColors.text))),
+        leading: IconButton(onPressed: busy ? null : widget.onClose, icon: CustomPaint(size: const Size.square(22), painter: BackPainter(LumaColors.text))),
         title: const Text('Editar perfil', style: TextStyle(fontFamily: null, fontSize: 18, fontWeight: FontWeight.w700, color: LumaColors.text)),
         actions: [
           TextButton(
-            onPressed: () async {
-              await widget.state.updateProfile(name: name.text, bio: bio.text, website: web.text, avatar: avatar);
-              widget.onClose();
-            },
-            child: const Text('Guardar', style: TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w700)),
+            onPressed: busy ? null : _save,
+            child: busy
+                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                : const Text('Guardar', style: TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -696,19 +728,40 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         children: [
           Center(
             child: GestureDetector(
-              onTap: () async {
-                final f = await pickImage();
-                if (f != null) setState(() => avatar = f);
-              },
-              child: CircleAvatar(
-                radius: 44,
-                backgroundImage: avatar != null
-                    ? FileImage(avatar!)
-                    : (widget.state.me.avatarPath.isEmpty ? null : FileImage(File(widget.state.me.avatarPath))),
-                child: const Align(alignment: Alignment.bottomRight, child: Icon(Icons.add_a_photo, size: 20)),
+              onTap: busy
+                  ? null
+                  : () async {
+                      final f = await pickImage();
+                      if (f != null) setState(() => avatar = f);
+                    },
+              child: Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 48,
+                    backgroundColor: const Color(0xFFEFEFEF),
+                    backgroundImage: avatar != null ? FileImage(avatar!) : null,
+                    child: avatar != null
+                        ? null
+                        : ClipOval(
+                            child: SizedBox(width: 96, height: 96, child: NetworkPhoto(widget.state.me.avatarPath)),
+                          ),
+                  ),
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(color: LumaColors.blue, shape: BoxShape.circle),
+                      child: const Icon(Icons.photo_camera, size: 16, color: Colors.white),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
+          const SizedBox(height: 8),
+          const Center(child: Text('Cambiar foto de perfil', style: TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w600))),
+          const SizedBox(height: 16),
           TextField(controller: name, decoration: const InputDecoration(labelText: 'Nombre')),
           TextField(controller: bio, decoration: const InputDecoration(labelText: 'Bio'), maxLines: 3),
           TextField(controller: web, decoration: const InputDecoration(labelText: 'Sitio web')),

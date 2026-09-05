@@ -11,4 +11,8 @@ class SpaceConfig {
 
   static const postsBucket = 'posts';
   static const avatarsBucket = 'avatars';
+
+  /// OAuth Web client from google-services.json (client_type 3).
+  static const googleWebClientId =
+      '75598117075-uestulli76edrubopd5an127pjtf74e7.apps.googleusercontent.com';
 }

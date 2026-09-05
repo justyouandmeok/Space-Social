@@ -51,8 +51,22 @@ class AppState extends ChangeNotifier {
   String query = '';
   String? lastError;
 
-  bool get isLoggedIn => currentUserId != null && users.any((u) => u.id == currentUserId);
-  UserAccount get me => users.firstWhere((u) => u.id == currentUserId);
+  bool get isLoggedIn => currentUserId != null;
+
+  UserAccount get me {
+    final found = tryUser(currentUserId ?? '');
+    if (found != null) return found;
+    final fb = _auth.currentUser;
+    return UserAccount(
+      id: currentUserId ?? '',
+      email: fb?.email ?? '',
+      username: (fb?.email ?? 'user').split('@').first,
+      name: fb?.displayName ?? 'Usuario',
+      passwordHash: '',
+      salt: '',
+      avatarPath: fb?.photoURL ?? '',
+    );
+  }
   UserAccount userById(String id) => users.firstWhere((u) => u.id == id);
 
   UserAccount? tryUser(String id) {
@@ -68,8 +82,12 @@ class AppState extends ChangeNotifier {
   List<Post> get feed {
     if (!isLoggedIn) return [];
     final ids = <String>{currentUserId!, ...followingOf(currentUserId!)};
-    return posts.where((p) => ids.contains(p.userId)).toList()
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final followed = posts.where((p) => ids.contains(p.userId)).toList();
+    if (followed.isNotEmpty) {
+      followed.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return followed;
+    }
+    return List<Post>.from(posts)..sort((a, b) => b.createdAt.compareTo(a.createdAt));
   }
 
   List<Post> get explorePosts =>
@@ -127,16 +145,50 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> load() async {
+    _db.collection('users').snapshots().listen((_) {
+      if (ready) _refresh().then((_) => notifyListeners());
+    });
+    _db.collection('posts').snapshots().listen((_) {
+      if (ready) _refresh().then((_) => notifyListeners());
+    });
     _auth.authStateChanges().listen((user) async {
       currentUserId = user?.uid;
+      if (user != null) {
+        await _ensureUserDoc(user);
+      }
       await _refresh();
       ready = true;
       notifyListeners();
     });
     currentUserId = _auth.currentUser?.uid;
+    if (_auth.currentUser != null) {
+      await _ensureUserDoc(_auth.currentUser!);
+    }
     await _refresh();
     ready = true;
     notifyListeners();
+  }
+
+  Future<void> _ensureUserDoc(User user) async {
+    final ref = _db.collection('users').doc(user.uid);
+    final existing = await ref.get();
+    if (existing.exists) return;
+    final raw = (user.email ?? 'user').split('@').first.toLowerCase().replaceAll(RegExp(r'[^a-z0-9._]'), '');
+    var username = raw.length >= 3 ? raw : 'user${user.uid.substring(0, 6)}';
+    final clash = await _db.collection('users').where('username', isEqualTo: username).limit(1).get();
+    if (clash.docs.isNotEmpty) username = '$username${user.uid.substring(0, 4)}';
+    await ref.set({
+      'id': user.uid,
+      'email': user.email ?? '',
+      'username': username,
+      'name': user.displayName ?? username,
+      'passwordHash': '',
+      'salt': '',
+      'avatarPath': user.photoURL ?? '',
+      'bio': '',
+      'website': '',
+      'createdAt': DateTime.now().toIso8601String(),
+    });
   }
 
   Future<void> _refresh() async {
@@ -187,8 +239,13 @@ class AppState extends ChangeNotifier {
   Future<String> _upload(File file, String bucket, String prefix) async {
     final ext = p.extension(file.path).isEmpty ? '.jpg' : p.extension(file.path);
     final path = '$prefix/${DateTime.now().millisecondsSinceEpoch}$ext';
-    await _sb.storage.from(bucket).upload(path, file);
-    return _sb.storage.from(bucket).getPublicUrl(path);
+    await _sb.storage.from(bucket).upload(
+          path,
+          file,
+          fileOptions: const FileOptions(upsert: true, contentType: 'image/jpeg'),
+        );
+    final url = _sb.storage.from(bucket).getPublicUrl(path);
+    return '$url?t=${DateTime.now().millisecondsSinceEpoch}';
   }
 
   Future<bool> register({
@@ -290,7 +347,10 @@ class AppState extends ChangeNotifier {
   Future<bool> loginWithGoogle() async {
     lastError = null;
     try {
-      final googleUser = await GoogleSignIn().signIn();
+      final googleUser = await GoogleSignIn(
+        serverClientId: SpaceConfig.googleWebClientId,
+        scopes: const ['email', 'profile'],
+      ).signIn();
       if (googleUser == null) return false;
       final googleAuth = await googleUser.authentication;
       final cred = await _auth.signInWithCredential(
@@ -324,13 +384,16 @@ class AppState extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (_) {
-      lastError = 'No se pudo entrar con Google.';
+      lastError = 'No se pudo entrar con Google. Si pasa de nuevo, revisá SHA-1 en Firebase.';
       notifyListeners();
       return false;
     }
   }
 
   Future<void> logout() async {
+    try {
+      await GoogleSignIn(serverClientId: SpaceConfig.googleWebClientId).signOut();
+    } catch (_) {}
     await _auth.signOut();
     currentUserId = null;
     notifyListeners();
@@ -338,18 +401,34 @@ class AppState extends ChangeNotifier {
 
   Future<void> switchUser(String userId) async {}
 
-  Future<void> updateProfile({String? name, String? bio, String? website, File? avatar}) async {
-    if (!isLoggedIn) return;
-    var path = me.avatarPath;
-    if (avatar != null) path = await _upload(avatar, SpaceConfig.avatarsBucket, me.id);
-    await _db.collection('users').doc(me.id).update({
-      'name': name?.trim() ?? me.name,
-      'bio': bio ?? me.bio,
-      'website': website ?? me.website,
-      'avatarPath': path,
-    });
-    await _refresh();
-    notifyListeners();
+  Future<bool> updateProfile({String? name, String? bio, String? website, File? avatar}) async {
+    if (!isLoggedIn) return false;
+    lastError = null;
+    try {
+      var path = me.avatarPath;
+      if (avatar != null) {
+        path = await _upload(avatar, SpaceConfig.avatarsBucket, me.id);
+      }
+      await _db.collection('users').doc(me.id).set({
+        'id': me.id,
+        'email': me.email,
+        'username': me.username,
+        'name': (name ?? me.name).trim(),
+        'bio': bio ?? me.bio,
+        'website': website ?? me.website,
+        'avatarPath': path,
+        'passwordHash': '',
+        'salt': '',
+        'createdAt': (me.createdAt ?? DateTime.now()).toIso8601String(),
+      }, SetOptions(merge: true));
+      await _refresh();
+      notifyListeners();
+      return true;
+    } catch (_) {
+      lastError = 'No se pudo guardar el perfil. Probá de nuevo.';
+      notifyListeners();
+      return false;
+    }
   }
 
   Future<void> publishPost({required File image, required String caption, String location = ''}) async {

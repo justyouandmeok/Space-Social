@@ -55,7 +55,19 @@ class _LumaGateState extends State<LumaGate> {
   @override
   Widget build(BuildContext context) {
     if (!state.ready) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Space Social', style: TextStyle(fontFamily: 'GrandHotel', fontSize: 44)),
+              SizedBox(height: 18),
+              SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2)),
+            ],
+          ),
+        ),
+      );
     }
     if (!state.isLoggedIn) {
       return AuthScreen(state: state);
