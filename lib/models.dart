@@ -175,6 +175,7 @@ class ActivityItem {
     required this.text,
     required this.createdAt,
     this.postId,
+    this.targetId,
     this.isFollow = false,
   });
 
@@ -182,6 +183,7 @@ class ActivityItem {
   final String text;
   final DateTime createdAt;
   final String? postId;
+  final String? targetId;
   final bool isFollow;
 
   Map<String, dynamic> toJson() => {
@@ -190,6 +192,7 @@ class ActivityItem {
         'createdAt': createdAt.toIso8601String(),
         'postId': postId,
         'isFollow': isFollow,
+        'targetId': targetId,
       };
 
   factory ActivityItem.fromJson(Map<String, dynamic> j) => ActivityItem(
@@ -197,6 +200,7 @@ class ActivityItem {
         text: j['text'] as String,
         createdAt: DateTime.tryParse(j['createdAt'] as String? ?? '') ?? DateTime.now(),
         postId: j['postId'] as String?,
+        targetId: j['targetId'] as String?,
         isFollow: j['isFollow'] as bool? ?? false,
       );
 }

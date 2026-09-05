@@ -120,7 +120,7 @@ class AppState extends ChangeNotifier {
     final mine = postsOf(me.id).map((p) => p.id).toSet();
     return activity.where((a) {
       if (a.actorId == currentUserId) return false;
-      if (a.isFollow) return true;
+      if (a.isFollow) return a.targetId == currentUserId || a.targetId == null;
       return a.postId != null && mine.contains(a.postId);
     }).toList()
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -690,6 +690,7 @@ class AppState extends ChangeNotifier {
         'text': 'empezó a seguirte.',
         'createdAt': DateTime.now().toIso8601String(),
         'isFollow': true,
+        'targetId': userId,
       });
     }
     await _refresh();
