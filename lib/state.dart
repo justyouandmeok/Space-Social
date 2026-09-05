@@ -373,6 +373,7 @@ class AppState extends ChangeNotifier {
   }
 
   AuthCredential? _pendingGoogle;
+  String? pendingEmail;
 
   Future<bool> login({required String userOrEmail, required String password}) async {
     lastError = null;
@@ -391,8 +392,13 @@ class AppState extends ChangeNotifier {
       if (_pendingGoogle != null && _auth.currentUser != null) {
         try {
           await _auth.currentUser!.linkWithCredential(_pendingGoogle!);
+        } on FirebaseAuthException catch (e) {
+          if (e.code != 'provider-already-linked' && e.code != 'credential-already-in-use') {
+            lastError = 'Entraste a tu cuenta. Google no se pudo vincular: ${e.code}';
+          }
         } catch (_) {}
         _pendingGoogle = null;
+        pendingEmail = null;
       }
       currentUserId = _auth.currentUser?.uid;
       await _refresh();
@@ -430,8 +436,38 @@ class AppState extends ChangeNotifier {
         }
         rethrow;
       }
-      currentUserId = cred.user!.uid;
+      final email = (cred.user?.email ?? googleUser.email).trim().toLowerCase();
       await _refresh();
+      UserAccount? existing;
+      for (final u in users) {
+        if (u.email.trim().toLowerCase() == email && u.id != cred.user!.uid && !u.username.startsWith('_merged_')) {
+          existing = u;
+          break;
+        }
+      }
+      if (existing == null && email.isNotEmpty) {
+        try {
+          final q = await _db.collection('users').where('email', isEqualTo: email).limit(8).get();
+          for (final d in q.docs) {
+            final uname = (d.data()['username'] as String? ?? '');
+            if (d.id != cred.user!.uid && !uname.startsWith('_merged_')) {
+              existing = UserAccount.fromJson({...d.data(), 'id': d.id});
+              break;
+            }
+          }
+        } catch (_) {}
+      }
+      if (existing != null) {
+        _pendingGoogle = googleCred;
+        pendingEmail = email;
+        try { await _auth.signOut(); } catch (_) {}
+        try { await GoogleSignIn(serverClientId: SpaceConfig.googleWebClientId).signOut(); } catch (_) {}
+        currentUserId = null;
+        lastError = 'Ese mail ya tiene cuenta. Entrá con tu contraseña y Google queda en la misma ID.';
+        notifyListeners();
+        return false;
+      }
+      currentUserId = cred.user!.uid;
       await _adoptGoogleUser(cred.user!, photo: googleUser.photoUrl, displayName: googleUser.displayName);
       await _refresh();
       await _saveCache();

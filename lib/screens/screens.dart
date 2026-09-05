@@ -147,6 +147,12 @@ class _AuthScreenState extends State<AuthScreen> {
                         final ok = await widget.state.loginWithGoogle();
                         if (mounted) setState(() => busy = false);
                         if (!ok && mounted && widget.state.lastError != null) {
+                          if ((widget.state.pendingEmail ?? '').isNotEmpty) {
+                            setState(() {
+                              register = false;
+                              email.text = widget.state.pendingEmail!;
+                            });
+                          }
                           final msg = widget.state.lastError!;
                           if (msg.contains('contraseña')) setState(() => register = false);
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
