@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../theme.dart';
 
@@ -9,23 +10,16 @@ class NetworkPhoto extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (url.isEmpty) {
-      return Container(
-        color: const Color(0xFFEFEFEF),
-        alignment: Alignment.center,
-        child: const Icon(Icons.person, color: LumaColors.textTertiary),
-      );
-    }
+    if (url.isEmpty) return _err(person: true);
     if (url.startsWith('http://') || url.startsWith('https://')) {
-      return Image.network(
-        url,
+      return CachedNetworkImage(
+        imageUrl: url.split('?').first,
         fit: fit,
-        gaplessPlayback: true,
-        loadingBuilder: (context, child, progress) {
-          if (progress == null) return child;
-          return Container(color: const Color(0xFFF2F2F2));
-        },
-        errorBuilder: (_, __, ___) => _err(),
+        fadeInDuration: Duration.zero,
+        fadeOutDuration: Duration.zero,
+        memCacheWidth: 1080,
+        placeholder: (_, __) => Container(color: const Color(0xFFF2F2F2)),
+        errorWidget: (_, __, ___) => _err(),
       );
     }
     final file = File(url);
@@ -33,10 +27,10 @@ class NetworkPhoto extends StatelessWidget {
     return Image.file(file, fit: fit, gaplessPlayback: true, errorBuilder: (_, __, ___) => _err());
   }
 
-  Widget _err() => Container(
+  Widget _err({bool person = false}) => Container(
         color: const Color(0xFFEFEFEF),
         alignment: Alignment.center,
-        child: const Icon(Icons.image_outlined, color: LumaColors.textTertiary),
+        child: Icon(person ? Icons.person : Icons.image_outlined, color: LumaColors.textTertiary),
       );
 }
 
@@ -48,9 +42,29 @@ class Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final img = ClipOval(
-      child: SizedBox(width: size, height: size, child: NetworkPhoto(url)),
-    );
+    Widget img;
+    if (url.startsWith('http')) {
+      img = ClipOval(
+        child: CachedNetworkImage(
+          imageUrl: url.split('?').first,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          fadeInDuration: Duration.zero,
+          memCacheWidth: (size * 3).toInt(),
+          placeholder: (_, __) => Container(width: size, height: size, color: const Color(0xFFEFEFEF)),
+          errorWidget: (_, __, ___) => Container(
+            width: size,
+            height: size,
+            color: const Color(0xFFEFEFEF),
+            alignment: Alignment.center,
+            child: Icon(Icons.person, size: size * 0.5, color: LumaColors.textTertiary),
+          ),
+        ),
+      );
+    } else {
+      img = ClipOval(child: SizedBox(width: size, height: size, child: NetworkPhoto(url)));
+    }
     if (onTap == null) return img;
     return GestureDetector(onTap: onTap, child: img);
   }

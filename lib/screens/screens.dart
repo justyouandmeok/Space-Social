@@ -736,8 +736,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
         children: [
+          const SizedBox(height: 22),
           Center(
             child: GestureDetector(
               onTap: busy
@@ -746,40 +746,42 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       final f = await pickImage();
                       if (f != null) setState(() => avatar = f);
                     },
-              child: Stack(
-                children: [
-                  CircleAvatar(
-                    radius: 48,
-                    backgroundColor: const Color(0xFFEFEFEF),
-                    backgroundImage: avatar != null ? FileImage(avatar!) : null,
-                    child: avatar != null
-                        ? null
-                        : ClipOval(
-                            child: SizedBox(width: 96, height: 96, child: NetworkPhoto(widget.state.me.avatarPath)),
-                          ),
-                  ),
-                  Positioned(
-                    right: 0,
-                    bottom: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: const BoxDecoration(color: LumaColors.blue, shape: BoxShape.circle),
-                      child: const Icon(Icons.photo_camera, size: 16, color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
+              child: avatar != null
+                  ? CircleAvatar(radius: 48, backgroundImage: FileImage(avatar!))
+                  : Avatar(widget.state.me.avatarPath, size: 96),
             ),
           ),
-          const SizedBox(height: 8),
-          const Center(child: Text('Cambiar foto de perfil', style: TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w600))),
-          const SizedBox(height: 16),
-          TextField(controller: name, decoration: const InputDecoration(labelText: 'Nombre')),
-          TextField(controller: username, decoration: const InputDecoration(labelText: 'Usuario')),
-          TextField(controller: bio, decoration: const InputDecoration(labelText: 'Bio'), maxLines: 3),
-          TextField(controller: web, decoration: const InputDecoration(labelText: 'Sitio web')),
+          const SizedBox(height: 12),
+          Center(
+            child: GestureDetector(
+              onTap: busy
+                  ? null
+                  : () async {
+                      final f = await pickImage();
+                      if (f != null) setState(() => avatar = f);
+                    },
+              child: const Text('Cambiar foto de perfil', style: TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w700, fontSize: 14)),
+            ),
+          ),
+          const SizedBox(height: 18),
+          const Divider(height: 1, color: LumaColors.hairline),
+          _igRow('Nombre', name),
+          _igRow('Usuario', username),
+          _igRow('Presentación', bio, maxLines: 3),
+          _igRow('Sitio web', web),
         ],
       ),
+    );
+  }
+
+  Widget _igRow(String label, TextEditingController c, {int maxLines = 1}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: LumaColors.hairline, width: 0.4))),
+      child: Row(crossAxisAlignment: maxLines > 1 ? CrossAxisAlignment.start : CrossAxisAlignment.center, children: [
+        SizedBox(width: 110, child: Padding(padding: EdgeInsets.only(top: maxLines > 1 ? 12 : 0), child: Text(label, style: const TextStyle(fontSize: 16)))),
+        Expanded(child: TextField(controller: c, maxLines: maxLines, decoration: const InputDecoration(border: InputBorder.none, isDense: true))),
+      ]),
     );
   }
 }

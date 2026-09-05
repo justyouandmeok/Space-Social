@@ -280,7 +280,7 @@ class AppState extends ChangeNotifier {
           fileOptions: const FileOptions(upsert: true, contentType: 'image/jpeg'),
         );
     final url = _sb.storage.from(bucket).getPublicUrl(path);
-    return '$url?t=${DateTime.now().millisecondsSinceEpoch}';
+    return url;
   }
 
   Future<bool> register({
