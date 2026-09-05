@@ -354,6 +354,8 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  AuthCredential? _pendingGoogle;
+
   Future<bool> login({required String userOrEmail, required String password}) async {
     lastError = null;
     try {
@@ -368,6 +370,12 @@ class AppState extends ChangeNotifier {
         email = snap.docs.first.data()['email'] as String? ?? email;
       }
       await _auth.signInWithEmailAndPassword(email: email, password: password);
+      if (_pendingGoogle != null && _auth.currentUser != null) {
+        try {
+          await _auth.currentUser!.linkWithCredential(_pendingGoogle!);
+        } catch (_) {}
+        _pendingGoogle = null;
+      }
       currentUserId = _auth.currentUser?.uid;
       await _refresh();
       notifyListeners();
@@ -388,40 +396,100 @@ class AppState extends ChangeNotifier {
       ).signIn();
       if (googleUser == null) return false;
       final googleAuth = await googleUser.authentication;
-      final cred = await _auth.signInWithCredential(
-        GoogleAuthProvider.credential(
-          idToken: googleAuth.idToken,
-          accessToken: googleAuth.accessToken,
-        ),
+      final googleCred = GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken,
+        accessToken: googleAuth.accessToken,
       );
-      final user = cred.user!;
-      final existing = await _db.collection('users').doc(user.uid).get();
-      if (!existing.exists) {
-        final raw = (user.email ?? 'user').split('@').first.toLowerCase().replaceAll(RegExp(r'[^a-z0-9._]'), '');
-        var username = raw.length >= 3 ? raw : 'user${user.uid.substring(0, 6)}';
-        final clash = await _db.collection('users').where('username', isEqualTo: username).limit(1).get();
-        if (clash.docs.isNotEmpty) username = '$username${user.uid.substring(0, 4)}';
-        await _db.collection('users').doc(user.uid).set({
-          'id': user.uid,
-          'email': user.email ?? '',
-          'username': username,
-          'name': user.displayName ?? username,
-          'passwordHash': '',
-          'salt': '',
-          'avatarPath': user.photoURL ?? '',
-          'bio': '',
-          'website': '',
-          'createdAt': DateTime.now().toIso8601String(),
-        });
+      UserCredential cred;
+      try {
+        cred = await _auth.signInWithCredential(googleCred);
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'account-exists-with-different-credential') {
+          _pendingGoogle = e.credential ?? googleCred;
+          lastError = 'Ese mail ya tiene cuenta. Entrá con tu contraseña y se vincula Google.';
+          notifyListeners();
+          return false;
+        }
+        rethrow;
       }
-      currentUserId = user.uid;
+      await _adoptGoogleUser(cred.user!, photo: googleUser.photoUrl, displayName: googleUser.displayName);
+      currentUserId = cred.user!.uid;
       await _refresh();
+      await _saveCache();
       notifyListeners();
       return true;
     } catch (_) {
       lastError = 'No se pudo entrar con Google. Si pasa de nuevo, revisá SHA-1 en Firebase.';
       notifyListeners();
       return false;
+    }
+  }
+
+  Future<void> _adoptGoogleUser(User user, {String? photo, String? displayName}) async {
+    final email = (user.email ?? '').trim().toLowerCase();
+    final byId = await _db.collection('users').doc(user.uid).get();
+    QuerySnapshot<Map<String, dynamic>>? byEmail;
+    if (email.isNotEmpty) {
+      byEmail = await _db.collection('users').where('email', isEqualTo: email).limit(5).get();
+    }
+    final others = byEmail?.docs.where((d) => d.id != user.uid).toList() ?? const [];
+    if (byId.exists && others.isEmpty) return;
+    if (others.isNotEmpty) {
+      final old = others.first;
+      final data = Map<String, dynamic>.from(old.data());
+      data['id'] = user.uid;
+      data['email'] = email.isEmpty ? (data['email'] ?? '') : email;
+      if ((data['avatarPath'] as String? ?? '').isEmpty && (photo ?? '').isNotEmpty) {
+        data['avatarPath'] = photo;
+      }
+      if ((data['name'] as String? ?? '').trim().isEmpty && (displayName ?? '').isNotEmpty) {
+        data['name'] = displayName;
+      }
+      await _db.collection('users').doc(user.uid).set(data, SetOptions(merge: true));
+      await _repointUser(old.id, user.uid);
+      await old.reference.delete();
+      return;
+    }
+    if (!byId.exists) {
+      final raw = (email.isEmpty ? 'user' : email.split('@').first).replaceAll(RegExp(r'[^a-z0-9._]'), '');
+      var username = raw.length >= 3 ? raw : 'user${user.uid.substring(0, 6)}';
+      final clash = await _db.collection('users').where('username', isEqualTo: username).limit(1).get();
+      if (clash.docs.isNotEmpty) username = '$username${user.uid.substring(0, 4)}';
+      await _db.collection('users').doc(user.uid).set({
+        'id': user.uid,
+        'email': email,
+        'username': username,
+        'name': displayName ?? username,
+        'passwordHash': '',
+        'salt': '',
+        'avatarPath': photo ?? '',
+        'bio': '',
+        'website': '',
+        'createdAt': DateTime.now().toIso8601String(),
+      });
+    }
+  }
+
+  Future<void> _repointUser(String from, String to) async {
+    final posts = await _db.collection('posts').where('userId', isEqualTo: from).get();
+    for (final d in posts.docs) {
+      await d.reference.update({'userId': to});
+    }
+    final fromF = await _db.collection('follows').where('from', isEqualTo: from).get();
+    for (final d in fromF.docs) {
+      final target = d.data()['to'] as String? ?? '';
+      await d.reference.delete();
+      if (target.isNotEmpty) {
+        await _db.collection('follows').doc('${to}_$target').set({'from': to, 'to': target});
+      }
+    }
+    final toF = await _db.collection('follows').where('to', isEqualTo: from).get();
+    for (final d in toF.docs) {
+      final source = d.data()['from'] as String? ?? '';
+      await d.reference.delete();
+      if (source.isNotEmpty) {
+        await _db.collection('follows').doc('${source}_$to').set({'from': source, 'to': to});
+      }
     }
   }
 

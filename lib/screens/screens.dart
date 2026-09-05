@@ -131,7 +131,9 @@ class _AuthScreenState extends State<AuthScreen> {
                         final ok = await widget.state.loginWithGoogle();
                         if (mounted) setState(() => busy = false);
                         if (!ok && mounted && widget.state.lastError != null) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(widget.state.lastError!)));
+                          final msg = widget.state.lastError!;
+                          if (msg.contains('contraseña')) setState(() => register = false);
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
                         }
                       },
                 label: const Text('Continuar con Google', style: TextStyle(fontWeight: FontWeight.w700, color: LumaColors.text)),
@@ -783,27 +785,53 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 }
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key, required this.state, required this.onClose, required this.onLogout});
+  const SettingsScreen({super.key, required this.state, required this.onClose, required this.onLogout, this.onEdit});
   final AppState state;
   final VoidCallback onClose;
   final VoidCallback onLogout;
+  final VoidCallback? onEdit;
   @override
   Widget build(BuildContext context) {
     final me = state.me;
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         leading: IconButton(onPressed: onClose, icon: CustomPaint(size: const Size.square(22), painter: BackPainter(LumaColors.text))),
-        title: const Text('Ajustes', style: TextStyle(fontFamily: null, fontSize: 18, fontWeight: FontWeight.w700, color: LumaColors.text)),
+        title: const Text('Ajustes y actividad', style: TextStyle(fontFamily: null, fontSize: 18, fontWeight: FontWeight.w700, color: LumaColors.text)),
       ),
       body: ListView(children: [
-        ListTile(leading: Avatar(me.avatarPath, size: 48), title: Text(me.username), subtitle: Text(me.email)),
-        const Divider(),
-        ListTile(title: const Text('Cuenta'), subtitle: Text('${me.name} · @${me.username}')),
-        const ListTile(title: Text('Notificaciones'), subtitle: Text('Likes, comentarios y mensajes en tiempo real')),
-        const ListTile(title: Text('Privacidad'), subtitle: Text('Tu perfil y publicaciones son visibles para toda la plataforma')),
-        const ListTile(title: Text('Almacenamiento'), subtitle: Text('Las fotos y el feed se guardan en caché para abrir más rápido')),
-        const Divider(),
-        ListTile(title: const Text('Cerrar sesión', style: TextStyle(color: Colors.red)), onTap: onLogout),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: Text('Tu cuenta', style: TextStyle(color: LumaColors.textSecondary, fontWeight: FontWeight.w600, fontSize: 13)),
+        ),
+        ListTile(
+          leading: Avatar(me.avatarPath, size: 52),
+          title: Text(me.name.isEmpty ? me.username : me.name, style: const TextStyle(fontWeight: FontWeight.w700)),
+          subtitle: Text('@${me.username}\n${me.email}'),
+          isThreeLine: true,
+          trailing: const Icon(Icons.chevron_right),
+          onTap: onEdit,
+        ),
+        ListTile(
+          leading: const Icon(Icons.person_outline),
+          title: const Text('Editar perfil'),
+          subtitle: const Text('Foto, nombre, usuario y bio'),
+          onTap: onEdit,
+        ),
+        const Divider(height: 24),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: Text('Cómo usás Space Social', style: TextStyle(color: LumaColors.textSecondary, fontWeight: FontWeight.w600, fontSize: 13)),
+        ),
+        const ListTile(leading: Icon(Icons.notifications_none), title: Text('Notificaciones'), subtitle: Text('Actividad en tiempo real en toda la plataforma')),
+        const ListTile(leading: Icon(Icons.lock_outline), title: Text('Privacidad'), subtitle: Text('Perfil y publicaciones visibles para todos')),
+        const ListTile(leading: Icon(Icons.sd_storage_outlined), title: Text('Almacenamiento'), subtitle: Text('Caché local para abrir más rápido')),
+        const Divider(height: 24),
+        ListTile(
+          leading: const Icon(Icons.logout, color: Color(0xFFED4956)),
+          title: const Text('Cerrar sesión', style: TextStyle(color: Color(0xFFED4956), fontWeight: FontWeight.w600)),
+          onTap: onLogout,
+        ),
       ]),
     );
   }

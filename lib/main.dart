@@ -140,7 +140,7 @@ class _LumaShellState extends State<LumaShell> {
   Widget build(BuildContext context) {
     Widget body;
     if (settings) {
-      body = SettingsScreen(state: state, onClose: () => setState(() => settings = false), onLogout: () { setState(() => settings = false); state.logout(); });
+      body = SettingsScreen(state: state, onClose: () => setState(() => settings = false), onEdit: () => setState(() { settings = false; editing = true; }), onLogout: () { setState(() => settings = false); state.logout(); });
     } else if (editing) {
       body = EditProfileScreen(state: state, onClose: () => setState(() => editing = false));
     } else if (chatUserId != null) {
