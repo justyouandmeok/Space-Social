@@ -394,7 +394,8 @@ class _CreateScreenState extends State<CreateScreen> {
       return;
     }
     setState(() => busy = true);
-    final ok = await widget.state.publishPost(image: image!, caption: caption.text, location: location.text);
+    final ok = await widget.state.publishPost(image: image!, caption: caption.text, location: location.text)
+        .timeout(const Duration(seconds: 30), onTimeout: () => false);
     if (!mounted) return;
     setState(() => busy = false);
     if (!ok) {
@@ -744,7 +745,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       bio: bio.text,
       website: web.text,
       avatar: avatar,
-    );
+    ).timeout(const Duration(seconds: 30), onTimeout: () => false);
     if (!mounted) return;
     setState(() => busy = false);
     if (!ok) {
@@ -760,7 +761,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(onPressed: busy ? null : widget.onClose, icon: CustomPaint(size: const Size.square(22), painter: BackPainter(LumaColors.text))),
+        leading: IconButton(onPressed: widget.onClose, icon: CustomPaint(size: const Size.square(22), painter: BackPainter(LumaColors.text))),
         title: const Text('Editar perfil', style: TextStyle(fontFamily: null, fontSize: 18, fontWeight: FontWeight.w700, color: LumaColors.text)),
         actions: [
           TextButton(

@@ -457,16 +457,6 @@ class AppState extends ChangeNotifier {
           }
         } catch (_) {}
       }
-      if (existing != null) {
-        _pendingGoogle = googleCred;
-        pendingEmail = email;
-        try { await _auth.signOut(); } catch (_) {}
-        try { await GoogleSignIn(serverClientId: SpaceConfig.googleWebClientId).signOut(); } catch (_) {}
-        currentUserId = null;
-        lastError = 'Ese mail ya tiene cuenta. Entrá con tu contraseña y Google queda en la misma ID.';
-        notifyListeners();
-        return false;
-      }
       currentUserId = cred.user!.uid;
       await _adoptGoogleUser(cred.user!, photo: googleUser.photoUrl, displayName: googleUser.displayName);
       await _refresh();
@@ -586,7 +576,11 @@ class AppState extends ChangeNotifier {
     try {
       var path = me.avatarPath;
       if (avatar != null) {
-        path = await _upload(avatar, SpaceConfig.avatarsBucket, me.id);
+        try {
+          path = await _upload(avatar, SpaceConfig.avatarsBucket, me.id);
+        } catch (_) {
+          lastError = 'La foto tardó o falló. Se guardó el resto del perfil.';
+        }
       }
       var userName = (username ?? me.username).trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9._]'), '');
       if (userName.length < 3) userName = me.username;
@@ -630,20 +624,24 @@ class AppState extends ChangeNotifier {
     try {
       final url = await _upload(image, SpaceConfig.postsBucket, me.id);
       final id = newId();
+      final created = DateTime.now();
       await _db.collection('posts').doc(id).set({
         'id': id,
         'userId': me.id,
         'imagePath': url,
         'caption': caption.trim(),
         'location': location.trim(),
-        'createdAt': DateTime.now().toIso8601String(),
+        'createdAt': created.toIso8601String(),
         'likes': <String>[],
         'comments': <Map<String, dynamic>>[],
         'savedBy': <String>[],
       });
-      await _refresh();
-      await _saveCache();
+      posts = [
+        Post(id: id, userId: me.id, imagePath: url, caption: caption.trim(), location: location.trim(), createdAt: created),
+        ...posts,
+      ];
       notifyListeners();
+      unawaited(_refresh().then((_) => _saveCache()));
       return true;
     } catch (e) {
       lastError = 'No se pudo publicar: $e';
