@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -271,6 +272,24 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+
+  Future<bool> usernameAvailable(String raw, {String? exceptUserId}) async {
+    final u = raw.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9._]'), '');
+    if (u.length < 3) return false;
+    final taken = await _db.collection('users').where('username', isEqualTo: u).limit(5).get();
+    if (taken.docs.any((d) => d.id != exceptUserId)) return false;
+    try {
+      final reserved = await _db.collection('username_reserved').doc(u).get();
+      if (reserved.exists) {
+        final until = DateTime.tryParse(reserved.data()?['until'] as String? ?? '');
+        if (until != null && until.isAfter(DateTime.now()) && reserved.data()?['userId'] != exceptUserId) {
+          return false;
+        }
+      }
+    } catch (_) {}
+    return true;
+  }
+
   Future<String> _upload(File file, String bucket, String prefix) async {
     final ext = p.extension(file.path).isEmpty ? '.jpg' : p.extension(file.path);
     final path = '$prefix/${DateTime.now().millisecondsSinceEpoch}$ext';
@@ -278,7 +297,7 @@ class AppState extends ChangeNotifier {
           path,
           file,
           fileOptions: const FileOptions(upsert: true, contentType: 'image/jpeg'),
-        );
+        ).timeout(const Duration(seconds: 25));
     final url = _sb.storage.from(bucket).getPublicUrl(path);
     return url;
   }
@@ -314,9 +333,8 @@ class AppState extends ChangeNotifier {
       return false;
     }
     try {
-      final taken = await _db.collection('users').where('username', isEqualTo: u).limit(1).get();
-      if (taken.docs.isNotEmpty) {
-        lastError = 'Ese usuario ya existe.';
+      if (!await usernameAvailable(u)) {
+        lastError = 'Ese usuario ya existe o está reservado 3 meses.';
         notifyListeners();
         return false;
       }
@@ -484,7 +502,11 @@ class AppState extends ChangeNotifier {
     await _db.collection('users').doc(user.uid).set(data, SetOptions(merge: true));
     await _repointUser(oldUser.id, user.uid);
     try {
-      await _db.collection('users').doc(oldUser.id).delete();
+      await _db.collection('users').doc(oldUser.id).set({
+        'username': '_merged_${oldUser.id.substring(0, 6)}',
+        'mergedInto': user.uid,
+        'email': email,
+      }, SetOptions(merge: true));
     } catch (_) {}
   }
 
@@ -533,12 +555,16 @@ class AppState extends ChangeNotifier {
       var userName = (username ?? me.username).trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9._]'), '');
       if (userName.length < 3) userName = me.username;
       if (userName != me.username) {
-        final taken = await _db.collection('users').where('username', isEqualTo: userName).limit(1).get();
-        if (taken.docs.any((d) => d.id != me.id)) {
-          lastError = 'Ese usuario ya existe.';
+        if (!await usernameAvailable(userName, exceptUserId: me.id)) {
+          lastError = 'Ese usuario ya existe o está reservado 3 meses.';
           notifyListeners();
           return false;
         }
+        await _db.collection('username_reserved').doc(me.username).set({
+          'username': me.username,
+          'userId': me.id,
+          'until': DateTime.now().add(const Duration(days: 90)).toIso8601String(),
+        });
       }
       await _db.collection('users').doc(me.id).set({
         'id': me.id,
@@ -552,9 +578,8 @@ class AppState extends ChangeNotifier {
         'salt': '',
         'createdAt': (me.createdAt ?? DateTime.now()).toIso8601String(),
       }, SetOptions(merge: true));
-      await _refresh();
-      await _saveCache();
       notifyListeners();
+      unawaited(_refresh().then((_) => _saveCache()));
       return true;
     } catch (_) {
       lastError = 'No se pudo guardar el perfil. Probá de nuevo.';

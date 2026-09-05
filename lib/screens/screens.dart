@@ -74,7 +74,15 @@ class _AuthScreenState extends State<AuthScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(28, 36, 28, 24),
           children: [
-            const Center(child: Text('Space Social', style: TextStyle(fontFamily: 'GrandHotel', fontSize: 46))),
+            Center(
+              child: Column(
+                children: [
+                  ClipRRect(borderRadius: BorderRadius.circular(16), child: Image.asset('assets/brand/logo_mark.png', width: 64, height: 64)),
+                  const SizedBox(height: 10),
+                  const Text('Space Social', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, letterSpacing: -0.6)),
+                ],
+              ),
+            ),
             const SizedBox(height: 8),
             Text(register ? 'Creá tu cuenta para publicar.' : 'Entrá con tu cuenta.',
                 textAlign: TextAlign.center,
@@ -238,7 +246,14 @@ class FeedScreen extends StatelessWidget {
     final items = state.feed;
     return Scaffold(
       appBar: AppBar(
-        title: const Padding(padding: EdgeInsets.only(left: 4, top: 4), child: Text('Space Social', style: TextStyle(fontFamily: 'GrandHotel', fontSize: 30, color: LumaColors.text))),
+        title: Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: Row(children: [
+            ClipRRect(borderRadius: BorderRadius.circular(7), child: Image.asset('assets/brand/logo_mark.png', width: 26, height: 26)),
+            const SizedBox(width: 8),
+            const Text('Space Social', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, letterSpacing: -0.5, color: LumaColors.text)),
+          ]),
+        ),
         actions: [
           IconButton(
             onPressed: onOpenMessages,
@@ -732,7 +747,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       );
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Perfil actualizado')));
     widget.onClose();
   }
 
@@ -866,10 +880,21 @@ class SettingsScreen extends StatelessWidget {
           title: const Text('Almacenamiento'),
           subtitle: const Text('Las fotos quedan en caché para abrir más rápido'),
         ),
+        ListTile(
+          leading: const Icon(Icons.lock_reset_outlined),
+          title: const Text('Contraseña'),
+          subtitle: const Text('Si tu cuenta es de email, podés resetearla'),
+          onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Usá “olvidé contraseña” en el login o el mail de Firebase'))),
+        ),
+        const ListTile(
+          leading: Icon(Icons.badge_outlined),
+          title: Text('Usuario único'),
+          subtitle: Text('Nadie puede repetir tu @. Si lo cambiás, queda reservado 3 meses'),
+        ),
         const ListTile(
           leading: Icon(Icons.info_outline),
           title: Text('Space Social'),
-          subtitle: Text('Versión 1.3.1'),
+          subtitle: Text('Versión 1.4.0'),
         ),
         const Divider(height: 24),
         ListTile(

@@ -55,15 +55,20 @@ class _LumaGateState extends State<LumaGate> {
   @override
   Widget build(BuildContext context) {
     if (!state.ready) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: Colors.white,
         body: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Space Social', style: TextStyle(fontFamily: 'GrandHotel', fontSize: 44)),
-              SizedBox(height: 18),
-              SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2)),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(22),
+                child: Image.asset('assets/brand/logo_mark.png', width: 88, height: 88, fit: BoxFit.cover),
+              ),
+              const SizedBox(height: 16),
+              const Text('Space Social', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, letterSpacing: -0.4)),
+              const SizedBox(height: 18),
+              const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2)),
             ],
           ),
         ),
@@ -92,6 +97,7 @@ class _LumaShellState extends State<LumaShell> {
   bool editing = false;
   bool settings = false;
   bool saved = false;
+  String? editFrom;
   String? chatUserId;
 
   AppState get state => widget.state;
@@ -105,6 +111,7 @@ class _LumaShellState extends State<LumaShell> {
       editing = false;
       settings = false;
       saved = false;
+      editFrom = null;
       chatUserId = null;
     });
   }
@@ -117,6 +124,7 @@ class _LumaShellState extends State<LumaShell> {
       editing = false;
       settings = false;
       saved = false;
+      editFrom = null;
       chatUserId = null;
     });
   }
@@ -137,6 +145,7 @@ class _LumaShellState extends State<LumaShell> {
     editing = false;
     settings = false;
     saved = false;
+    editFrom = null;
     chatUserId = null;
   }
 
@@ -146,9 +155,13 @@ class _LumaShellState extends State<LumaShell> {
     if (saved) {
       body = SavedScreen(state: state, onClose: () => setState(() => saved = false), onOpenPost: (p) => setState(() { saved = false; overlayPost = p; }));
     } else if (settings) {
-      body = SettingsScreen(state: state, onClose: () => setState(() => settings = false), onEdit: () => setState(() { settings = false; editing = true; }), onSaved: () => setState(() { settings = false; saved = true; }), onLogout: () { setState(() => settings = false); state.logout(); });
+      body = SettingsScreen(state: state, onClose: () => setState(() => settings = false), onEdit: () => setState(() { settings = false; editing = true; editFrom = 'settings'; }), onSaved: () => setState(() { settings = false; saved = true; }), onLogout: () { setState(() => settings = false); state.logout(); });
     } else if (editing) {
-      body = EditProfileScreen(state: state, onClose: () => setState(() => editing = false));
+      body = EditProfileScreen(state: state, onClose: () => setState(() {
+        editing = false;
+        if (editFrom == 'settings') settings = true;
+        editFrom = null;
+      }));
     } else if (chatUserId != null) {
       body = ChatScreen(state: state, otherId: chatUserId!, onClose: () => setState(() => chatUserId = null));
     } else if (messages) {
@@ -193,7 +206,7 @@ class _LumaShellState extends State<LumaShell> {
             state: state,
             user: state.me,
             onOpenPost: _openPost,
-            onEdit: () => setState(() => editing = true),
+            onEdit: () => setState(() { editing = true; editFrom = 'profile'; }),
             onSettings: () => setState(() => settings = true),
             onLogout: () => state.logout(),
           ),
