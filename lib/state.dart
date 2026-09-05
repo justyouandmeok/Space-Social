@@ -40,6 +40,7 @@ class AppState extends ChangeNotifier {
   final _auth = FirebaseAuth.instance;
   final _db = FirebaseFirestore.instance;
   final _sb = Supabase.instance.client;
+  final _store = LumaStore();
 
   bool ready = false;
   String? currentUserId;
@@ -145,28 +146,62 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> load() async {
+    await _loadCache();
+    ready = true;
+    notifyListeners();
     _db.collection('users').snapshots().listen((_) {
-      if (ready) _refresh().then((_) => notifyListeners());
+      if (ready) _refresh().then((_) { _saveCache(); notifyListeners(); });
     });
     _db.collection('posts').snapshots().listen((_) {
-      if (ready) _refresh().then((_) => notifyListeners());
+      if (ready) _refresh().then((_) { _saveCache(); notifyListeners(); });
+    });
+    _db.collection('follows').snapshots().listen((_) {
+      if (ready) _refresh().then((_) { _saveCache(); notifyListeners(); });
+    });
+    _db.collection('messages').snapshots().listen((_) {
+      if (ready && currentUserId != null) _refresh().then((_) { _saveCache(); notifyListeners(); });
     });
     _auth.authStateChanges().listen((user) async {
       currentUserId = user?.uid;
-      if (user != null) {
-        await _ensureUserDoc(user);
-      }
+      if (user != null) await _ensureUserDoc(user);
       await _refresh();
+      await _saveCache();
       ready = true;
       notifyListeners();
     });
     currentUserId = _auth.currentUser?.uid;
-    if (_auth.currentUser != null) {
-      await _ensureUserDoc(_auth.currentUser!);
-    }
+    if (_auth.currentUser != null) await _ensureUserDoc(_auth.currentUser!);
     await _refresh();
+    await _saveCache();
     ready = true;
     notifyListeners();
+  }
+
+  Future<void> _loadCache() async {
+    try {
+      final db = await _store.load();
+      final rawUsers = (db['users'] as List?) ?? const [];
+      users = rawUsers.map((e) => UserAccount.fromJson(Map<String, dynamic>.from(e as Map))).toList();
+      final rawPosts = (db['posts'] as List?) ?? const [];
+      posts = rawPosts.map((e) => Post.fromJson(Map<String, dynamic>.from(e as Map))).toList();
+      following = {};
+      final fol = db['following'];
+      if (fol is Map) {
+        fol.forEach((k, v) {
+          following['$k'] = List<String>.from(v as List? ?? const []);
+        });
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _saveCache() async {
+    try {
+      await _store.save({
+        'users': users.map((u) => u.toJson()).toList(),
+        'posts': posts.map((p) => p.toJson()).toList(),
+        'following': following,
+      });
+    } catch (_) {}
   }
 
   Future<void> _ensureUserDoc(User user) async {
@@ -401,7 +436,7 @@ class AppState extends ChangeNotifier {
 
   Future<void> switchUser(String userId) async {}
 
-  Future<bool> updateProfile({String? name, String? bio, String? website, File? avatar}) async {
+  Future<bool> updateProfile({String? name, String? username, String? bio, String? website, File? avatar}) async {
     if (!isLoggedIn) return false;
     lastError = null;
     try {
@@ -409,10 +444,20 @@ class AppState extends ChangeNotifier {
       if (avatar != null) {
         path = await _upload(avatar, SpaceConfig.avatarsBucket, me.id);
       }
+      var userName = (username ?? me.username).trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9._]'), '');
+      if (userName.length < 3) userName = me.username;
+      if (userName != me.username) {
+        final taken = await _db.collection('users').where('username', isEqualTo: userName).limit(1).get();
+        if (taken.docs.any((d) => d.id != me.id)) {
+          lastError = 'Ese usuario ya existe.';
+          notifyListeners();
+          return false;
+        }
+      }
       await _db.collection('users').doc(me.id).set({
         'id': me.id,
         'email': me.email,
-        'username': me.username,
+        'username': userName,
         'name': (name ?? me.name).trim(),
         'bio': bio ?? me.bio,
         'website': website ?? me.website,
@@ -422,6 +467,7 @@ class AppState extends ChangeNotifier {
         'createdAt': (me.createdAt ?? DateTime.now()).toIso8601String(),
       }, SetOptions(merge: true));
       await _refresh();
+      await _saveCache();
       notifyListeners();
       return true;
     } catch (_) {
@@ -431,23 +477,32 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  Future<void> publishPost({required File image, required String caption, String location = ''}) async {
-    if (!isLoggedIn) return;
-    final url = await _upload(image, SpaceConfig.postsBucket, me.id);
-    final id = newId();
-    await _db.collection('posts').doc(id).set({
-      'id': id,
-      'userId': me.id,
-      'imagePath': url,
-      'caption': caption.trim(),
-      'location': location.trim(),
-      'createdAt': DateTime.now().toIso8601String(),
-      'likes': <String>[],
-      'comments': <Map<String, dynamic>>[],
-      'savedBy': <String>[],
-    });
-    await _refresh();
-    notifyListeners();
+  Future<bool> publishPost({required File image, required String caption, String location = ''}) async {
+    if (!isLoggedIn) return false;
+    lastError = null;
+    try {
+      final url = await _upload(image, SpaceConfig.postsBucket, me.id);
+      final id = newId();
+      await _db.collection('posts').doc(id).set({
+        'id': id,
+        'userId': me.id,
+        'imagePath': url,
+        'caption': caption.trim(),
+        'location': location.trim(),
+        'createdAt': DateTime.now().toIso8601String(),
+        'likes': <String>[],
+        'comments': <Map<String, dynamic>>[],
+        'savedBy': <String>[],
+      });
+      await _refresh();
+      await _saveCache();
+      notifyListeners();
+      return true;
+    } catch (_) {
+      lastError = 'No se pudo publicar. Revisá la conexión y el bucket de fotos.';
+      notifyListeners();
+      return false;
+    }
   }
 
   Future<void> deletePost(String postId) async {

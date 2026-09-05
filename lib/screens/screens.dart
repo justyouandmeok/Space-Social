@@ -228,7 +228,7 @@ class FeedScreen extends StatelessWidget {
     final items = state.feed;
     return Scaffold(
       appBar: AppBar(
-        title: const Padding(padding: EdgeInsets.only(left: 4, top: 4), child: Text('Space Social')),
+        title: const Padding(padding: EdgeInsets.only(left: 4, top: 4), child: Text('Space Social', style: TextStyle(fontFamily: 'GrandHotel', fontSize: 30, color: LumaColors.text))),
         actions: [
           IconButton(
             onPressed: onOpenMessages,
@@ -360,10 +360,14 @@ class _CreateScreenState extends State<CreateScreen> {
       return;
     }
     setState(() => busy = true);
-    await widget.state.publishPost(image: image!, caption: caption.text, location: location.text);
+    final ok = await widget.state.publishPost(image: image!, caption: caption.text, location: location.text);
     if (!mounted) return;
+    setState(() => busy = false);
+    if (!ok) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(widget.state.lastError ?? 'No se pudo publicar')));
+      return;
+    }
     setState(() {
-      busy = false;
       image = null;
       caption.clear();
       location.clear();
@@ -497,6 +501,7 @@ class ProfileScreen extends StatelessWidget {
     required this.onOpenPost,
     this.onBack,
     this.onEdit,
+    this.onSettings,
     this.onMessage,
     this.onLogout,
   });
@@ -506,6 +511,7 @@ class ProfileScreen extends StatelessWidget {
   final void Function(Post post) onOpenPost;
   final VoidCallback? onBack;
   final VoidCallback? onEdit;
+  final VoidCallback? onSettings;
   final VoidCallback? onMessage;
   final VoidCallback? onLogout;
 
@@ -617,8 +623,9 @@ class ProfileScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(title: const Text('Editar perfil'), onTap: () { Navigator.pop(context); onEdit?.call(); }),
-            ListTile(title: const Text('Cerrar sesión'), onTap: () { Navigator.pop(context); onLogout?.call(); }),
+            ListTile(leading: const Icon(Icons.edit_outlined), title: const Text('Editar perfil'), onTap: () { Navigator.pop(context); onEdit?.call(); }),
+            ListTile(leading: const Icon(Icons.settings_outlined), title: const Text('Ajustes'), onTap: () { Navigator.pop(context); onSettings?.call(); }),
+            ListTile(leading: const Icon(Icons.logout), title: const Text('Cerrar sesión'), onTap: () { Navigator.pop(context); onLogout?.call(); }),
           ],
         ),
       ),
@@ -674,6 +681,7 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   late final name = TextEditingController(text: widget.state.me.name);
+  late final username = TextEditingController(text: widget.state.me.username);
   late final bio = TextEditingController(text: widget.state.me.bio);
   late final web = TextEditingController(text: widget.state.me.website);
   File? avatar;
@@ -682,6 +690,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void dispose() {
     name.dispose();
+    username.dispose();
     bio.dispose();
     web.dispose();
     super.dispose();
@@ -692,6 +701,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     setState(() => busy = true);
     final ok = await widget.state.updateProfile(
       name: name.text,
+      username: username.text,
       bio: bio.text,
       website: web.text,
       avatar: avatar,
@@ -763,10 +773,38 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           const Center(child: Text('Cambiar foto de perfil', style: TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w600))),
           const SizedBox(height: 16),
           TextField(controller: name, decoration: const InputDecoration(labelText: 'Nombre')),
+          TextField(controller: username, decoration: const InputDecoration(labelText: 'Usuario')),
           TextField(controller: bio, decoration: const InputDecoration(labelText: 'Bio'), maxLines: 3),
           TextField(controller: web, decoration: const InputDecoration(labelText: 'Sitio web')),
         ],
       ),
+    );
+  }
+}
+
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key, required this.state, required this.onClose, required this.onLogout});
+  final AppState state;
+  final VoidCallback onClose;
+  final VoidCallback onLogout;
+  @override
+  Widget build(BuildContext context) {
+    final me = state.me;
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(onPressed: onClose, icon: CustomPaint(size: const Size.square(22), painter: BackPainter(LumaColors.text))),
+        title: const Text('Ajustes', style: TextStyle(fontFamily: null, fontSize: 18, fontWeight: FontWeight.w700, color: LumaColors.text)),
+      ),
+      body: ListView(children: [
+        ListTile(leading: Avatar(me.avatarPath, size: 48), title: Text(me.username), subtitle: Text(me.email)),
+        const Divider(),
+        ListTile(title: const Text('Cuenta'), subtitle: Text('${me.name} · @${me.username}')),
+        const ListTile(title: Text('Notificaciones'), subtitle: Text('Likes, comentarios y mensajes en tiempo real')),
+        const ListTile(title: Text('Privacidad'), subtitle: Text('Tu perfil y publicaciones son visibles para toda la plataforma')),
+        const ListTile(title: Text('Almacenamiento'), subtitle: Text('Las fotos y el feed se guardan en caché para abrir más rápido')),
+        const Divider(),
+        ListTile(title: const Text('Cerrar sesión', style: TextStyle(color: Colors.red)), onTap: onLogout),
+      ]),
     );
   }
 }

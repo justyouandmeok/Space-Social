@@ -90,6 +90,7 @@ class _LumaShellState extends State<LumaShell> {
   Post? overlayComments;
   bool messages = false;
   bool editing = false;
+  bool settings = false;
   String? chatUserId;
 
   AppState get state => widget.state;
@@ -101,6 +102,7 @@ class _LumaShellState extends State<LumaShell> {
       overlayComments = null;
       messages = false;
       editing = false;
+      settings = false;
       chatUserId = null;
     });
   }
@@ -111,6 +113,7 @@ class _LumaShellState extends State<LumaShell> {
       overlayComments = null;
       messages = false;
       editing = false;
+      settings = false;
       chatUserId = null;
     });
   }
@@ -129,13 +132,16 @@ class _LumaShellState extends State<LumaShell> {
     overlayComments = null;
     messages = false;
     editing = false;
+    settings = false;
     chatUserId = null;
   }
 
   @override
   Widget build(BuildContext context) {
     Widget body;
-    if (editing) {
+    if (settings) {
+      body = SettingsScreen(state: state, onClose: () => setState(() => settings = false), onLogout: () { setState(() => settings = false); state.logout(); });
+    } else if (editing) {
       body = EditProfileScreen(state: state, onClose: () => setState(() => editing = false));
     } else if (chatUserId != null) {
       body = ChatScreen(state: state, otherId: chatUserId!, onClose: () => setState(() => chatUserId = null));
@@ -182,13 +188,14 @@ class _LumaShellState extends State<LumaShell> {
             user: state.me,
             onOpenPost: _openPost,
             onEdit: () => setState(() => editing = true),
+            onSettings: () => setState(() => settings = true),
             onLogout: () => state.logout(),
           ),
         ],
       );
     }
 
-    final hideNav = editing || messages || chatUserId != null || overlayComments != null || overlayPost != null ||
+    final hideNav = settings || editing || messages || chatUserId != null || overlayComments != null || overlayPost != null ||
         (overlayUser != null && overlayUser!.id != state.me.id);
 
     return Scaffold(

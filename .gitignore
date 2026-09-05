@@ -8,6 +8,5 @@
 .pub/
 /build/
 android/local.properties
-android/*.jks
 android/key.properties
 android/.gradle/
