@@ -584,8 +584,8 @@ class AppState extends ChangeNotifier {
       await _saveCache();
       notifyListeners();
       return true;
-    } catch (_) {
-      lastError = 'No se pudo publicar. Revisá la conexión y el bucket de fotos.';
+    } catch (e) {
+      lastError = 'No se pudo publicar: $e';
       notifyListeners();
       return false;
     }

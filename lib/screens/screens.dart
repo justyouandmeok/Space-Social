@@ -9,10 +9,18 @@ import '../widgets/ig_icons.dart';
 import '../widgets/network_photo.dart';
 import '../widgets/post_card.dart';
 
-Future<File?> pickImage() async {
-  final x = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 88, maxWidth: 1600);
-  if (x == null) return null;
-  return File(x.path);
+Future<File?> pickImage({bool camera = false}) async {
+  try {
+    final x = await ImagePicker().pickImage(
+      source: camera ? ImageSource.camera : ImageSource.gallery,
+      imageQuality: 85,
+      maxWidth: 1600,
+    );
+    if (x == null) return null;
+    return File(x.path);
+  } catch (_) {
+    return null;
+  }
 }
 
 class AuthScreen extends StatefulWidget {
@@ -351,9 +359,12 @@ class _CreateScreenState extends State<CreateScreen> {
     super.dispose();
   }
 
-  Future<void> _pick() async {
-    final f = await pickImage();
+  Future<void> _pick({bool camera = false}) async {
+    final f = await pickImage(camera: camera);
     if (f != null) setState(() => image = f);
+    else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se pudo abrir la galería')));
+    }
   }
 
   Future<void> _publish() async {
@@ -393,19 +404,24 @@ class _CreateScreenState extends State<CreateScreen> {
       body: ListView(
         children: [
           GestureDetector(
-            onTap: _pick,
+            onTap: busy ? null : _pick,
             child: AspectRatio(
               aspectRatio: 1,
               child: image == null
                   ? Container(
-                      color: const Color(0xFFF4F4F4),
+                      color: const Color(0xFFFAFAFA),
                       alignment: Alignment.center,
-                      child: const Column(
+                      child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.add_photo_alternate_outlined, size: 48, color: LumaColors.textSecondary),
-                          SizedBox(height: 8),
-                          Text('Elegir de la galería'),
+                          const Icon(Icons.add_photo_alternate_outlined, size: 56, color: LumaColors.textSecondary),
+                          const SizedBox(height: 10),
+                          const Text('Elegir de la galería', style: TextStyle(fontWeight: FontWeight.w600)),
+                          const SizedBox(height: 12),
+                          TextButton(
+                            onPressed: busy ? null : () => _pick(camera: true),
+                            child: const Text('Usar cámara', style: TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w700)),
+                          ),
                         ],
                       ),
                     )
@@ -787,11 +803,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 }
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key, required this.state, required this.onClose, required this.onLogout, this.onEdit});
+  const SettingsScreen({super.key, required this.state, required this.onClose, required this.onLogout, this.onEdit, this.onSaved});
   final AppState state;
   final VoidCallback onClose;
   final VoidCallback onLogout;
   final VoidCallback? onEdit;
+  final VoidCallback? onSaved;
   @override
   Widget build(BuildContext context) {
     final me = state.me;
@@ -825,9 +842,35 @@ class SettingsScreen extends StatelessWidget {
           padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
           child: Text('Cómo usás Space Social', style: TextStyle(color: LumaColors.textSecondary, fontWeight: FontWeight.w600, fontSize: 13)),
         ),
-        const ListTile(leading: Icon(Icons.notifications_none), title: Text('Notificaciones'), subtitle: Text('Actividad en tiempo real en toda la plataforma')),
-        const ListTile(leading: Icon(Icons.lock_outline), title: Text('Privacidad'), subtitle: Text('Perfil y publicaciones visibles para todos')),
-        const ListTile(leading: Icon(Icons.sd_storage_outlined), title: Text('Almacenamiento'), subtitle: Text('Caché local para abrir más rápido')),
+        ListTile(
+          leading: const Icon(Icons.bookmark_border),
+          title: const Text('Guardados'),
+          subtitle: const Text('Publicaciones que marcaste'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: onSaved,
+        ),
+        ListTile(
+          leading: const Icon(Icons.notifications_none),
+          title: const Text('Notificaciones'),
+          subtitle: const Text('Likes, comentarios y seguidores en tiempo real'),
+          onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Las notificaciones ya están activas en la app'))),
+        ),
+        ListTile(
+          leading: const Icon(Icons.lock_outline),
+          title: const Text('Privacidad de la cuenta'),
+          subtitle: const Text('Tu perfil es público en toda la plataforma'),
+          onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Por ahora todas las cuentas son públicas'))),
+        ),
+        ListTile(
+          leading: const Icon(Icons.sd_storage_outlined),
+          title: const Text('Almacenamiento'),
+          subtitle: const Text('Las fotos quedan en caché para abrir más rápido'),
+        ),
+        const ListTile(
+          leading: Icon(Icons.info_outline),
+          title: Text('Space Social'),
+          subtitle: Text('Versión 1.3.1'),
+        ),
         const Divider(height: 24),
         ListTile(
           leading: const Icon(Icons.logout, color: Color(0xFFED4956)),
@@ -835,6 +878,30 @@ class SettingsScreen extends StatelessWidget {
           onTap: onLogout,
         ),
       ]),
+    );
+  }
+}
+
+class SavedScreen extends StatelessWidget {
+  const SavedScreen({super.key, required this.state, required this.onClose, required this.onOpenPost});
+  final AppState state;
+  final VoidCallback onClose;
+  final void Function(Post post) onOpenPost;
+  @override
+  Widget build(BuildContext context) {
+    final list = state.posts.where((p) => p.savedFor(state.me.id)).toList();
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(onPressed: onClose, icon: CustomPaint(size: const Size.square(22), painter: BackPainter(LumaColors.text))),
+        title: const Text('Guardados', style: TextStyle(fontFamily: null, fontSize: 18, fontWeight: FontWeight.w700, color: LumaColors.text)),
+      ),
+      body: list.isEmpty
+          ? const EmptyHint('Sin guardados', 'Tocá el bookmark en una publicación para verla acá.')
+          : GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, mainAxisSpacing: 1.2, crossAxisSpacing: 1.2),
+              itemCount: list.length,
+              itemBuilder: (context, i) => GestureDetector(onTap: () => onOpenPost(list[i]), child: NetworkPhoto(list[i].imagePath)),
+            ),
     );
   }
 }

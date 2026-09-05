@@ -91,6 +91,7 @@ class _LumaShellState extends State<LumaShell> {
   bool messages = false;
   bool editing = false;
   bool settings = false;
+  bool saved = false;
   String? chatUserId;
 
   AppState get state => widget.state;
@@ -103,6 +104,7 @@ class _LumaShellState extends State<LumaShell> {
       messages = false;
       editing = false;
       settings = false;
+      saved = false;
       chatUserId = null;
     });
   }
@@ -114,6 +116,7 @@ class _LumaShellState extends State<LumaShell> {
       messages = false;
       editing = false;
       settings = false;
+      saved = false;
       chatUserId = null;
     });
   }
@@ -133,14 +136,17 @@ class _LumaShellState extends State<LumaShell> {
     messages = false;
     editing = false;
     settings = false;
+    saved = false;
     chatUserId = null;
   }
 
   @override
   Widget build(BuildContext context) {
     Widget body;
-    if (settings) {
-      body = SettingsScreen(state: state, onClose: () => setState(() => settings = false), onEdit: () => setState(() { settings = false; editing = true; }), onLogout: () { setState(() => settings = false); state.logout(); });
+    if (saved) {
+      body = SavedScreen(state: state, onClose: () => setState(() => saved = false), onOpenPost: (p) => setState(() { saved = false; overlayPost = p; }));
+    } else if (settings) {
+      body = SettingsScreen(state: state, onClose: () => setState(() => settings = false), onEdit: () => setState(() { settings = false; editing = true; }), onSaved: () => setState(() { settings = false; saved = true; }), onLogout: () { setState(() => settings = false); state.logout(); });
     } else if (editing) {
       body = EditProfileScreen(state: state, onClose: () => setState(() => editing = false));
     } else if (chatUserId != null) {
@@ -195,7 +201,7 @@ class _LumaShellState extends State<LumaShell> {
       );
     }
 
-    final hideNav = settings || editing || messages || chatUserId != null || overlayComments != null || overlayPost != null ||
+    final hideNav = saved || settings || editing || messages || chatUserId != null || overlayComments != null || overlayPost != null ||
         (overlayUser != null && overlayUser!.id != state.me.id);
 
     return Scaffold(
