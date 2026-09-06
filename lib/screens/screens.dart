@@ -1065,7 +1065,7 @@ class SettingsScreen extends StatelessWidget {
         const ListTile(
           leading: Icon(Icons.info_outline),
           title: Text('Space Social'),
-          subtitle: Text('Versión 1.4.0'),
+          subtitle: Text('Versión 1.6.2'),
         ),
         const Divider(height: 24),
         ListTile(

@@ -269,3 +269,79 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
     );
   }
 }
+
+
+class CommentsSheet extends StatefulWidget {
+  const CommentsSheet({super.key, required this.state, required this.post});
+  final AppState state;
+  final Post post;
+  @override
+  State<CommentsSheet> createState() => _CommentsSheetState();
+}
+
+class _CommentsSheetState extends State<CommentsSheet> {
+  final c = TextEditingController();
+  @override
+  void dispose() {
+    c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final post = widget.state.posts.firstWhere((p) => p.id == widget.post.id, orElse: () => widget.post);
+    return Column(children: [
+      const SizedBox(height: 8),
+      Container(width: 40, height: 4, decoration: BoxDecoration(color: const Color(0xFFDBDBDB), borderRadius: BorderRadius.circular(4))),
+      const Padding(padding: EdgeInsets.all(12), child: Text('Comentarios', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16))),
+      const Divider(height: 1),
+      Expanded(
+        child: ListView(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          children: [
+            if (post.caption.isNotEmpty)
+              ListTile(
+                leading: Avatar(widget.state.tryUser(post.userId)?.avatarPath ?? '', size: 32),
+                title: Text.rich(TextSpan(children: [
+                  TextSpan(text: widget.state.tryUser(post.userId)?.username ?? '', style: const TextStyle(fontWeight: FontWeight.w700)),
+                  const TextSpan(text: '  '),
+                  TextSpan(text: post.caption),
+                ])),
+              ),
+            ...post.comments.map((cm) {
+              final u = widget.state.tryUser(cm.userId);
+              if (u == null) return const SizedBox.shrink();
+              return ListTile(
+                leading: Avatar(u.avatarPath, size: 32),
+                title: Text.rich(TextSpan(children: [
+                  TextSpan(text: u.username, style: const TextStyle(fontWeight: FontWeight.w700)),
+                  const TextSpan(text: '  '),
+                  TextSpan(text: cm.text),
+                ])),
+              );
+            }),
+          ],
+        ),
+      ),
+      const Divider(height: 1),
+      SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 6, 8, 8),
+          child: Row(children: [
+            Avatar(widget.state.me.avatarPath, size: 32),
+            const SizedBox(width: 8),
+            Expanded(child: TextField(controller: c, decoration: const InputDecoration(hintText: 'Agregá un comentario...', border: InputBorder.none))),
+            TextButton(
+              onPressed: () async {
+                await widget.state.addComment(post.id, c.text);
+                c.clear();
+                setState(() {});
+              },
+              child: const Text('Publicar', style: TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w700)),
+            ),
+          ]),
+        ),
+      ),
+    ]);
+  }
+}
