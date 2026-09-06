@@ -89,11 +89,11 @@ class LumaShell extends StatefulWidget {
 }
 
 class _LumaShellState extends State<LumaShell> {
-  int tab = 0;
-  int lastTab = 0;
+  int tab = 0; // 0 home, 1 search, 2 reels, 3 profile
   UserAccount? overlayUser;
   Post? overlayPost;
   Post? overlayComments;
+  bool creating = false;
   bool messages = false;
   bool editing = false;
   bool settings = false;
@@ -109,11 +109,11 @@ class _LumaShellState extends State<LumaShell> {
       overlayUser = state.tryUser(id);
       overlayPost = null;
       overlayComments = null;
+      creating = false;
       messages = false;
       editing = false;
       settings = false;
       saved = false;
-    activity = false;
       activity = false;
       editFrom = null;
       chatUserId = null;
@@ -124,11 +124,11 @@ class _LumaShellState extends State<LumaShell> {
     setState(() {
       overlayPost = post;
       overlayComments = null;
+      creating = false;
       messages = false;
       editing = false;
       settings = false;
       saved = false;
-    activity = false;
       activity = false;
       editFrom = null;
       chatUserId = null;
@@ -147,6 +147,7 @@ class _LumaShellState extends State<LumaShell> {
     overlayUser = null;
     overlayPost = null;
     overlayComments = null;
+    creating = false;
     messages = false;
     editing = false;
     settings = false;
@@ -155,6 +156,8 @@ class _LumaShellState extends State<LumaShell> {
     editFrom = null;
     chatUserId = null;
   }
+
+  void _openCreate() => setState(() => creating = true);
 
   @override
   Widget build(BuildContext context) {
@@ -198,6 +201,8 @@ class _LumaShellState extends State<LumaShell> {
         onMessage: () => setState(() => chatUserId = overlayUser!.id),
         onOpenProfile: _openUser,
       );
+    } else if (creating) {
+      body = CreateScreen(state: state, onPublished: () => setState(() => creating = false), onClose: () => setState(() => creating = false));
     } else {
       body = IndexedStack(
         index: tab,
@@ -211,7 +216,6 @@ class _LumaShellState extends State<LumaShell> {
             onOpenActivity: () => setState(() => activity = true),
           ),
           ExploreScreen(state: state, onOpenPost: _openPost, onOpenProfile: _openUser),
-          CreateScreen(state: state, onPublished: () => setState(() { tab = lastTab == 2 ? 0 : lastTab; _resetOverlays(); })),
           ReelsScreen(state: state, onOpenProfile: _openUser, onOpenComments: _openComments),
           ProfileScreen(
             state: state,
@@ -226,7 +230,7 @@ class _LumaShellState extends State<LumaShell> {
       );
     }
 
-    final hideNav = activity || saved || settings || editing || messages || chatUserId != null || overlayComments != null || overlayPost != null ||
+    final hideNav = creating || activity || saved || settings || editing || messages || chatUserId != null || overlayComments != null || overlayPost != null ||
         (overlayUser != null && overlayUser!.id != state.me.id);
 
     return Scaffold(
@@ -245,22 +249,27 @@ class _LumaShellState extends State<LumaShell> {
                     children: [
                       _nav(0, (c) => HomeOutlinePainter(c, filled: tab == 0)),
                       _nav(1, (c) => SearchOutlinePainter(c, bold: tab == 1)),
-                      _nav(2, AddBoxPainter.new),
-                      _nav(3, (c) => CommentPainter(c)),
+                      Expanded(
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: _openCreate,
+                          child: Center(child: CustomPaint(size: const Size.square(25), painter: AddBoxPainter(LumaColors.text))),
+                        ),
+                      ),
+                      _nav(2, (c) => CommentPainter(c)),
                       Expanded(
                         child: GestureDetector(
                           behavior: HitTestBehavior.opaque,
                           onTap: () => setState(() {
-                            lastTab = tab;
-                            tab = 4;
-                            _resetOverlays();
+                            tab = 3;
+                            overlayUser = null;
                           }),
                           child: Center(
                             child: Container(
                               padding: const EdgeInsets.all(1.5),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                border: Border.all(color: tab == 4 ? LumaColors.text : Colors.transparent, width: 1.6),
+                                border: Border.all(color: tab == 3 ? LumaColors.text : Colors.transparent, width: 1.6),
                               ),
                               child: Avatar(state.me.avatarPath, size: 24),
                             ),
@@ -280,9 +289,10 @@ class _LumaShellState extends State<LumaShell> {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () => setState(() {
-          if (index == 2) lastTab = tab == 2 ? 0 : tab;
           tab = index;
-          _resetOverlays();
+          overlayUser = null;
+          overlayPost = null;
+          overlayComments = null;
         }),
         child: Center(
           child: CustomPaint(size: const Size.square(25), painter: painter(LumaColors.text)),

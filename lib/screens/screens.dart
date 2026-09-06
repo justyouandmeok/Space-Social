@@ -432,9 +432,10 @@ class ExploreScreen extends StatelessWidget {
 }
 
 class CreateScreen extends StatefulWidget {
-  const CreateScreen({super.key, required this.state, required this.onPublished});
+  const CreateScreen({super.key, required this.state, required this.onPublished, this.onClose});
   final AppState state;
   final VoidCallback onPublished;
+  final VoidCallback? onClose;
   @override
   State<CreateScreen> createState() => _CreateScreenState();
 }
@@ -531,21 +532,20 @@ class _CreateScreenState extends State<CreateScreen> {
     const titles = ['Nueva publicación', 'Nueva historia', 'Nuevo reel'];
     return Scaffold(
       appBar: AppBar(
-        leading: mode != null
-            ? IconButton(
+        leading: IconButton(
                 onPressed: busy
                     ? null
-                    : () => setState(() {
+                    : () {
                           if (media != null) {
-                            media = null;
-                            video = false;
+                            setState(() { media = null; video = false; });
+                          } else if (mode != null) {
+                            setState(() => mode = null);
                           } else {
-                            mode = null;
+                            widget.onClose?.call();
                           }
-                        }),
-                icon: const Icon(Icons.arrow_back),
-              )
-            : null,
+                        },
+                icon: const Icon(Icons.close),
+              ),
         title: Text(mode == null ? 'Crear' : titles[mode!], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
         actions: [
           if (mode != null)
