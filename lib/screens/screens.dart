@@ -253,12 +253,14 @@ class FeedScreen extends StatelessWidget {
     required this.onOpenComments,
     required this.onOpenPost,
     required this.onOpenMessages,
+    this.onOpenActivity,
   });
   final AppState state;
   final void Function(String userId) onOpenProfile;
   final void Function(Post post) onOpenComments;
   final void Function(Post post) onOpenPost;
   final VoidCallback onOpenMessages;
+  final VoidCallback? onOpenActivity;
 
   @override
   Widget build(BuildContext context) {
@@ -274,6 +276,10 @@ class FeedScreen extends StatelessWidget {
           ]),
         ),
         actions: [
+          IconButton(
+            onPressed: onOpenActivity,
+            icon: CustomPaint(size: const Size.square(24), painter: HeartPainter(LumaColors.text)),
+          ),
           IconButton(
             onPressed: onOpenMessages,
             icon: CustomPaint(size: const Size.square(26), painter: MessengerPainter(LumaColors.text)),
@@ -354,6 +360,38 @@ class ExploreScreen extends StatelessWidget {
                 ),
               ),
             ),
+            if (state.query.isEmpty && state.suggested.isNotEmpty)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 4, 14, 10),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    const Text('Sugerencias', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      height: 88,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: state.suggested.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 12),
+                        itemBuilder: (context, i) {
+                          final u = state.suggested[i];
+                          return GestureDetector(
+                            onTap: () => onOpenProfile(u.id),
+                            child: SizedBox(
+                              width: 72,
+                              child: Column(children: [
+                                Avatar(u.avatarPath, size: 56),
+                                const SizedBox(height: 4),
+                                Text(u.username, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11.5)),
+                              ]),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ]),
+                ),
+              ),
             if (state.query.isNotEmpty)
               SliverList.builder(
                 itemCount: state.searchUsers.length,
@@ -580,15 +618,17 @@ class _CreateScreenState extends State<CreateScreen> {
 }
 
 class ActivityScreen extends StatelessWidget {
-  const ActivityScreen({super.key, required this.state, required this.onOpenProfile});
+  const ActivityScreen({super.key, required this.state, required this.onOpenProfile, this.onClose});
   final AppState state;
   final void Function(String userId) onOpenProfile;
+  final VoidCallback? onClose;
 
   @override
   Widget build(BuildContext context) {
     final items = state.myActivity;
     return Scaffold(
       appBar: AppBar(
+        leading: onClose == null ? null : IconButton(onPressed: onClose, icon: const Icon(Icons.arrow_back)),
         title: const Text('Actividad', style: TextStyle(fontFamily: null, fontSize: 22, fontWeight: FontWeight.w700, color: LumaColors.text)),
       ),
       body: items.isEmpty
@@ -701,8 +741,18 @@ class ProfileScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         _stat('${list.length}', 'publicaciones'),
-                        _stat(compact(state.followersOf(user.id).length), 'seguidores'),
-                        _stat(compact(state.followingOf(user.id).length), 'seguidos'),
+                        GestureDetector(
+                          onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                            builder: (_) => PeopleScreen(state: state, title: 'Seguidores', ids: state.followersOf(user.id), onOpenProfile: onOpenProfile),
+                          )),
+                          child: _stat(compact(state.followersOf(user.id).length), 'seguidores'),
+                        ),
+                        GestureDetector(
+                          onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                            builder: (_) => PeopleScreen(state: state, title: 'Seguidos', ids: state.followingOf(user.id), onOpenProfile: onOpenProfile),
+                          )),
+                          child: _stat(compact(state.followingOf(user.id).length), 'seguidos'),
+                        ),
                       ],
                     ),
                   ),
@@ -1375,12 +1425,16 @@ class StoryViewer extends StatelessWidget {
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-              child: Row(children: [
-                Avatar(user.avatarPath, size: 32),
-                const SizedBox(width: 8),
-                Text(user.username, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-                const Spacer(),
-                const Icon(Icons.close, color: Colors.white),
+              child: Column(children: [
+                Container(height: 2, width: double.infinity, color: Colors.white70),
+                const SizedBox(height: 10),
+                Row(children: [
+                  Avatar(user.avatarPath, size: 32),
+                  const SizedBox(width: 8),
+                  Text(user.username, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                  const Spacer(),
+                  const Icon(Icons.close, color: Colors.white),
+                ]),
               ]),
             ),
           ),
@@ -1503,6 +1557,40 @@ class ReelsScreen extends StatelessWidget {
           ]);
         },
       ),
+    );
+  }
+}
+
+
+class PeopleScreen extends StatelessWidget {
+  const PeopleScreen({super.key, required this.state, required this.title, required this.ids, required this.onOpenProfile});
+  final AppState state;
+  final String title;
+  final List<String> ids;
+  final void Function(String userId) onOpenProfile;
+  @override
+  Widget build(BuildContext context) {
+    final people = ids.map(state.tryUser).whereType<UserAccount>().toList();
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: people.isEmpty
+          ? EmptyHint(title, 'Todavía no hay nadie en esta lista.')
+          : ListView.builder(
+              itemCount: people.length,
+              itemBuilder: (context, i) {
+                final u = people[i];
+                return ListTile(
+                  onTap: () {
+                    Navigator.pop(context);
+                    onOpenProfile(u.id);
+                  },
+                  leading: Avatar(u.avatarPath, size: 44),
+                  title: Text(u.username, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: Text(u.name, style: const TextStyle(color: LumaColors.textSecondary)),
+                  trailing: u.id == state.me.id ? null : _FollowChip(following: state.isFollowing(u.id), onTap: () => state.toggleFollow(u.id)),
+                );
+              },
+            ),
     );
   }
 }

@@ -98,6 +98,7 @@ class _LumaShellState extends State<LumaShell> {
   bool editing = false;
   bool settings = false;
   bool saved = false;
+  bool activity = false;
   String? editFrom;
   String? chatUserId;
 
@@ -112,6 +113,8 @@ class _LumaShellState extends State<LumaShell> {
       editing = false;
       settings = false;
       saved = false;
+    activity = false;
+      activity = false;
       editFrom = null;
       chatUserId = null;
     });
@@ -125,6 +128,8 @@ class _LumaShellState extends State<LumaShell> {
       editing = false;
       settings = false;
       saved = false;
+    activity = false;
+      activity = false;
       editFrom = null;
       chatUserId = null;
     });
@@ -146,6 +151,7 @@ class _LumaShellState extends State<LumaShell> {
     editing = false;
     settings = false;
     saved = false;
+    activity = false;
     editFrom = null;
     chatUserId = null;
   }
@@ -153,7 +159,9 @@ class _LumaShellState extends State<LumaShell> {
   @override
   Widget build(BuildContext context) {
     Widget body;
-    if (saved) {
+    if (activity) {
+      body = ActivityScreen(state: state, onClose: () => setState(() => activity = false), onOpenProfile: (id) { setState(() => activity = false); _openUser(id); });
+    } else if (saved) {
       body = SavedScreen(state: state, onClose: () => setState(() => saved = false), onOpenPost: (p) => setState(() { saved = false; overlayPost = p; }));
     } else if (settings) {
       body = SettingsScreen(state: state, onClose: () => setState(() => settings = false), onEdit: () => setState(() { settings = false; editing = true; editFrom = 'settings'; }), onSaved: () => setState(() { settings = false; saved = true; }), onLogout: () { setState(() => settings = false); state.logout(); });
@@ -199,6 +207,7 @@ class _LumaShellState extends State<LumaShell> {
             onOpenComments: _openComments,
             onOpenPost: _openPost,
             onOpenMessages: () => setState(() => messages = true),
+            onOpenActivity: () => setState(() => activity = true),
           ),
           ExploreScreen(state: state, onOpenPost: _openPost, onOpenProfile: _openUser),
           CreateScreen(state: state, onPublished: () => setState(() { tab = lastTab == 2 ? 0 : lastTab; _resetOverlays(); })),
@@ -215,7 +224,7 @@ class _LumaShellState extends State<LumaShell> {
       );
     }
 
-    final hideNav = saved || settings || editing || messages || chatUserId != null || overlayComments != null || overlayPost != null ||
+    final hideNav = activity || saved || settings || editing || messages || chatUserId != null || overlayComments != null || overlayPost != null ||
         (overlayUser != null && overlayUser!.id != state.me.id);
 
     return Scaffold(

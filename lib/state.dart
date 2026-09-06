@@ -144,6 +144,12 @@ class AppState extends ChangeNotifier {
 
   bool isFollowing(String userId) => isLoggedIn && followingOf(currentUserId!).contains(userId);
 
+  List<UserAccount> get suggested {
+    if (!isLoggedIn) return users.take(12).toList();
+    final mine = followingOf(me.id).toSet();
+    return users.where((u) => u.id != me.id && !mine.contains(u.id) && !u.username.startsWith('_merged_')).take(12).toList();
+  }
+
   List<UserAccount> get searchUsers {
     final q = query.trim().toLowerCase();
     final list = users.where((u) => !isLoggedIn || u.id != currentUserId).toList();
