@@ -50,16 +50,17 @@ ThemeData buildLumaTheme() {
       foregroundColor: LumaColors.text,
       centerTitle: false,
       titleTextStyle: TextStyle(
-        fontFamily: null,
-        fontSize: 18,
+        fontSize: 22,
         fontWeight: FontWeight.w700,
         color: LumaColors.text,
+        letterSpacing: -0.4,
         height: 1.1,
       ),
       systemOverlayStyle: SystemUiOverlayStyle.dark,
     ),
     dividerColor: LumaColors.hairline,
     textTheme: textTheme,
-    splashFactory: InkRipple.splashFactory,
+    splashFactory: NoSplash.splashFactory,
+    highlightColor: Colors.transparent,
   );
 }

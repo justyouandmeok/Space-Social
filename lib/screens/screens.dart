@@ -92,7 +92,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 children: [
                   ClipRRect(borderRadius: BorderRadius.circular(16), child: Image.asset('assets/brand/logo_mark.png', width: 64, height: 64)),
                   const SizedBox(height: 10),
-                  const Text('Space Social', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, letterSpacing: -0.6)),
+                  const Text('Space Social', style: TextStyle(fontSize: 34, fontWeight: FontWeight.w800, letterSpacing: -1.2, height: 1)),
                 ],
               ),
             ),
@@ -270,7 +270,7 @@ class FeedScreen extends StatelessWidget {
           child: Row(children: [
             ClipRRect(borderRadius: BorderRadius.circular(7), child: Image.asset('assets/brand/logo_mark.png', width: 26, height: 26)),
             const SizedBox(width: 8),
-            const Text('Space Social', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, letterSpacing: -0.5, color: LumaColors.text)),
+            const Text('Space Social', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, letterSpacing: -0.8, color: LumaColors.text)),
           ]),
         ),
         actions: [
@@ -731,7 +731,7 @@ class ProfileScreen extends StatelessWidget {
                   ? Row(children: [
                       Expanded(child: GestureDetector(onTap: onEdit, child: _outlineBtn('Editar perfil'))),
                       const SizedBox(width: 8),
-                      Expanded(child: GestureDetector(onTap: onLogout, child: _outlineBtn('Cerrar sesión'))),
+                      Expanded(child: GestureDetector(onTap: onSettings, child: _outlineBtn('Ajustes'))),
                     ])
                   : Row(children: [
                       Expanded(

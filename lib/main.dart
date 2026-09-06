@@ -229,7 +229,7 @@ class _LumaShellState extends State<LumaShell> {
               ),
               child: SafeArea(
                 child: SizedBox(
-                  height: 48,
+                  height: 50,
                   child: Row(
                     children: [
                       _nav(0, (c) => HomeOutlinePainter(c, filled: tab == 0)),
