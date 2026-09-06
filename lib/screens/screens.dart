@@ -1379,7 +1379,7 @@ class StoryTray extends StatelessWidget {
               }
               if (has) {
                 Navigator.of(context).push(MaterialPageRoute(
-                  builder: (_) => StoryViewer(state: state, user: u),
+                  builder: (_) => StoryViewer(state: state, startUserId: u.id),
                 ));
               } else {
                 onOpenProfile(u.id);
@@ -1417,34 +1417,179 @@ class StoryTray extends StatelessWidget {
   }
 }
 
-class StoryViewer extends StatelessWidget {
-  const StoryViewer({super.key, required this.state, required this.user});
+
+class StoryViewer extends StatefulWidget {
+  const StoryViewer({super.key, required this.state, required this.startUserId});
   final AppState state;
-  final UserAccount user;
+  final String startUserId;
+  @override
+  State<StoryViewer> createState() => _StoryViewerState();
+}
+
+class _StoryViewerState extends State<StoryViewer> with SingleTickerProviderStateMixin {
+  late List<UserAccount> authors;
+  late int userIndex;
+  int storyIndex = 0;
+  late AnimationController bar;
+  final reply = TextEditingController();
+  bool held = false;
+
+  List<Story> get currentStories => widget.state.storiesOf(authors[userIndex].id);
+
+  @override
+  void initState() {
+    super.initState();
+    authors = widget.state.storyAuthors.where((u) => widget.state.storiesOf(u.id).isNotEmpty).toList();
+    if (authors.isEmpty) {
+      authors = [widget.state.me];
+    }
+    userIndex = authors.indexWhere((u) => u.id == widget.startUserId);
+    if (userIndex < 0) userIndex = 0;
+    bar = AnimationController(vsync: this, duration: const Duration(seconds: 5))
+      ..addStatusListener((s) {
+        if (s == AnimationStatus.completed) _next();
+      })
+      ..forward();
+  }
+
+  @override
+  void dispose() {
+    bar.dispose();
+    reply.dispose();
+    super.dispose();
+  }
+
+  void _restartBar() {
+    bar
+      ..duration = const Duration(seconds: 5)
+      ..forward(from: 0);
+  }
+
+  void _next() {
+    if (storyIndex < currentStories.length - 1) {
+      setState(() => storyIndex++);
+      _restartBar();
+      return;
+    }
+    if (userIndex < authors.length - 1) {
+      setState(() {
+        userIndex++;
+        storyIndex = 0;
+      });
+      _restartBar();
+      return;
+    }
+    Navigator.pop(context);
+  }
+
+  void _prev() {
+    if (storyIndex > 0) {
+      setState(() => storyIndex--);
+      _restartBar();
+      return;
+    }
+    if (userIndex > 0) {
+      setState(() {
+        userIndex--;
+        storyIndex = widget.state.storiesOf(authors[userIndex].id).length - 1;
+        if (storyIndex < 0) storyIndex = 0;
+      });
+      _restartBar();
+    } else {
+      _restartBar();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final list = state.storiesOf(user.id);
-    if (list.isEmpty) return const SizedBox.shrink();
-    final s = list.first;
+    if (authors.isEmpty || currentStories.isEmpty) {
+      return const Scaffold(backgroundColor: Colors.black, body: SizedBox.shrink());
+    }
+    final user = authors[userIndex];
+    final stories = currentStories;
+    if (storyIndex >= stories.length) storyIndex = 0;
+    final s = stories[storyIndex];
     return Scaffold(
       backgroundColor: Colors.black,
       body: GestureDetector(
-        onTap: () => Navigator.pop(context),
+        onLongPressStart: (_) {
+          held = true;
+          bar.stop();
+        },
+        onLongPressEnd: (_) {
+          held = false;
+          bar.forward();
+        },
         child: Stack(fit: StackFit.expand, children: [
           NetworkPhoto(s.imagePath),
+          const DecoratedBox(decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.center, colors: [Color(0x88000000), Colors.transparent]))),
+          Row(children: [
+            Expanded(child: GestureDetector(behavior: HitTestBehavior.translucent, onTap: _prev)),
+            Expanded(child: GestureDetector(behavior: HitTestBehavior.translucent, onTap: _next)),
+          ]),
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
               child: Column(children: [
-                Container(height: 2, width: double.infinity, color: Colors.white70),
+                Row(
+                  children: List.generate(stories.length, (i) {
+                    return Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 1.5),
+                        child: AnimatedBuilder(
+                          animation: bar,
+                          builder: (_, __) {
+                            double v = 0;
+                            if (i < storyIndex) v = 1;
+                            if (i == storyIndex) v = bar.value;
+                            return LinearProgressIndicator(
+                              value: v,
+                              minHeight: 2,
+                              backgroundColor: Colors.white24,
+                              color: Colors.white,
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  }),
+                ),
                 const SizedBox(height: 10),
                 Row(children: [
                   Avatar(user.avatarPath, size: 32),
                   const SizedBox(width: 8),
                   Text(user.username, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                  const SizedBox(width: 8),
+                  Text(timeAgo(s.createdAt), style: const TextStyle(color: Colors.white70, fontSize: 12)),
                   const Spacer(),
-                  const Icon(Icons.close, color: Colors.white),
+                  GestureDetector(onTap: () => Navigator.pop(context), child: const Icon(Icons.close, color: Colors.white)),
                 ]),
+                const Spacer(),
+                if (user.id != widget.state.me.id)
+                  Row(children: [
+                    Expanded(
+                      child: TextField(
+                        controller: reply,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          hintText: 'Enviar mensaje',
+                          hintStyle: const TextStyle(color: Colors.white70),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: const BorderSide(color: Colors.white54)),
+                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: const BorderSide(color: Colors.white)),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () async {
+                        if (reply.text.trim().isEmpty) return;
+                        await widget.state.sendMessage(user.id, reply.text.trim());
+                        reply.clear();
+                        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enviado')));
+                      },
+                      icon: const Icon(Icons.send, color: Colors.white),
+                    ),
+                  ]),
               ]),
             ),
           ),
@@ -1453,7 +1598,6 @@ class StoryViewer extends StatelessWidget {
     );
   }
 }
-
 
 class ReelsScreen extends StatelessWidget {
   const ReelsScreen({super.key, required this.state, required this.onOpenProfile, required this.onOpenComments});
