@@ -339,11 +339,12 @@ class AppState extends ChangeNotifier {
   Future<String> _upload(File file, String bucket, String prefix) async {
     final ext = p.extension(file.path).isEmpty ? '.jpg' : p.extension(file.path);
     final path = '$prefix/${DateTime.now().millisecondsSinceEpoch}$ext';
+    final video = ['.mp4', '.mov', '.webm', '.m4v'].contains(ext.toLowerCase());
     await _sb.storage.from(bucket).upload(
           path,
           file,
-          fileOptions: const FileOptions(upsert: true, contentType: 'image/jpeg'),
-        ).timeout(const Duration(seconds: 25));
+          fileOptions: FileOptions(upsert: true, contentType: video ? 'video/mp4' : 'image/jpeg'),
+        ).timeout(const Duration(seconds: 40));
     final url = _sb.storage.from(bucket).getPublicUrl(path);
     return url;
   }
@@ -664,7 +665,7 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  Future<bool> publishPost({required File image, required String caption, String location = '', bool isReel = false}) async {
+  Future<bool> publishPost({required File image, required String caption, String location = '', bool isReel = false, bool isVideo = false}) async {
     if (!isLoggedIn) return false;
     lastError = null;
     try {
@@ -682,9 +683,10 @@ class AppState extends ChangeNotifier {
         'comments': <Map<String, dynamic>>[],
         'savedBy': <String>[],
         'isReel': isReel,
+        'isVideo': isVideo,
       });
       posts = [
-        Post(id: id, userId: me.id, imagePath: url, caption: caption.trim(), location: location.trim(), createdAt: created, isReel: isReel),
+        Post(id: id, userId: me.id, imagePath: url, caption: caption.trim(), location: location.trim(), createdAt: created, isReel: isReel, isVideo: isVideo),
         ...posts,
       ];
       notifyListeners();

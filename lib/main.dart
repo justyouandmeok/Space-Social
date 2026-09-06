@@ -90,6 +90,7 @@ class LumaShell extends StatefulWidget {
 
 class _LumaShellState extends State<LumaShell> {
   int tab = 0;
+  int lastTab = 0;
   UserAccount? overlayUser;
   Post? overlayPost;
   Post? overlayComments;
@@ -200,7 +201,7 @@ class _LumaShellState extends State<LumaShell> {
             onOpenMessages: () => setState(() => messages = true),
           ),
           ExploreScreen(state: state, onOpenPost: _openPost, onOpenProfile: _openUser),
-          CreateScreen(state: state, onPublished: () => setState(() { tab = 0; _resetOverlays(); })),
+          CreateScreen(state: state, onPublished: () => setState(() { tab = lastTab == 2 ? 0 : lastTab; _resetOverlays(); })),
           ReelsScreen(state: state, onOpenProfile: _openUser, onOpenComments: _openComments),
           ProfileScreen(
             state: state,
@@ -239,6 +240,7 @@ class _LumaShellState extends State<LumaShell> {
                         child: GestureDetector(
                           behavior: HitTestBehavior.opaque,
                           onTap: () => setState(() {
+                            lastTab = tab;
                             tab = 4;
                             _resetOverlays();
                           }),
@@ -267,6 +269,7 @@ class _LumaShellState extends State<LumaShell> {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () => setState(() {
+          if (index == 2) lastTab = tab == 2 ? 0 : tab;
           tab = index;
           _resetOverlays();
         }),

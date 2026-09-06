@@ -9,6 +9,19 @@ import '../widgets/ig_icons.dart';
 import '../widgets/network_photo.dart';
 import '../widgets/post_card.dart';
 
+Future<File?> pickVideoFile({bool camera = false}) async {
+  try {
+    final x = await ImagePicker().pickVideo(
+      source: camera ? ImageSource.camera : ImageSource.gallery,
+      maxDuration: const Duration(seconds: 60),
+    );
+    if (x == null) return null;
+    return File(x.path);
+  } catch (_) {
+    return null;
+  }
+}
+
 Future<File?> pickImage({bool camera = false}) async {
   try {
     final x = await ImagePicker().pickImage(
@@ -381,11 +394,12 @@ class CreateScreen extends StatefulWidget {
 }
 
 class _CreateScreenState extends State<CreateScreen> {
-  File? image;
+  File? media;
+  bool video = false;
   final caption = TextEditingController();
   final location = TextEditingController();
   bool busy = false;
-  int mode = 0; // 0 post 1 story 2 reel
+  int? mode;
 
   @override
   void dispose() {
@@ -394,117 +408,173 @@ class _CreateScreenState extends State<CreateScreen> {
     super.dispose();
   }
 
-  Widget _modeChip(int i, String label) {
-    final on = mode == i;
-    return GestureDetector(
-      onTap: () => setState(() => mode = i),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: on ? LumaColors.text : const Color(0xFFF2F2F2),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Text(label, style: TextStyle(color: on ? Colors.white : LumaColors.text, fontWeight: FontWeight.w600, fontSize: 13)),
-      ),
-    );
-  }
+  double get _ratio => (mode == 1 || mode == 2) ? 9 / 16 : 1;
 
-  Future<void> _pick({bool camera = false}) async {
-    final f = await pickImage(camera: camera);
-    if (f != null) setState(() => image = f);
-    else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se pudo abrir la galería')));
-    }
+  Future<void> _pick({required bool fromCamera, required bool asVideo}) async {
+    final f = asVideo ? await pickVideoFile(camera: fromCamera) : await pickImage(camera: fromCamera);
+    if (f != null) setState(() { media = f; video = asVideo; });
   }
 
   Future<void> _publish() async {
-    if (image == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Elegí una foto primero')));
+    if (media == null || mode == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Elegí el tipo y el archivo')));
       return;
     }
     setState(() => busy = true);
-    bool ok;
-    if (mode == 1) {
-      ok = await widget.state.publishStory(image!).timeout(const Duration(seconds: 30), onTimeout: () => false);
-    } else {
-      ok = await widget.state.publishPost(image: image!, caption: caption.text, location: location.text, isReel: mode == 2)
-          .timeout(const Duration(seconds: 30), onTimeout: () => false);
-    }
+    final bool ok = mode == 1
+        ? await widget.state.publishStory(media!).timeout(const Duration(seconds: 40), onTimeout: () => false)
+        : await widget.state.publishPost(
+            image: media!,
+            caption: caption.text,
+            location: location.text,
+            isReel: mode == 2,
+            isVideo: video,
+          ).timeout(const Duration(seconds: 40), onTimeout: () => false);
     if (!mounted) return;
     setState(() => busy = false);
     if (!ok) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(widget.state.lastError ?? 'No se pudo publicar')));
       return;
     }
-    setState(() {
-      image = null;
-      caption.clear();
-      location.clear();
-    });
+    setState(() { media = null; video = false; caption.clear(); location.clear(); mode = null; });
     widget.onPublished();
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Publicación compartida')));
+  }
+
+  Widget _typeCard(int i, String title, String sub, IconData icon) {
+    return GestureDetector(
+      onTap: () => setState(() => mode = i),
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFAFAFA),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: LumaColors.hairline),
+        ),
+        child: Row(children: [
+          Icon(icon, size: 28),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+              const SizedBox(height: 2),
+              Text(sub, style: const TextStyle(color: LumaColors.textSecondary, fontSize: 13)),
+            ]),
+          ),
+          const Icon(Icons.chevron_right),
+        ]),
+      ),
+    );
+  }
+
+  Widget _srcBtn(String label, VoidCallback onTap) {
+    return TextButton(
+      style: TextButton.styleFrom(
+        backgroundColor: Colors.white,
+        foregroundColor: LumaColors.text,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      ),
+      onPressed: busy ? null : onTap,
+      child: Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    const titles = ['Nueva publicación', 'Nueva historia', 'Nuevo reel'];
     return Scaffold(
       appBar: AppBar(
-        title: Text(mode == 1 ? 'Nueva historia' : (mode == 2 ? 'Nuevo reel' : 'Nueva publicación'), style: const TextStyle(fontFamily: null, fontSize: 18, fontWeight: FontWeight.w600, color: LumaColors.text)),
+        leading: mode != null
+            ? IconButton(
+                onPressed: busy
+                    ? null
+                    : () => setState(() {
+                          if (media != null) {
+                            media = null;
+                            video = false;
+                          } else {
+                            mode = null;
+                          }
+                        }),
+                icon: const Icon(Icons.arrow_back),
+              )
+            : null,
+        title: Text(mode == null ? 'Crear' : titles[mode!], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
         actions: [
-          TextButton(
-            onPressed: busy ? null : _publish,
-            child: const Text('Compartir', style: TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w700)),
-          ),
+          if (mode != null)
+            TextButton(
+              onPressed: busy ? null : _publish,
+              child: busy
+                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Text('Compartir', style: TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w700)),
+            ),
         ],
       ),
-      body: ListView(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
-            child: Row(children: [
-              _modeChip(0, 'Publicación'),
-              const SizedBox(width: 8),
-              _modeChip(1, 'Historia'),
-              const SizedBox(width: 8),
-              _modeChip(2, 'Reel'),
-            ]),
-          ),
-          GestureDetector(
-            onTap: busy ? null : _pick,
-            child: AspectRatio(
-              aspectRatio: 1,
-              child: image == null
-                  ? Container(
-                      color: const Color(0xFFFAFAFA),
-                      alignment: Alignment.center,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.add_photo_alternate_outlined, size: 56, color: LumaColors.textSecondary),
-                          const SizedBox(height: 10),
-                          const Text('Elegir de la galería', style: TextStyle(fontWeight: FontWeight.w600)),
-                          const SizedBox(height: 12),
-                          TextButton(
-                            onPressed: busy ? null : () => _pick(camera: true),
-                            child: const Text('Usar cámara', style: TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w700)),
-                          ),
-                        ],
-                      ),
-                    )
-                  : Image.file(image!, fit: BoxFit.cover),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
+      body: mode == null
+          ? ListView(
+              padding: const EdgeInsets.fromLTRB(16, 18, 16, 24),
               children: [
-                TextField(controller: caption, maxLines: 3, decoration: const InputDecoration(hintText: 'Escribí un pie de foto...', border: InputBorder.none)),
-                TextField(controller: location, decoration: const InputDecoration(hintText: 'Ubicación (opcional)', prefixIcon: Icon(Icons.place_outlined), border: InputBorder.none)),
+                const Text('¿Qué vas a crear?', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 6),
+                const Text('Elegí el formato. Después la foto o el video.', style: TextStyle(color: LumaColors.textSecondary)),
+                const SizedBox(height: 18),
+                _typeCard(0, 'Publicación', 'Foto o video en cuadrado 1:1', Icons.crop_square),
+                _typeCard(1, 'Historia', 'Vertical 9:16, dura 24 horas', Icons.circle_outlined),
+                _typeCard(2, 'Reel', 'Vertical para el tab de Reels', Icons.movie_outlined),
+              ],
+            )
+          : ListView(
+              children: [
+                AspectRatio(
+                  aspectRatio: _ratio,
+                  child: media == null
+                      ? Container(
+                          color: Colors.black,
+                          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                            const Icon(Icons.photo_library_outlined, color: Colors.white, size: 42),
+                            const SizedBox(height: 14),
+                            Wrap(spacing: 8, runSpacing: 8, alignment: WrapAlignment.center, children: [
+                              _srcBtn('Galería foto', () => _pick(fromCamera: false, asVideo: false)),
+                              _srcBtn('Cámara foto', () => _pick(fromCamera: true, asVideo: false)),
+                              _srcBtn('Galería video', () => _pick(fromCamera: false, asVideo: true)),
+                              _srcBtn('Cámara video', () => _pick(fromCamera: true, asVideo: true)),
+                            ]),
+                          ]),
+                        )
+                      : Stack(fit: StackFit.expand, children: [
+                          if (video)
+                            const ColoredBox(
+                              color: Colors.black,
+                              child: Center(child: Icon(Icons.play_circle_outline, color: Colors.white, size: 64)),
+                            )
+                          else
+                            Image.file(media!, fit: BoxFit.cover),
+                          Positioned(
+                            right: 10,
+                            bottom: 10,
+                            child: TextButton(
+                              onPressed: busy ? null : () => setState(() { media = null; video = false; }),
+                              child: const Text('Cambiar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                            ),
+                          ),
+                        ]),
+                ),
+                if (mode != 1)
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(children: [
+                      TextField(controller: caption, maxLines: 3, decoration: const InputDecoration(hintText: 'Escribí un pie...', border: InputBorder.none)),
+                      TextField(controller: location, decoration: const InputDecoration(hintText: 'Ubicación (opcional)', prefixIcon: Icon(Icons.place_outlined), border: InputBorder.none)),
+                    ]),
+                  )
+                else
+                  const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text('La historia se ve 24 horas en la bandeja del inicio.', style: TextStyle(color: LumaColors.textSecondary)),
+                  ),
               ],
             ),
-          ),
-        ],
-      ),
     );
   }
 }
