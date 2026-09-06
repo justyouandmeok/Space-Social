@@ -427,7 +427,7 @@ class _CreateScreenState extends State<CreateScreen> {
     if (mode == 1) {
       ok = await widget.state.publishStory(image!).timeout(const Duration(seconds: 30), onTimeout: () => false);
     } else {
-      ok = await widget.state.publishPost(image: image!, caption: caption.text, location: location.text)
+      ok = await widget.state.publishPost(image: image!, caption: caption.text, location: location.text, isReel: mode == 2)
           .timeout(const Duration(seconds: 30), onTimeout: () => false);
     }
     if (!mounted) return;
@@ -1320,16 +1320,29 @@ class StoryViewer extends StatelessWidget {
   }
 }
 
+
 class ReelsScreen extends StatelessWidget {
   const ReelsScreen({super.key, required this.state, required this.onOpenProfile, required this.onOpenComments});
   final AppState state;
   final void Function(String userId) onOpenProfile;
   final void Function(Post post) onOpenComments;
+
   @override
   Widget build(BuildContext context) {
-    final items = state.explorePosts;
+    final items = state.reels;
     if (items.isEmpty) {
-      return const Scaffold(body: EmptyHint('Reels', 'Las publicaciones nuevas también aparecen acá en formato vertical.'));
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(
+          child: Column(mainAxisSize: MainAxisSize.min, children: const [
+            Icon(Icons.movie_outlined, color: Colors.white70, size: 42),
+            SizedBox(height: 12),
+            Text('Todavía no hay Reels', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+            SizedBox(height: 6),
+            Text('Creá uno desde + → Reel', style: TextStyle(color: Colors.white70)),
+          ]),
+        ),
+      );
     }
     return Scaffold(
       backgroundColor: Colors.black,
@@ -1339,30 +1352,79 @@ class ReelsScreen extends StatelessWidget {
         itemBuilder: (context, i) {
           final post = items[i];
           final user = state.tryUser(post.userId);
+          final liked = post.likedBy(state.me.id);
+          final saved = post.savedFor(state.me.id);
           return Stack(fit: StackFit.expand, children: [
             NetworkPhoto(post.imagePath),
-            const DecoratedBox(decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Colors.transparent, Colors.black54]))),
+            const DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0x66000000), Colors.transparent, Color(0x99000000)],
+                ),
+              ),
+            ),
             SafeArea(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(14, 10, 14, 18),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Text('Reels', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 20)),
+                padding: const EdgeInsets.fromLTRB(12, 8, 10, 16),
+                child: Column(children: [
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Reels', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 22)),
+                  ),
                   const Spacer(),
                   Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
                     Expanded(
-                      child: GestureDetector(
-                        onTap: () { if (user != null) onOpenProfile(user.id); },
-                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text(user?.username ?? '', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15)),
-                          if (post.caption.isNotEmpty)
-                            Text(post.caption, maxLines: 3, style: const TextStyle(color: Colors.white, fontSize: 14)),
-                        ]),
-                      ),
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        GestureDetector(
+                          onTap: () { if (user != null) onOpenProfile(user.id); },
+                          child: Row(children: [
+                            Avatar(user?.avatarPath ?? '', size: 36),
+                            const SizedBox(width: 8),
+                            Text(user?.username ?? '', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15)),
+                            if (user != null && user.id != state.me.id) ...[
+                              const SizedBox(width: 10),
+                              GestureDetector(
+                                onTap: () => state.toggleFollow(user.id),
+                                child: Text(state.isFollowing(user.id) ? 'Siguiendo' : 'Seguir',
+                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                              ),
+                            ],
+                          ]),
+                        ),
+                        if (post.caption.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          Text(post.caption, maxLines: 3, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white, fontSize: 14)),
+                        ],
+                        const SizedBox(height: 8),
+                        const Text('Audio original · Space Social', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                      ]),
                     ),
                     Column(children: [
-                      IconButton(onPressed: () => state.toggleLike(post.id), icon: Icon(post.likedBy(state.me.id) ? Icons.favorite : Icons.favorite_border, color: post.likedBy(state.me.id) ? LumaColors.like : Colors.white, size: 30)),
-                      Text('${post.likes.length}', style: const TextStyle(color: Colors.white)),
-                      IconButton(onPressed: () => onOpenComments(post), icon: const Icon(Icons.mode_comment_outlined, color: Colors.white, size: 26)),
+                      IconButton(
+                        onPressed: () => state.toggleLike(post.id),
+                        icon: Icon(liked ? Icons.favorite : Icons.favorite_border, color: liked ? LumaColors.like : Colors.white, size: 32),
+                      ),
+                      Text('${post.likes.length}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 8),
+                      IconButton(onPressed: () => onOpenComments(post), icon: const Icon(Icons.mode_comment_outlined, color: Colors.white, size: 28)),
+                      Text('${post.comments.length}', style: const TextStyle(color: Colors.white)),
+                      const SizedBox(height: 8),
+                      IconButton(onPressed: () => state.toggleSave(post.id), icon: Icon(saved ? Icons.bookmark : Icons.bookmark_border, color: Colors.white, size: 28)),
+                      const SizedBox(height: 8),
+                      IconButton(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reel listo para compartir')));
+                        },
+                        icon: const Icon(Icons.send_outlined, color: Colors.white, size: 26),
+                      ),
+                      const SizedBox(height: 16),
+                      Container(
+                        width: 36, height: 36,
+                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.white, width: 2)),
+                        child: ClipRRect(borderRadius: BorderRadius.circular(6), child: NetworkPhoto(user?.avatarPath ?? post.imagePath)),
+                      ),
                     ]),
                   ]),
                 ]),
@@ -1374,4 +1436,3 @@ class ReelsScreen extends StatelessWidget {
     );
   }
 }
-

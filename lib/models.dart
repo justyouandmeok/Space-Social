@@ -109,6 +109,7 @@ class Post {
     this.likes = const [],
     this.comments = const [],
     this.savedBy = const [],
+    this.isReel = false,
   });
 
   final String id;
@@ -120,6 +121,7 @@ class Post {
   final List<String> likes;
   final List<Comment> comments;
   final List<String> savedBy;
+  final bool isReel;
 
   bool likedBy(String uid) => likes.contains(uid);
   bool savedFor(String uid) => savedBy.contains(uid);
@@ -139,6 +141,7 @@ class Post {
       likes: likes ?? this.likes,
       comments: comments ?? this.comments,
       savedBy: savedBy ?? this.savedBy,
+      isReel: isReel,
     );
   }
 
@@ -152,6 +155,7 @@ class Post {
         'likes': likes,
         'comments': comments.map((c) => c.toJson()).toList(),
         'savedBy': savedBy,
+        'isReel': isReel,
       };
 
   factory Post.fromJson(Map<String, dynamic> j) => Post(
@@ -166,6 +170,7 @@ class Post {
             .map((e) => Comment.fromJson(Map<String, dynamic>.from(e as Map)))
             .toList(),
         savedBy: ((j['savedBy'] as List?) ?? const []).cast<String>(),
+        isReel: j['isReel'] as bool? ?? false,
       );
 }
 

@@ -123,6 +123,12 @@ class AppState extends ChangeNotifier {
     return out;
   }
 
+  List<Post> get reels {
+    final only = posts.where((p) => p.isReel).toList();
+    final src = only.isNotEmpty ? only : posts;
+    return List<Post>.from(src)..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  }
+
   List<Post> get explorePosts =>
       List<Post>.from(posts)..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
@@ -658,7 +664,7 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  Future<bool> publishPost({required File image, required String caption, String location = ''}) async {
+  Future<bool> publishPost({required File image, required String caption, String location = '', bool isReel = false}) async {
     if (!isLoggedIn) return false;
     lastError = null;
     try {
@@ -675,9 +681,10 @@ class AppState extends ChangeNotifier {
         'likes': <String>[],
         'comments': <Map<String, dynamic>>[],
         'savedBy': <String>[],
+        'isReel': isReel,
       });
       posts = [
-        Post(id: id, userId: me.id, imagePath: url, caption: caption.trim(), location: location.trim(), createdAt: created),
+        Post(id: id, userId: me.id, imagePath: url, caption: caption.trim(), location: location.trim(), createdAt: created, isReel: isReel),
         ...posts,
       ];
       notifyListeners();
