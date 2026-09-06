@@ -201,7 +201,7 @@ class _LumaShellState extends State<LumaShell> {
           ),
           ExploreScreen(state: state, onOpenPost: _openPost, onOpenProfile: _openUser),
           CreateScreen(state: state, onPublished: () => setState(() { tab = 0; _resetOverlays(); })),
-          ActivityScreen(state: state, onOpenProfile: _openUser),
+          ReelsScreen(state: state, onOpenProfile: _openUser, onOpenComments: _openComments),
           ProfileScreen(
             state: state,
             user: state.me,
@@ -234,7 +234,7 @@ class _LumaShellState extends State<LumaShell> {
                       _nav(0, (c) => HomeOutlinePainter(c, filled: tab == 0)),
                       _nav(1, (c) => SearchOutlinePainter(c, bold: tab == 1)),
                       _nav(2, AddBoxPainter.new),
-                      _nav(3, (c) => HeartPainter(c, filled: tab == 3)),
+                      _nav(3, (c) => CommentPainter(c)),
                       Expanded(
                         child: GestureDetector(
                           behavior: HitTestBehavior.opaque,

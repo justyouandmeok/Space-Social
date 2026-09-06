@@ -204,3 +204,32 @@ class ActivityItem {
         isFollow: j['isFollow'] as bool? ?? false,
       );
 }
+
+
+class Story {
+  const Story({
+    required this.id,
+    required this.userId,
+    required this.imagePath,
+    required this.createdAt,
+  });
+  final String id;
+  final String userId;
+  final String imagePath;
+  final DateTime createdAt;
+  bool get isLive => DateTime.now().difference(createdAt) < const Duration(hours: 24);
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'userId': userId,
+        'imagePath': imagePath,
+        'createdAt': createdAt.toIso8601String(),
+      };
+
+  factory Story.fromJson(Map<String, dynamic> j) => Story(
+        id: j['id'] as String,
+        userId: j['userId'] as String,
+        imagePath: j['imagePath'] as String,
+        createdAt: DateTime.tryParse(j['createdAt'] as String? ?? '') ?? DateTime.now(),
+      );
+}

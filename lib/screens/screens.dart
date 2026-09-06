@@ -271,18 +271,31 @@ class FeedScreen extends StatelessWidget {
           child: Divider(height: 0.4, thickness: 0.4, color: LumaColors.hairline),
         ),
       ),
-      body: items.isEmpty
-          ? const EmptyHint('Todavía no hay publicaciones', 'Creá una desde el botón + o seguí a otra cuenta de este teléfono.')
-          : ListView.builder(
-              itemCount: items.length,
-              itemBuilder: (context, i) => PostCard(
-                post: items[i],
-                state: state,
-                onOpenProfile: onOpenProfile,
-                onOpenComments: onOpenComments,
-                onOpenPost: onOpenPost,
-              ),
-            ),
+      body: RefreshIndicator(
+        color: LumaColors.text,
+        onRefresh: () async => state.load(),
+        child: ListView.builder(
+          itemCount: items.length + 1,
+          itemBuilder: (context, i) {
+            if (i == 0) {
+              return StoryTray(state: state, onOpenProfile: onOpenProfile);
+            }
+            if (items.isEmpty) {
+              return const Padding(
+                padding: EdgeInsets.only(top: 80),
+                child: EmptyHint('Todavía no hay publicaciones', 'Creá una desde el + . En Explorar también aparecen cuentas nuevas.'),
+              );
+            }
+            return PostCard(
+              post: items[i - 1],
+              state: state,
+              onOpenProfile: onOpenProfile,
+              onOpenComments: onOpenComments,
+              onOpenPost: onOpenPost,
+            );
+          },
+        ),
+      ),
     );
   }
 }
@@ -372,12 +385,28 @@ class _CreateScreenState extends State<CreateScreen> {
   final caption = TextEditingController();
   final location = TextEditingController();
   bool busy = false;
+  int mode = 0; // 0 post 1 story 2 reel
 
   @override
   void dispose() {
     caption.dispose();
     location.dispose();
     super.dispose();
+  }
+
+  Widget _modeChip(int i, String label) {
+    final on = mode == i;
+    return GestureDetector(
+      onTap: () => setState(() => mode = i),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: on ? LumaColors.text : const Color(0xFFF2F2F2),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Text(label, style: TextStyle(color: on ? Colors.white : LumaColors.text, fontWeight: FontWeight.w600, fontSize: 13)),
+      ),
+    );
   }
 
   Future<void> _pick({bool camera = false}) async {
@@ -394,8 +423,13 @@ class _CreateScreenState extends State<CreateScreen> {
       return;
     }
     setState(() => busy = true);
-    final ok = await widget.state.publishPost(image: image!, caption: caption.text, location: location.text)
-        .timeout(const Duration(seconds: 30), onTimeout: () => false);
+    bool ok;
+    if (mode == 1) {
+      ok = await widget.state.publishStory(image!).timeout(const Duration(seconds: 30), onTimeout: () => false);
+    } else {
+      ok = await widget.state.publishPost(image: image!, caption: caption.text, location: location.text)
+          .timeout(const Duration(seconds: 30), onTimeout: () => false);
+    }
     if (!mounted) return;
     setState(() => busy = false);
     if (!ok) {
@@ -415,7 +449,7 @@ class _CreateScreenState extends State<CreateScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nueva publicación', style: TextStyle(fontFamily: null, fontSize: 18, fontWeight: FontWeight.w600, color: LumaColors.text)),
+        title: Text(mode == 1 ? 'Nueva historia' : (mode == 2 ? 'Nuevo reel' : 'Nueva publicación'), style: const TextStyle(fontFamily: null, fontSize: 18, fontWeight: FontWeight.w600, color: LumaColors.text)),
         actions: [
           TextButton(
             onPressed: busy ? null : _publish,
@@ -425,6 +459,16 @@ class _CreateScreenState extends State<CreateScreen> {
       ),
       body: ListView(
         children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+            child: Row(children: [
+              _modeChip(0, 'Publicación'),
+              const SizedBox(width: 8),
+              _modeChip(1, 'Historia'),
+              const SizedBox(width: 8),
+              _modeChip(2, 'Reel'),
+            ]),
+          ),
           GestureDetector(
             onTap: busy ? null : _pick,
             child: AspectRatio(
@@ -1175,3 +1219,159 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 }
+
+
+class StoryTray extends StatelessWidget {
+  const StoryTray({super.key, required this.state, required this.onOpenProfile});
+  final AppState state;
+  final void Function(String userId) onOpenProfile;
+
+  @override
+  Widget build(BuildContext context) {
+    final authors = state.storyAuthors;
+    return SizedBox(
+      height: 108,
+      child: ListView.separated(
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+        scrollDirection: Axis.horizontal,
+        itemCount: authors.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        itemBuilder: (context, i) {
+          final u = authors[i];
+          final mine = u.id == state.me.id;
+          final has = state.storiesOf(u.id).isNotEmpty;
+          return GestureDetector(
+            onTap: () async {
+              if (mine && !has) {
+                final f = await pickImage();
+                if (f != null) await state.publishStory(f);
+                return;
+              }
+              if (has) {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => StoryViewer(state: state, user: u),
+                ));
+              } else {
+                onOpenProfile(u.id);
+              }
+            },
+            child: SizedBox(
+              width: 68,
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(2.2),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: has
+                          ? const LinearGradient(colors: [Color(0xFFF58529), Color(0xFFDD2A7B), Color(0xFF8134AF)])
+                          : null,
+                      border: has ? null : Border.all(color: LumaColors.hairline),
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                      child: Avatar(u.avatarPath, size: 56),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(mine ? 'Tu historia' : u.username,
+                      maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11.5)),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class StoryViewer extends StatelessWidget {
+  const StoryViewer({super.key, required this.state, required this.user});
+  final AppState state;
+  final UserAccount user;
+  @override
+  Widget build(BuildContext context) {
+    final list = state.storiesOf(user.id);
+    if (list.isEmpty) return const SizedBox.shrink();
+    final s = list.first;
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: GestureDetector(
+        onTap: () => Navigator.pop(context),
+        child: Stack(fit: StackFit.expand, children: [
+          NetworkPhoto(s.imagePath),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+              child: Row(children: [
+                Avatar(user.avatarPath, size: 32),
+                const SizedBox(width: 8),
+                Text(user.username, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                const Spacer(),
+                const Icon(Icons.close, color: Colors.white),
+              ]),
+            ),
+          ),
+        ]),
+      ),
+    );
+  }
+}
+
+class ReelsScreen extends StatelessWidget {
+  const ReelsScreen({super.key, required this.state, required this.onOpenProfile, required this.onOpenComments});
+  final AppState state;
+  final void Function(String userId) onOpenProfile;
+  final void Function(Post post) onOpenComments;
+  @override
+  Widget build(BuildContext context) {
+    final items = state.explorePosts;
+    if (items.isEmpty) {
+      return const Scaffold(body: EmptyHint('Reels', 'Las publicaciones nuevas también aparecen acá en formato vertical.'));
+    }
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: PageView.builder(
+        scrollDirection: Axis.vertical,
+        itemCount: items.length,
+        itemBuilder: (context, i) {
+          final post = items[i];
+          final user = state.tryUser(post.userId);
+          return Stack(fit: StackFit.expand, children: [
+            NetworkPhoto(post.imagePath),
+            const DecoratedBox(decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Colors.transparent, Colors.black54]))),
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(14, 10, 14, 18),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  const Text('Reels', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 20)),
+                  const Spacer(),
+                  Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () { if (user != null) onOpenProfile(user.id); },
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Text(user?.username ?? '', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15)),
+                          if (post.caption.isNotEmpty)
+                            Text(post.caption, maxLines: 3, style: const TextStyle(color: Colors.white, fontSize: 14)),
+                        ]),
+                      ),
+                    ),
+                    Column(children: [
+                      IconButton(onPressed: () => state.toggleLike(post.id), icon: Icon(post.likedBy(state.me.id) ? Icons.favorite : Icons.favorite_border, color: post.likedBy(state.me.id) ? LumaColors.like : Colors.white, size: 30)),
+                      Text('${post.likes.length}', style: const TextStyle(color: Colors.white)),
+                      IconButton(onPressed: () => onOpenComments(post), icon: const Icon(Icons.mode_comment_outlined, color: Colors.white, size: 26)),
+                    ]),
+                  ]),
+                ]),
+              ),
+            ),
+          ]);
+        },
+      ),
+    );
+  }
+}
+

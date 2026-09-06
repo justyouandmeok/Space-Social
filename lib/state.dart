@@ -50,6 +50,7 @@ class AppState extends ChangeNotifier {
   Map<String, List<String>> following = {};
   List<ActivityItem> activity = [];
   List<ChatMessage> messages = [];
+  List<Story> stories = [];
   String query = '';
   String? lastError;
 
@@ -82,14 +83,44 @@ class AppState extends ChangeNotifier {
       posts.where((p) => p.userId == userId).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
   List<Post> get feed {
-    if (!isLoggedIn) return [];
+    if (!isLoggedIn) return List<Post>.from(posts)..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     final ids = <String>{currentUserId!, ...followingOf(currentUserId!)};
-    final followed = posts.where((p) => ids.contains(p.userId)).toList();
-    if (followed.isNotEmpty) {
-      followed.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      return followed;
+    final now = DateTime.now();
+    double score(Post p) {
+      final hours = now.difference(p.createdAt).inMinutes / 60.0;
+      var s = 40.0 / (1 + hours); // recency
+      if (ids.contains(p.userId)) s += 8;
+      final fol = followersOf(p.userId).length;
+      if (fol < 15) s += 6; // small creators surface
+      s += (p.likes.length * 0.15).clamp(0, 4);
+      return s;
     }
-    return List<Post>.from(posts)..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final list = List<Post>.from(posts);
+    list.sort((a, b) => score(b).compareTo(score(a)));
+    return list;
+  }
+
+  List<Story> get liveStories =>
+      stories.where((s) => s.isLive).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+  List<Story> storiesOf(String userId) =>
+      liveStories.where((s) => s.userId == userId).toList();
+
+  List<UserAccount> get storyAuthors {
+    final seen = <String>{};
+    final out = <UserAccount>[];
+    if (isLoggedIn) {
+      final meUser = tryUser(me.id);
+      if (meUser != null) out.add(meUser);
+      seen.add(me.id);
+    }
+    for (final s in liveStories) {
+      if (seen.add(s.userId)) {
+        final u = tryUser(s.userId);
+        if (u != null) out.add(u);
+      }
+    }
+    return out;
   }
 
   List<Post> get explorePosts =>
@@ -151,6 +182,9 @@ class AppState extends ChangeNotifier {
     ready = true;
     notifyListeners();
     _db.collection('users').snapshots().listen((_) {
+      if (ready) _refresh().then((_) { _saveCache(); notifyListeners(); });
+    });
+    _db.collection('stories').snapshots().listen((_) {
       if (ready) _refresh().then((_) { _saveCache(); notifyListeners(); });
     });
     _db.collection('posts').snapshots().listen((_) {
@@ -249,6 +283,12 @@ class AppState extends ChangeNotifier {
       following.putIfAbsent(from, () => []);
       if (!following[from]!.contains(to)) following[from]!.add(to);
     }
+
+    try {
+      final stSnap = await _db.collection('stories').get();
+      stories = stSnap.docs.map((d) => Story.fromJson({...d.data(), 'id': d.id})).where((s) => s.isLive).toList()
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    } catch (_) {}
 
     final actSnap = await _db.collection('activity').get();
     activity = actSnap.docs.map((d) => ActivityItem.fromJson(d.data())).toList()
@@ -645,6 +685,29 @@ class AppState extends ChangeNotifier {
       return true;
     } catch (e) {
       lastError = 'No se pudo publicar: $e';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> publishStory(File image) async {
+    if (!isLoggedIn) return false;
+    lastError = null;
+    try {
+      final url = await _upload(image, SpaceConfig.postsBucket, 'stories/${me.id}');
+      final id = newId();
+      final created = DateTime.now();
+      await _db.collection('stories').doc(id).set({
+        'id': id,
+        'userId': me.id,
+        'imagePath': url,
+        'createdAt': created.toIso8601String(),
+      });
+      stories = [Story(id: id, userId: me.id, imagePath: url, createdAt: created), ...stories];
+      notifyListeners();
+      return true;
+    } catch (e) {
+      lastError = 'No se pudo subir la historia.';
       notifyListeners();
       return false;
     }
