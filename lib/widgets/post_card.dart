@@ -6,6 +6,7 @@ import '../store.dart';
 import '../theme.dart';
 import 'ig_icons.dart';
 import 'network_photo.dart';
+import 'media_view.dart';
 
 class PostCard extends StatefulWidget {
   const PostCard({
@@ -74,8 +75,16 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(user.username,
-                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5)),
+                      Row(children: [
+                        Text(user.username, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5)),
+                        if (user.id != widget.state.me.id && !widget.state.isFollowing(user.id)) ...[
+                          const Text('  ·  ', style: TextStyle(fontWeight: FontWeight.w700)),
+                          GestureDetector(
+                            onTap: () => widget.state.toggleFollow(user.id),
+                            child: const Text('Seguir', style: TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w700, fontSize: 13.5)),
+                          ),
+                        ],
+                      ]),
                       if (post.location.isNotEmpty)
                         Text(post.location, style: const TextStyle(fontSize: 11.5)),
                     ],
@@ -98,7 +107,7 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
             child: Stack(
               alignment: Alignment.center,
               children: [
-                Positioned.fill(child: NetworkPhoto(post.imagePath)),
+                Positioned.fill(child: MediaView(post.imagePath, video: post.isVideo)),
                 if (_burst)
                   FadeTransition(
                     opacity: Tween(begin: 1.0, end: 0.0).animate(

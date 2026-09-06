@@ -7,6 +7,7 @@ import '../store.dart';
 import '../theme.dart';
 import '../widgets/ig_icons.dart';
 import '../widgets/network_photo.dart';
+import '../widgets/media_view.dart';
 import '../widgets/post_card.dart';
 
 Future<File?> pickVideoFile({bool camera = false}) async {
@@ -412,7 +413,14 @@ class ExploreScreen extends StatelessWidget {
               SliverGrid(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, mainAxisSpacing: 1.2, crossAxisSpacing: 1.2),
                 delegate: SliverChildBuilderDelegate(
-                  (context, i) => GestureDetector(onTap: () => onOpenPost(posts[i]), child: NetworkPhoto(posts[i].imagePath)),
+                  (context, i) => GestureDetector(
+                    onTap: () => onOpenPost(posts[i]),
+                    child: Stack(fit: StackFit.expand, children: [
+                      NetworkPhoto(posts[i].imagePath),
+                      if (posts[i].isReel || posts[i].isVideo)
+                        const Positioned(right: 6, top: 6, child: Icon(Icons.play_arrow, color: Colors.white, size: 18)),
+                    ]),
+                  ),
                   childCount: posts.length,
                 ),
               ),
@@ -1067,7 +1075,7 @@ class SettingsScreen extends StatelessWidget {
         const ListTile(
           leading: Icon(Icons.info_outline),
           title: Text('Space Social'),
-          subtitle: Text('Versión 1.6.2'),
+          subtitle: Text('Versión 1.6.3'),
         ),
         const Divider(height: 24),
         ListTile(
@@ -1481,7 +1489,7 @@ class ReelsScreen extends StatelessWidget {
           final liked = post.likedBy(state.me.id);
           final saved = post.savedFor(state.me.id);
           return Stack(fit: StackFit.expand, children: [
-            NetworkPhoto(post.imagePath),
+            MediaView(post.imagePath, video: post.isVideo, autoplay: true),
             const DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
