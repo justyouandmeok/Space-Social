@@ -698,6 +698,7 @@ class ProfileScreen extends StatelessWidget {
     this.onSettings,
     this.onMessage,
     this.onLogout,
+    this.onOpenProfile,
   });
 
   final AppState state;
@@ -708,6 +709,7 @@ class ProfileScreen extends StatelessWidget {
   final VoidCallback? onSettings;
   final VoidCallback? onMessage;
   final VoidCallback? onLogout;
+  final void Function(String userId)? onOpenProfile;
 
   @override
   Widget build(BuildContext context) {
@@ -743,13 +745,13 @@ class ProfileScreen extends StatelessWidget {
                         _stat('${list.length}', 'publicaciones'),
                         GestureDetector(
                           onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                            builder: (_) => PeopleScreen(state: state, title: 'Seguidores', ids: state.followersOf(user.id), onOpenProfile: onOpenProfile),
+                            builder: (_) => PeopleScreen(state: state, title: 'Seguidores', ids: state.followersOf(user.id), onOpenProfile: onOpenProfile ?? (id) {}),
                           )),
                           child: _stat(compact(state.followersOf(user.id).length), 'seguidores'),
                         ),
                         GestureDetector(
                           onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                            builder: (_) => PeopleScreen(state: state, title: 'Seguidos', ids: state.followingOf(user.id), onOpenProfile: onOpenProfile),
+                            builder: (_) => PeopleScreen(state: state, title: 'Seguidos', ids: state.followingOf(user.id), onOpenProfile: onOpenProfile ?? (id) {}),
                           )),
                           child: _stat(compact(state.followingOf(user.id).length), 'seguidos'),
                         ),

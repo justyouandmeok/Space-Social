@@ -196,6 +196,7 @@ class _LumaShellState extends State<LumaShell> {
         onOpenPost: _openPost,
         onBack: () => setState(() => overlayUser = null),
         onMessage: () => setState(() => chatUserId = overlayUser!.id),
+        onOpenProfile: _openUser,
       );
     } else {
       body = IndexedStack(
@@ -219,6 +220,7 @@ class _LumaShellState extends State<LumaShell> {
             onEdit: () => setState(() { editing = true; editFrom = 'profile'; }),
             onSettings: () => setState(() => settings = true),
             onLogout: () => state.logout(),
+            onOpenProfile: _openUser,
           ),
         ],
       );
