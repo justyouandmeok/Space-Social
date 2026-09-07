@@ -438,6 +438,9 @@ class AppState extends ChangeNotifier {
         'email': e,
         'userId': cred.user!.uid,
       });
+      try {
+        await _sb.from('usernames').upsert({'username': u, 'email': e, 'user_id': cred.user!.uid});
+      } catch (_) {}
       currentUserId = cred.user!.uid;
       await _refresh();
       notifyListeners();
@@ -494,6 +497,14 @@ class AppState extends ChangeNotifier {
           email = local.email.toLowerCase();
         } else {
           try {
+            try {
+              final row = await _sb.from('usernames').select('email').eq('username', email).maybeSingle();
+              final mapped = (row?['email'] as String?)?.toLowerCase();
+              if (mapped != null && mapped.contains('@')) {
+                email = mapped;
+              }
+            } catch (_) {}
+            if (!email.contains('@')) {
             final alias = await _db.collection('usernames').doc(email).get();
             if (alias.exists) {
               email = (alias.data()?['email'] as String? ?? email).toLowerCase();
@@ -516,6 +527,16 @@ class AppState extends ChangeNotifier {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
       currentUserId = _auth.currentUser?.uid;
       await _refresh();
+      for (final u in users) {
+        if (u.username.isEmpty || !u.email.contains('@')) continue;
+        try {
+          await _sb.from('usernames').upsert({
+            'username': u.username.toLowerCase(),
+            'email': u.email.toLowerCase(),
+            'user_id': u.id,
+          });
+        } catch (_) {}
+      }
       notifyListeners();
       return true;
     } on FirebaseAuthException {
