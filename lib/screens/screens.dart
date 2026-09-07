@@ -268,13 +268,9 @@ class FeedScreen extends StatelessWidget {
     final items = state.feed;
     return Scaffold(
       appBar: AppBar(
-        title: Padding(
-          padding: const EdgeInsets.only(left: 4),
-          child: Row(children: [
-            ClipRRect(borderRadius: BorderRadius.circular(7), child: Image.asset('assets/brand/logo_mark.png', width: 26, height: 26)),
-            const SizedBox(width: 8),
-            const Text('Space Social', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, letterSpacing: -0.8, color: LumaColors.text)),
-          ]),
+        title: const Padding(
+          padding: EdgeInsets.only(left: 8),
+          child: Text('Space', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, letterSpacing: -1.2, color: LumaColors.text, height: 1)),
         ),
         actions: [
           IconButton(
