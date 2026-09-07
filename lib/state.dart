@@ -505,17 +505,18 @@ class AppState extends ChangeNotifier {
               }
             } catch (_) {}
             if (!email.contains('@')) {
-            final alias = await _db.collection('usernames').doc(email).get();
-            if (alias.exists) {
-              email = (alias.data()?['email'] as String? ?? email).toLowerCase();
-            } else {
-              final snap = await _db.collection('users').where('username', isEqualTo: email).limit(1).get();
-              if (snap.docs.isEmpty) {
-                lastError = 'Usuario o contraseña incorrectos.';
-                notifyListeners();
-                return false;
+              final alias = await _db.collection('usernames').doc(email).get();
+              if (alias.exists) {
+                email = (alias.data()?['email'] as String? ?? email).toLowerCase();
+              } else {
+                final snap = await _db.collection('users').where('username', isEqualTo: email).limit(1).get();
+                if (snap.docs.isEmpty) {
+                  lastError = 'Usuario o contraseña incorrectos.';
+                  notifyListeners();
+                  return false;
+                }
+                email = (snap.docs.first.data()['email'] as String? ?? email).toLowerCase();
               }
-              email = (snap.docs.first.data()['email'] as String? ?? email).toLowerCase();
             }
           } catch (_) {
             lastError = 'Entrá con el email si es la primera vez en este teléfono.';
