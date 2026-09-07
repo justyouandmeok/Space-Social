@@ -1,12 +1,60 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isMe(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
     match /users/{userId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow create: if isMe(userId);
+      allow update, delete: if isMe(userId);
     }
+
+    match /username_reserved/{name} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
+    match /usernames/{name} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
+
+    match /posts/{postId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if signedIn();
+      allow delete: if signedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    match /stories/{storyId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if signedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    match /follows/{followId} {
+      allow read: if signedIn();
+      allow write: if signedIn();
+    }
+
+    match /messages/{msgId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.fromId == request.auth.uid;
+      allow update, delete: if signedIn();
+    }
+
+    match /activity/{actId} {
+      allow read, write: if signedIn();
+    }
+
     match /{document=**} {
-      allow read, write: if request.auth != null;
+      allow read, write: if signedIn();
     }
   }
 }
