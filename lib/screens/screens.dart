@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models.dart';
 import '../state.dart';
@@ -716,7 +717,7 @@ class _FollowChip extends StatelessWidget {
   }
 }
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({
     super.key,
     required this.state,
@@ -741,46 +742,76 @@ class ProfileScreen extends StatelessWidget {
   final void Function(String userId)? onOpenProfile;
 
   @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  int tab = 0;
+
+  AppState get state => widget.state;
+  UserAccount get user => widget.user;
+
+  @override
   Widget build(BuildContext context) {
-    final list = state.postsOf(user.id);
+    final all = state.postsOf(user.id);
+    final list = tab == 1 ? all.where((p) => p.isReel || p.isVideo).toList() : all;
     final isMe = state.isLoggedIn && user.id == state.me.id;
     final following = state.isFollowing(user.id);
+    final hasStory = state.storiesOf(user.id).isNotEmpty;
     return Scaffold(
       appBar: AppBar(
-        leading: onBack == null
-            ? IconButton(
-                onPressed: () => _menu(context),
-                icon: CustomPaint(size: const Size.square(22), painter: MenuPainter(LumaColors.text)),
-              )
+        leading: widget.onBack == null
+            ? null
             : IconButton(
-                onPressed: onBack,
+                onPressed: widget.onBack,
                 icon: CustomPaint(size: const Size.square(22), painter: BackPainter(LumaColors.text)),
               ),
-        title: Text(user.username, style: const TextStyle(fontFamily: null, fontSize: 20, fontWeight: FontWeight.w700, color: LumaColors.text)),
+        title: Text(user.username, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+        actions: [
+          if (isMe)
+            IconButton(
+              onPressed: () => _menu(context),
+              icon: CustomPaint(size: const Size.square(22), painter: MenuPainter(LumaColors.text)),
+            ),
+        ],
       ),
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
               child: Row(
                 children: [
-                  Avatar(user.avatarPath, size: 86),
-                  const SizedBox(width: 28),
+                  Container(
+                    padding: const EdgeInsets.all(2.4),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: hasStory
+                          ? const LinearGradient(colors: [Color(0xFFF58529), Color(0xFFDD2A7B), Color(0xFF8134AF)])
+                          : null,
+                      border: hasStory ? null : Border.all(color: LumaColors.hairline),
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                      child: Avatar(user.avatarPath, size: 82),
+                    ),
+                  ),
+                  const SizedBox(width: 22),
                   Expanded(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _stat('${list.length}', 'publicaciones'),
+                        _stat('${all.length}', 'publicaciones'),
                         GestureDetector(
                           onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                            builder: (_) => PeopleScreen(state: state, title: 'Seguidores', ids: state.followersOf(user.id), onOpenProfile: onOpenProfile ?? (id) {}),
+                            builder: (_) => PeopleScreen(state: state, title: 'Seguidores', ids: state.followersOf(user.id), onOpenProfile: widget.onOpenProfile ?? (id) {}),
                           )),
                           child: _stat(compact(state.followersOf(user.id).length), 'seguidores'),
                         ),
                         GestureDetector(
                           onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                            builder: (_) => PeopleScreen(state: state, title: 'Seguidos', ids: state.followingOf(user.id), onOpenProfile: onOpenProfile ?? (id) {}),
+                            builder: (_) => PeopleScreen(state: state, title: 'Seguidos', ids: state.followingOf(user.id), onOpenProfile: widget.onOpenProfile ?? (id) {}),
                           )),
                           child: _stat(compact(state.followingOf(user.id).length), 'seguidos'),
                         ),
@@ -797,7 +828,7 @@ class ProfileScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(user.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                  Text(user.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
                   if (user.bio.isNotEmpty) Text(user.bio, style: const TextStyle(fontSize: 14, height: 1.3)),
                   if (user.website.isNotEmpty)
                     Text(user.website, style: const TextStyle(color: LumaColors.link, fontWeight: FontWeight.w600, fontSize: 14)),
@@ -810,9 +841,17 @@ class ProfileScreen extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
               child: isMe
                   ? Row(children: [
-                      Expanded(child: GestureDetector(onTap: onEdit, child: _outlineBtn('Editar perfil'))),
+                      Expanded(child: GestureDetector(onTap: widget.onEdit, child: _outlineBtn('Editar perfil'))),
                       const SizedBox(width: 8),
-                      Expanded(child: GestureDetector(onTap: onSettings, child: _outlineBtn('Ajustes'))),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            Clipboard.setData(ClipboardData(text: '@${user.username}'));
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Perfil copiado')));
+                          },
+                          child: _outlineBtn('Compartir perfil'),
+                        ),
+                      ),
                     ])
                   : Row(children: [
                       Expanded(
@@ -831,18 +870,36 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Expanded(child: GestureDetector(onTap: onMessage, child: _outlineBtn('Mensaje'))),
+                      Expanded(child: GestureDetector(onTap: widget.onMessage, child: _outlineBtn('Mensaje'))),
                     ]),
             ),
           ),
-          SliverPersistentHeader(pinned: true, delegate: _TabsHeader()),
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _TabsHeader(
+              tab: tab,
+              onTab: (i) => setState(() => tab = i),
+            ),
+          ),
           if (list.isEmpty)
-            const SliverFillRemaining(child: EmptyHint('Sin publicaciones', 'Cuando publiques una foto, aparece en tu grilla.'))
+            SliverFillRemaining(
+              child: EmptyHint(
+                tab == 1 ? 'Sin reels' : 'Sin publicaciones',
+                tab == 1 ? 'Los reels de esta cuenta aparecen acá.' : 'Cuando publiques una foto, aparece en la grilla.',
+              ),
+            )
           else
             SliverGrid(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, mainAxisSpacing: 1.2, crossAxisSpacing: 1.2, childAspectRatio: 3 / 4),
               delegate: SliverChildBuilderDelegate(
-                (context, i) => GestureDetector(onTap: () => onOpenPost(list[i]), child: NetworkPhoto(list[i].imagePath)),
+                (context, i) => GestureDetector(
+                  onTap: () => widget.onOpenPost(list[i]),
+                  child: Stack(fit: StackFit.expand, children: [
+                    NetworkPhoto(list[i].imagePath),
+                    if (list[i].isReel || list[i].isVideo)
+                      const Positioned(right: 6, top: 6, child: Icon(Icons.play_arrow, color: Colors.white, size: 18)),
+                  ]),
+                ),
                 childCount: list.length,
               ),
             ),
@@ -858,9 +915,9 @@ class ProfileScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(leading: const Icon(Icons.edit_outlined), title: const Text('Editar perfil'), onTap: () { Navigator.pop(context); onEdit?.call(); }),
-            ListTile(leading: const Icon(Icons.settings_outlined), title: const Text('Ajustes'), onTap: () { Navigator.pop(context); onSettings?.call(); }),
-            ListTile(leading: const Icon(Icons.logout), title: const Text('Cerrar sesión'), onTap: () { Navigator.pop(context); onLogout?.call(); }),
+            ListTile(leading: const Icon(Icons.edit_outlined), title: const Text('Editar perfil'), onTap: () { Navigator.pop(context); widget.onEdit?.call(); }),
+            ListTile(leading: const Icon(Icons.settings_outlined), title: const Text('Ajustes'), onTap: () { Navigator.pop(context); widget.onSettings?.call(); }),
+            ListTile(leading: const Icon(Icons.logout), title: const Text('Cerrar sesión'), onTap: () { Navigator.pop(context); widget.onLogout?.call(); }),
           ],
         ),
       ),
@@ -881,6 +938,9 @@ class ProfileScreen extends StatelessWidget {
 }
 
 class _TabsHeader extends SliverPersistentHeaderDelegate {
+  _TabsHeader({this.tab = 0, this.onTab});
+  final int tab;
+  final void Function(int)? onTab;
   @override
   double get minExtent => 44;
   @override
@@ -893,8 +953,8 @@ class _TabsHeader extends SliverPersistentHeaderDelegate {
         SizedBox(
           height: 43,
           child: Row(children: [
-            Expanded(child: Center(child: CustomPaint(size: const Size.square(22), painter: GridPainter(LumaColors.text)))),
-            Expanded(child: Center(child: CustomPaint(size: const Size.square(22), painter: TagPainter(LumaColors.textTertiary)))),
+            Expanded(child: GestureDetector(onTap: () => onTab?.call(0), child: Center(child: CustomPaint(size: const Size.square(22), painter: GridPainter(tab == 0 ? LumaColors.text : LumaColors.textTertiary))))),
+            Expanded(child: GestureDetector(onTap: () => onTab?.call(1), child: Center(child: Icon(Icons.play_circle_outline, color: tab == 1 ? LumaColors.text : LumaColors.textTertiary)))),
           ]),
         ),
         const Divider(height: 1, color: LumaColors.hairline),
@@ -903,7 +963,7 @@ class _TabsHeader extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  bool shouldRebuild(covariant _TabsHeader oldDelegate) => false;
+  bool shouldRebuild(covariant _TabsHeader oldDelegate) => oldDelegate.tab != tab;
 }
 
 class EditProfileScreen extends StatefulWidget {
