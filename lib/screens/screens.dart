@@ -284,7 +284,6 @@ class FeedScreen extends StatelessWidget {
             icon: CustomPaint(size: const Size.square(24), painter: HeartPainter(LumaColors.text)),
           ),
         ],
-        ],
         bottom: const PreferredSize(
           preferredSize: Size.fromHeight(0.4),
           child: Divider(height: 0.4, thickness: 0.4, color: LumaColors.hairline),
