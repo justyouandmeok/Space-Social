@@ -193,6 +193,35 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
     );
   }
 
+  void _shareToChat(BuildContext context, Post post) {
+    final people = widget.state.users.where((u) => u.id != widget.state.me.id).toList();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (_) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            const ListTile(title: Text('Enviar a', style: TextStyle(fontWeight: FontWeight.w700))),
+            ...people.map((u) => ListTile(
+                  leading: Avatar(u.avatarPath, size: 36),
+                  title: Text(u.username),
+                  onTap: () async {
+                    await widget.state.sharePostTo(u.id, post);
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Enviado a @${u.username}')));
+                    }
+                  },
+                )),
+            if (people.isEmpty) const ListTile(title: Text('No hay otras cuentas todavía')),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _share(BuildContext context, Post post) {
     showModalBottomSheet(
       context: context,
@@ -207,6 +236,14 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
             const SizedBox(height: 16),
             const Text('Compartir', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
             const SizedBox(height: 8),
+            ListTile(
+              leading: const Icon(Icons.send_outlined),
+              title: const Text('Enviar en un chat'),
+              onTap: () {
+                Navigator.pop(context);
+                _shareToChat(context, post);
+              },
+            ),
             ListTile(
               leading: const Icon(Icons.copy),
               title: const Text('Copiar pie de foto'),

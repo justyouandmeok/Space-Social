@@ -51,6 +51,8 @@ class AppState extends ChangeNotifier {
   List<ActivityItem> activity = [];
   List<ChatMessage> messages = [];
   List<Story> stories = [];
+  Set<String> seenStories = {};
+  bool followingOnly = false;
   String query = '';
   String? lastError;
 
@@ -95,9 +97,28 @@ class AppState extends ChangeNotifier {
       s += (p.likes.length * 0.15).clamp(0, 4);
       return s;
     }
-    final list = List<Post>.from(posts);
+    var list = List<Post>.from(posts);
+    if (followingOnly) {
+      list = list.where((p) => ids.contains(p.userId)).toList();
+    }
     list.sort((a, b) => score(b).compareTo(score(a)));
     return list;
+  }
+
+  void setFollowingOnly(bool v) {
+    followingOnly = v;
+    notifyListeners();
+  }
+
+  bool storyUnseen(String userId) =>
+      storiesOf(userId).any((s) => !seenStories.contains(s.id));
+
+  void markStoriesSeen(String userId) {
+    for (final s in storiesOf(userId)) {
+      seenStories.add(s.id);
+    }
+    notifyListeners();
+    _saveCache();
   }
 
   List<Story> get liveStories =>
@@ -238,6 +259,9 @@ class AppState extends ChangeNotifier {
           following['$k'] = List<String>.from(v as List? ?? const []);
         });
       }
+      seenStories = {
+        ...(((db['seenStories'] as List?) ?? const []).map((e) => '$e')),
+      };
     } catch (_) {}
   }
 
@@ -247,6 +271,7 @@ class AppState extends ChangeNotifier {
         'users': users.map((u) => u.toJson()).toList(),
         'posts': posts.map((p) => p.toJson()).toList(),
         'following': following,
+        'seenStories': seenStories.toList(),
       });
     } catch (_) {}
   }
@@ -832,6 +857,11 @@ class AppState extends ChangeNotifier {
     }
     await _refresh();
     notifyListeners();
+  }
+
+  Future<void> sharePostTo(String toId, Post post) async {
+    final who = tryUser(post.userId)?.username ?? 'alguien';
+    await sendMessage(toId, 'Te compartió una publicación de @$who: ${post.caption.isEmpty ? post.id : post.caption}');
   }
 
   Future<void> sendMessage(String toId, String text) async {

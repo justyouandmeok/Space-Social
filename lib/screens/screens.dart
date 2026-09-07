@@ -296,7 +296,20 @@ class FeedScreen extends StatelessWidget {
           itemCount: items.length + 1,
           itemBuilder: (context, i) {
             if (i == 0) {
-              return StoryTray(state: state, onOpenProfile: onOpenProfile);
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  StoryTray(state: state, onOpenProfile: onOpenProfile),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                    child: Row(children: [
+                      _FeedChip(label: 'Para ti', selected: !state.followingOnly, onTap: () => state.setFollowingOnly(false)),
+                      const SizedBox(width: 8),
+                      _FeedChip(label: 'Siguiendo', selected: state.followingOnly, onTap: () => state.setFollowingOnly(true)),
+                    ]),
+                  ),
+                ],
+              );
             }
             if (items.isEmpty) {
               return const Padding(
@@ -313,6 +326,27 @@ class FeedScreen extends StatelessWidget {
             );
           },
         ),
+      ),
+    );
+  }
+}
+
+class _FeedChip extends StatelessWidget {
+  const _FeedChip({required this.label, required this.selected, required this.onTap});
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? LumaColors.text : const Color(0xFFF2F2F2),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Text(label, style: TextStyle(color: selected ? Colors.white : LumaColors.text, fontWeight: FontWeight.w700, fontSize: 13)),
       ),
     );
   }
@@ -1368,6 +1402,7 @@ class StoryTray extends StatelessWidget {
           final u = authors[i];
           final mine = u.id == state.me.id;
           final has = state.storiesOf(u.id).isNotEmpty;
+          final unseen = has && state.storyUnseen(u.id);
           return GestureDetector(
             onTap: () async {
               if (mine && !has) {
@@ -1391,10 +1426,10 @@ class StoryTray extends StatelessWidget {
                     padding: const EdgeInsets.all(2.2),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: has
+                      gradient: unseen
                           ? const LinearGradient(colors: [Color(0xFFF58529), Color(0xFFDD2A7B), Color(0xFF8134AF)])
                           : null,
-                      border: has ? null : Border.all(color: LumaColors.hairline),
+                      border: Border.all(color: unseen ? Colors.transparent : (has ? const Color(0xFFC7C7C7) : LumaColors.hairline)),
                     ),
                     child: Container(
                       padding: const EdgeInsets.all(2),
@@ -1443,6 +1478,7 @@ class _StoryViewerState extends State<StoryViewer> with SingleTickerProviderStat
     }
     userIndex = authors.indexWhere((u) => u.id == widget.startUserId);
     if (userIndex < 0) userIndex = 0;
+    widget.state.markStoriesSeen(authors[userIndex].id);
     bar = AnimationController(vsync: this, duration: const Duration(seconds: 5))
       ..addStatusListener((s) {
         if (s == AnimationStatus.completed) _next();
@@ -1474,6 +1510,7 @@ class _StoryViewerState extends State<StoryViewer> with SingleTickerProviderStat
         userIndex++;
         storyIndex = 0;
       });
+      widget.state.markStoriesSeen(authors[userIndex].id);
       _restartBar();
       return;
     }
