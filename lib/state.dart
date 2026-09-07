@@ -450,6 +450,29 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  Future<bool> sendReset(String emailOrUser) async {
+    lastError = null;
+    var email = emailOrUser.trim().toLowerCase();
+    if (!email.contains('@')) {
+      for (final u in users) {
+        if (u.username.toLowerCase() == email) email = u.email.toLowerCase();
+      }
+    }
+    if (!email.contains('@')) {
+      lastError = 'Poné el email de la cuenta para recuperar la clave.';
+      notifyListeners();
+      return false;
+    }
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      return true;
+    } catch (_) {
+      lastError = 'No se pudo enviar el mail de recuperación.';
+      notifyListeners();
+      return false;
+    }
+  }
+
   AuthCredential? _pendingGoogle;
   String? pendingEmail;
 
@@ -458,26 +481,29 @@ class AppState extends ChangeNotifier {
     try {
       var email = userOrEmail.trim().toLowerCase();
       if (!email.contains('@')) {
-        final snap = await _db.collection('users').where('username', isEqualTo: email).limit(1).get();
-        if (snap.docs.isEmpty) {
-          lastError = 'Usuario o contraseña incorrectos.';
-          notifyListeners();
-          return false;
+        UserAccount? local;
+        for (final u in users) {
+          if (u.username.toLowerCase() == email) local = u;
         }
-        email = snap.docs.first.data()['email'] as String? ?? email;
+        if (local != null) {
+          email = local.email.toLowerCase();
+        } else {
+          try {
+            final snap = await _db.collection('users').where('username', isEqualTo: email).limit(1).get();
+            if (snap.docs.isEmpty) {
+              lastError = 'Usuario o contraseña incorrectos.';
+              notifyListeners();
+              return false;
+            }
+            email = (snap.docs.first.data()['email'] as String? ?? email).toLowerCase();
+          } catch (_) {
+            lastError = 'Entrá con el email si es la primera vez en este teléfono.';
+            notifyListeners();
+            return false;
+          }
+        }
       }
       await _auth.signInWithEmailAndPassword(email: email, password: password);
-      if (_pendingGoogle != null && _auth.currentUser != null) {
-        try {
-          await _auth.currentUser!.linkWithCredential(_pendingGoogle!);
-        } on FirebaseAuthException catch (e) {
-          if (e.code != 'provider-already-linked' && e.code != 'credential-already-in-use') {
-            lastError = 'Entraste a tu cuenta. Google no se pudo vincular: ${e.code}';
-          }
-        } catch (_) {}
-        _pendingGoogle = null;
-        pendingEmail = null;
-      }
       currentUserId = _auth.currentUser?.uid;
       await _refresh();
       notifyListeners();

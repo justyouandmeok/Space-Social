@@ -46,7 +46,7 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
-  bool register = true;
+  bool register = false;
   final email = TextEditingController();
   final user = TextEditingController();
   final name = TextEditingController();
@@ -139,45 +139,34 @@ class _AuthScreenState extends State<AuthScreen> {
                     : Text(register ? 'Registrarme' : 'Entrar', style: const TextStyle(fontWeight: FontWeight.w700)),
               ),
             ),
-            const SizedBox(height: 14),
+            if (!register)
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: busy
+                      ? null
+                      : () async {
+                          final ok = await widget.state.sendReset(email.text.isEmpty ? user.text : email.text);
+                          if (!mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(ok ? 'Te mandamos un mail para cambiar la clave.' : (widget.state.lastError ?? 'No se pudo')),
+                          ));
+                        },
+                  child: const Text('¿Olvidaste tu contraseña?', style: TextStyle(color: LumaColors.link, fontSize: 13)),
+                ),
+              ),
+            const SizedBox(height: 18),
             const Row(children: [
               Expanded(child: Divider()),
-              Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('o', style: TextStyle(color: LumaColors.textSecondary))),
+              Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('O', style: TextStyle(color: LumaColors.textSecondary, fontWeight: FontWeight.w600))),
               Expanded(child: Divider()),
             ]),
-            const SizedBox(height: 14),
-            SizedBox(
-              height: 46,
-              child: OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  side: const BorderSide(color: LumaColors.hairline),
-                ),
-                icon: const Icon(Icons.g_mobiledata, size: 28, color: LumaColors.text),
-                onPressed: busy
-                    ? null
-                    : () async {
-                        setState(() => busy = true);
-                        final ok = await widget.state.loginWithGoogle();
-                        if (mounted) setState(() => busy = false);
-                        if (!ok && mounted && widget.state.lastError != null) {
-                          if ((widget.state.pendingEmail ?? '').isNotEmpty) {
-                            setState(() {
-                              register = false;
-                              email.text = widget.state.pendingEmail!;
-                            });
-                          }
-                          final msg = widget.state.lastError!;
-                          if (msg.contains('contraseña')) setState(() => register = false);
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-                        }
-                      },
-                label: const Text('Continuar con Google', style: TextStyle(fontWeight: FontWeight.w700, color: LumaColors.text)),
-              ),
-            ),
             TextButton(
               onPressed: () => setState(() => register = !register),
-              child: Text(register ? '¿Ya tenés cuenta? Entrar' : '¿No tenés cuenta? Registrate'),
+              child: Text(
+                register ? '¿Tenés una cuenta? Iniciá sesión' : '¿No tenés cuenta? Registrate',
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
             ),
             if (widget.state.users.isNotEmpty && register) ...[
               const Divider(),
