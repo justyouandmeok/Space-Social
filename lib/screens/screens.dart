@@ -729,6 +729,7 @@ class ProfileScreen extends StatefulWidget {
     this.onMessage,
     this.onLogout,
     this.onOpenProfile,
+    this.onCreate,
   });
 
   final AppState state;
@@ -740,6 +741,7 @@ class ProfileScreen extends StatefulWidget {
   final VoidCallback? onMessage;
   final VoidCallback? onLogout;
   final void Function(String userId)? onOpenProfile;
+  final VoidCallback? onCreate;
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -754,7 +756,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final all = state.postsOf(user.id);
-    final list = tab == 1 ? all.where((p) => p.isReel || p.isVideo).toList() : all;
+    final list = tab == 1
+        ? all.where((p) => p.isReel || p.isVideo).toList()
+        : (tab == 2 ? <Post>[] : all);
     final isMe = state.isLoggedIn && user.id == state.me.id;
     final following = state.isFollowing(user.id);
     final hasStory = state.storiesOf(user.id).isNotEmpty;
@@ -768,6 +772,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
         title: Text(user.username, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
         actions: [
+          if (isMe && widget.onCreate != null)
+            IconButton(
+              onPressed: widget.onCreate,
+              icon: CustomPaint(size: const Size.square(22), painter: AddBoxPainter(LumaColors.text)),
+            ),
           if (isMe)
             IconButton(
               onPressed: () => _menu(context),
@@ -775,14 +784,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
         ],
       ),
-      body: CustomScrollView(
+      body: RefreshIndicator(
+        color: LumaColors.text,
+        onRefresh: () async => state.load(),
+        child: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
               child: Row(
                 children: [
-                  Container(
+                  GestureDetector(
+                    onTap: () {
+                      if (hasStory) {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (_) => StoryViewer(state: state, startUserId: user.id),
+                        ));
+                      } else if (isMe) {
+                        widget.onEdit?.call();
+                      }
+                    },
+                    child: Container(
                     padding: const EdgeInsets.all(2.4),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
@@ -795,6 +817,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       padding: const EdgeInsets.all(2),
                       decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
                       child: Avatar(user.avatarPath, size: 82),
+                    ),
                     ),
                   ),
                   const SizedBox(width: 22),
@@ -884,8 +907,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           if (list.isEmpty)
             SliverFillRemaining(
               child: EmptyHint(
-                tab == 1 ? 'Sin reels' : 'Sin publicaciones',
-                tab == 1 ? 'Los reels de esta cuenta aparecen acá.' : 'Cuando publiques una foto, aparece en la grilla.',
+                tab == 1 ? 'Sin reels' : (tab == 2 ? 'Fotos en las que aparecés' : 'Sin publicaciones'),
+                tab == 1 ? 'Los reels de esta cuenta aparecen acá.' : (tab == 2 ? 'Todavía no hay fotos etiquetadas.' : 'Cuando publiques una foto, aparece en la grilla.'),
               ),
             )
           else
@@ -904,6 +927,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
         ],
+      ),
       ),
     );
   }
@@ -955,6 +979,7 @@ class _TabsHeader extends SliverPersistentHeaderDelegate {
           child: Row(children: [
             Expanded(child: GestureDetector(onTap: () => onTab?.call(0), child: Center(child: CustomPaint(size: const Size.square(22), painter: GridPainter(tab == 0 ? LumaColors.text : LumaColors.textTertiary))))),
             Expanded(child: GestureDetector(onTap: () => onTab?.call(1), child: Center(child: Icon(Icons.play_circle_outline, color: tab == 1 ? LumaColors.text : LumaColors.textTertiary)))),
+            Expanded(child: GestureDetector(onTap: () => onTab?.call(2), child: Center(child: CustomPaint(size: const Size.square(22), painter: TagPainter(tab == 2 ? LumaColors.text : LumaColors.textTertiary))))),
           ]),
         ),
         const Divider(height: 1, color: LumaColors.hairline),

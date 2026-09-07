@@ -227,6 +227,7 @@ class _LumaShellState extends State<LumaShell> {
             onSettings: () => setState(() => settings = true),
             onLogout: () => state.logout(),
             onOpenProfile: _openUser,
+            onCreate: _openCreate,
           ),
         ],
       );
