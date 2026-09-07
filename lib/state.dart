@@ -173,7 +173,7 @@ class AppState extends ChangeNotifier {
 
   List<UserAccount> get searchUsers {
     final q = query.trim().toLowerCase();
-    final list = users.where((u) => !isLoggedIn || u.id != currentUserId).toList();
+    final list = users.where((u) => (!isLoggedIn || u.id != currentUserId) && !u.username.startsWith('_merged_')).toList();
     if (q.isEmpty) return list;
     return list
         .where((u) => u.username.toLowerCase().contains(q) || u.name.toLowerCase().contains(q))
@@ -744,6 +744,18 @@ class AppState extends ChangeNotifier {
         'salt': '',
         'createdAt': (me.createdAt ?? DateTime.now()).toIso8601String(),
       }, SetOptions(merge: true));
+      try {
+        await _sb.from('usernames').upsert({
+          'username': userName,
+          'email': me.email.toLowerCase(),
+          'user_id': me.id,
+        });
+        await _db.collection('usernames').doc(userName).set({
+          'username': userName,
+          'email': me.email.toLowerCase(),
+          'userId': me.id,
+        });
+      } catch (_) {}
       notifyListeners();
       unawaited(_refresh().then((_) => _saveCache()));
       return true;
