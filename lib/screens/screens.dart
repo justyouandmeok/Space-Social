@@ -255,6 +255,7 @@ class FeedScreen extends StatelessWidget {
     required this.onOpenPost,
     required this.onOpenMessages,
     this.onOpenActivity,
+    this.onOpenCreate,
   });
   final AppState state;
   final void Function(String userId) onOpenProfile;
@@ -262,6 +263,7 @@ class FeedScreen extends StatelessWidget {
   final void Function(Post post) onOpenPost;
   final VoidCallback onOpenMessages;
   final VoidCallback? onOpenActivity;
+  final VoidCallback? onOpenCreate;
 
   @override
   Widget build(BuildContext context) {
@@ -274,13 +276,14 @@ class FeedScreen extends StatelessWidget {
         ),
         actions: [
           IconButton(
+            onPressed: onOpenCreate,
+            icon: CustomPaint(size: const Size.square(24), painter: AddBoxPainter(LumaColors.text)),
+          ),
+          IconButton(
             onPressed: onOpenActivity,
             icon: CustomPaint(size: const Size.square(24), painter: HeartPainter(LumaColors.text)),
           ),
-          IconButton(
-            onPressed: onOpenMessages,
-            icon: CustomPaint(size: const Size.square(26), painter: MessengerPainter(LumaColors.text)),
-          ),
+        ],
         ],
         bottom: const PreferredSize(
           preferredSize: Size.fromHeight(0.4),
@@ -407,7 +410,7 @@ class ExploreScreen extends StatelessWidget {
               const SliverFillRemaining(child: EmptyHint('Explorar', 'Cuando alguien publique, las fotos aparecen acá.'))
             else
               SliverGrid(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, mainAxisSpacing: 1.2, crossAxisSpacing: 1.2),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, mainAxisSpacing: 1.2, crossAxisSpacing: 1.2, childAspectRatio: 3 / 4),
                 delegate: SliverChildBuilderDelegate(
                   (context, i) => GestureDetector(
                     onTap: () => onOpenPost(posts[i]),
@@ -815,7 +818,7 @@ class ProfileScreen extends StatelessWidget {
             const SliverFillRemaining(child: EmptyHint('Sin publicaciones', 'Cuando publiques una foto, aparece en tu grilla.'))
           else
             SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, mainAxisSpacing: 1.2, crossAxisSpacing: 1.2),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, mainAxisSpacing: 1.2, crossAxisSpacing: 1.2, childAspectRatio: 3 / 4),
               delegate: SliverChildBuilderDelegate(
                 (context, i) => GestureDetector(onTap: () => onOpenPost(list[i]), child: NetworkPhoto(list[i].imagePath)),
                 childCount: list.length,
@@ -1100,7 +1103,7 @@ class SavedScreen extends StatelessWidget {
       body: list.isEmpty
           ? const EmptyHint('Sin guardados', 'Tocá el bookmark en una publicación para verla acá.')
           : GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, mainAxisSpacing: 1.2, crossAxisSpacing: 1.2),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, mainAxisSpacing: 1.2, crossAxisSpacing: 1.2, childAspectRatio: 3 / 4),
               itemCount: list.length,
               itemBuilder: (context, i) => GestureDetector(onTap: () => onOpenPost(list[i]), child: NetworkPhoto(list[i].imagePath)),
             ),
@@ -1226,9 +1229,9 @@ class PostDetailScreen extends StatelessWidget {
 }
 
 class MessagesScreen extends StatelessWidget {
-  const MessagesScreen({super.key, required this.state, required this.onClose, required this.onOpenChat});
+  const MessagesScreen({super.key, required this.state, required this.onOpenChat, this.onClose});
   final AppState state;
-  final VoidCallback onClose;
+  final VoidCallback? onClose;
   final void Function(String userId) onOpenChat;
 
   @override
@@ -1237,7 +1240,7 @@ class MessagesScreen extends StatelessWidget {
     final others = state.users.where((u) => u.id != state.me.id).toList();
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(onPressed: onClose, icon: CustomPaint(size: const Size.square(22), painter: BackPainter(LumaColors.text))),
+        leading: onClose == null ? null : IconButton(onPressed: onClose, icon: CustomPaint(size: const Size.square(22), painter: BackPainter(LumaColors.text))),
         title: Text(state.me.username, style: const TextStyle(fontFamily: null, fontSize: 18, fontWeight: FontWeight.w700, color: LumaColors.text)),
       ),
       body: ListView(

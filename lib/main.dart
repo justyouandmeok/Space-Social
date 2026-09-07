@@ -212,11 +212,13 @@ class _LumaShellState extends State<LumaShell> {
             onOpenProfile: _openUser,
             onOpenComments: _openComments,
             onOpenPost: _openPost,
-            onOpenMessages: () => setState(() => messages = true),
+            onOpenMessages: () => setState(() => tab = 2),
             onOpenActivity: () => setState(() => activity = true),
+            onOpenCreate: _openCreate,
           ),
-          ExploreScreen(state: state, onOpenPost: _openPost, onOpenProfile: _openUser),
           ReelsScreen(state: state, onOpenProfile: _openUser, onOpenComments: _openComments),
+          MessagesScreen(state: state, onOpenChat: (id) => setState(() => chatUserId = id)),
+          ExploreScreen(state: state, onOpenPost: _openPost, onOpenProfile: _openUser),
           ProfileScreen(
             state: state,
             user: state.me,
@@ -230,7 +232,7 @@ class _LumaShellState extends State<LumaShell> {
       );
     }
 
-    final hideNav = creating || activity || saved || settings || editing || messages || chatUserId != null || overlayComments != null || overlayPost != null ||
+    final hideNav = creating || activity || saved || settings || editing || chatUserId != null || overlayComments != null || overlayPost != null ||
         (overlayUser != null && overlayUser!.id != state.me.id);
 
     return Scaffold(
@@ -248,20 +250,14 @@ class _LumaShellState extends State<LumaShell> {
                   child: Row(
                     children: [
                       _nav(0, (c) => HomeOutlinePainter(c, filled: tab == 0)),
-                      _nav(1, (c) => SearchOutlinePainter(c, bold: tab == 1)),
-                      Expanded(
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: _openCreate,
-                          child: Center(child: CustomPaint(size: const Size.square(25), painter: AddBoxPainter(LumaColors.text))),
-                        ),
-                      ),
-                      _nav(2, (c) => CommentPainter(c)),
+                      _nav(1, (c) => CommentPainter(c)),
+                      _nav(2, (c) => MessengerPainter(c)),
+                      _nav(3, (c) => SearchOutlinePainter(c, bold: tab == 3)),
                       Expanded(
                         child: GestureDetector(
                           behavior: HitTestBehavior.opaque,
                           onTap: () => setState(() {
-                            tab = 3;
+                            tab = 4;
                             overlayUser = null;
                           }),
                           child: Center(
@@ -269,7 +265,7 @@ class _LumaShellState extends State<LumaShell> {
                               padding: const EdgeInsets.all(1.5),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                border: Border.all(color: tab == 3 ? LumaColors.text : Colors.transparent, width: 1.6),
+                                border: Border.all(color: tab == 4 ? LumaColors.text : Colors.transparent, width: 1.6),
                               ),
                               child: Avatar(state.me.avatarPath, size: 24),
                             ),
