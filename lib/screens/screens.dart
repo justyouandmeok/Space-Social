@@ -168,7 +168,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 ),
               ),
             const SizedBox(height: 18),
-            const Row(children: [
+            Row(children: [
               Expanded(child: Divider()),
               Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('O', style: TextStyle(color: LumaColors.textSecondary, fontWeight: FontWeight.w600))),
               Expanded(child: Divider()),
@@ -285,7 +285,7 @@ class FeedScreen extends StatelessWidget {
           onPressed: onOpenCreate,
           icon: CustomPaint(size: Size.square(26), painter: AddBoxPainter(LumaColors.text)),
         ),
-        title: const Text(
+        title: Text(
           'Space Social',
           style: TextStyle(fontFamily: 'GrandHotel', fontSize: 32, fontWeight: FontWeight.w400, color: LumaColors.text, height: 1),
         ),
@@ -295,7 +295,7 @@ class FeedScreen extends StatelessWidget {
             icon: CustomPaint(size: Size.square(26), painter: HeartPainter(LumaColors.text)),
           ),
         ],
-        bottom: const PreferredSize(
+        bottom: PreferredSize(
           preferredSize: Size.fromHeight(0.4),
           child: Divider(height: 0.4, thickness: 0.4, color: LumaColors.hairline),
         ),
@@ -384,7 +384,7 @@ class ExploreScreen extends StatelessWidget {
                         child: TextField(
                           onChanged: state.setQuery,
                           cursorColor: LumaColors.text,
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             hintText: 'Buscar',
                             hintStyle: TextStyle(color: LumaColors.textSecondary, fontSize: 16),
                             border: InputBorder.none,
@@ -1797,8 +1797,8 @@ class MessagesScreen extends StatelessWidget {
             ),
           ),
           if (partners.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(24),
+            Padding(
+              padding: const EdgeInsets.all(24),
               child: Text('No hay chats todavía. Escribile a otra cuenta de este teléfono.',
                   style: TextStyle(color: LumaColors.textSecondary)),
             ),
