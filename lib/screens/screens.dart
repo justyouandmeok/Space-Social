@@ -296,7 +296,7 @@ class FeedScreen extends StatelessWidget {
         color: LumaColors.text,
         onRefresh: () async => state.load(),
         child: ListView.builder(
-          itemCount: items.length + 1,
+          itemCount: items.isEmpty ? 2 : items.length + 1,
           itemBuilder: (context, i) {
             if (i == 0) {
               return Column(
@@ -318,7 +318,7 @@ class FeedScreen extends StatelessWidget {
             }
             if (items.isEmpty) {
               return const Padding(
-                padding: EdgeInsets.only(top: 80),
+                padding: EdgeInsets.only(top: 48),
                 child: EmptyHint('Todavía no hay publicaciones', 'Creá una desde el + . En Explorar también aparecen cuentas nuevas.'),
               );
             }
@@ -349,10 +349,10 @@ class _FeedChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: selected ? LumaColors.text : const Color(0xFFF2F2F2),
+          color: selected ? const Color(0xFFF5F5F5) : const Color(0xFF262626),
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Text(label, style: TextStyle(color: selected ? Colors.white : LumaColors.text, fontWeight: FontWeight.w700, fontSize: 13)),
+        child: Text(label, style: TextStyle(color: selected ? const Color(0xFF000000) : const Color(0xFFF5F5F5), fontWeight: FontWeight.w700, fontSize: 13)),
       ),
     );
   }
