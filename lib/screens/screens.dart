@@ -125,7 +125,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     radius: 42,
                     backgroundColor: const Color(0xFF2A2A2A),
                     backgroundImage: avatar == null ? null : FileImage(avatar!),
-                    child: avatar == null ? const Icon(Icons.add_a_photo_outlined, color: LumaColors.textSecondary) : null,
+                    child: avatar == null ? Icon(Icons.add_a_photo_outlined, color: LumaColors.textSecondary) : null,
                   ),
                 ),
               ),
@@ -217,8 +217,8 @@ class _AuthScreenState extends State<AuthScreen> {
           filled: true,
           fillColor: const Color(0xFF1C1C1C),
           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: LumaColors.hairline)),
-          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: LumaColors.hairline)),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: LumaColors.hairline)),
+          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: LumaColors.hairline)),
         ),
       ),
     );
@@ -283,7 +283,7 @@ class FeedScreen extends StatelessWidget {
         leadingWidth: 48,
         leading: IconButton(
           onPressed: onOpenCreate,
-          icon: CustomPaint(size: const Size.square(26), painter: AddBoxPainter(LumaColors.text)),
+          icon: CustomPaint(size: Size.square(26), painter: AddBoxPainter(LumaColors.text)),
         ),
         title: const Text(
           'Space Social',
@@ -292,7 +292,7 @@ class FeedScreen extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: onOpenActivity,
-            icon: CustomPaint(size: const Size.square(26), painter: HeartPainter(LumaColors.text)),
+            icon: CustomPaint(size: Size.square(26), painter: HeartPainter(LumaColors.text)),
           ),
         ],
         bottom: const PreferredSize(
@@ -378,7 +378,7 @@ class ExploreScreen extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: Row(
                     children: [
-                      CustomPaint(size: const Size.square(16), painter: SearchOutlinePainter(LumaColors.textSecondary)),
+                      CustomPaint(size: Size.square(16), painter: SearchOutlinePainter(LumaColors.textSecondary)),
                       const SizedBox(width: 8),
                       Expanded(
                         child: TextField(
@@ -949,7 +949,7 @@ class ActivityScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: onClose == null ? null : IconButton(onPressed: onClose, icon: const Icon(Icons.arrow_back)),
-        title: const Text('Actividad', style: TextStyle(fontFamily: null, fontSize: 22, fontWeight: FontWeight.w700, color: LumaColors.text)),
+        title: Text('Actividad', style: TextStyle(fontFamily: null, fontSize: 22, fontWeight: FontWeight.w700, color: LumaColors.text)),
       ),
       body: items.isEmpty
           ? const EmptyHint('Sin actividad', 'Acá vas a ver likes, comentarios y seguidores reales.')
@@ -1060,19 +1060,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ? null
             : IconButton(
                 onPressed: widget.onBack,
-                icon: CustomPaint(size: const Size.square(22), painter: BackPainter(LumaColors.text)),
+                icon: CustomPaint(size: Size.square(22), painter: BackPainter(LumaColors.text)),
               ),
         title: Text(user.username, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
         actions: [
           if (isMe && widget.onCreate != null)
             IconButton(
               onPressed: widget.onCreate,
-              icon: CustomPaint(size: const Size.square(22), painter: AddBoxPainter(LumaColors.text)),
+              icon: CustomPaint(size: Size.square(22), painter: AddBoxPainter(LumaColors.text)),
             ),
           if (isMe)
             IconButton(
               onPressed: () => _menu(context),
-              icon: CustomPaint(size: const Size.square(22), painter: MenuPainter(LumaColors.text)),
+              icon: CustomPaint(size: Size.square(22), painter: MenuPainter(LumaColors.text)),
             ),
         ],
       ),
@@ -1269,9 +1269,9 @@ class _TabsHeader extends SliverPersistentHeaderDelegate {
         SizedBox(
           height: 43,
           child: Row(children: [
-            Expanded(child: GestureDetector(onTap: () => onTab?.call(0), child: Center(child: CustomPaint(size: const Size.square(22), painter: GridPainter(tab == 0 ? LumaColors.text : LumaColors.textTertiary))))),
+            Expanded(child: GestureDetector(onTap: () => onTab?.call(0), child: Center(child: CustomPaint(size: Size.square(22), painter: GridPainter(tab == 0 ? LumaColors.text : LumaColors.textTertiary))))),
             Expanded(child: GestureDetector(onTap: () => onTab?.call(1), child: Center(child: Icon(Icons.play_circle_outline, color: tab == 1 ? LumaColors.text : LumaColors.textTertiary)))),
-            Expanded(child: GestureDetector(onTap: () => onTab?.call(2), child: Center(child: CustomPaint(size: const Size.square(22), painter: TagPainter(tab == 2 ? LumaColors.text : LumaColors.textTertiary))))),
+            Expanded(child: GestureDetector(onTap: () => onTab?.call(2), child: Center(child: CustomPaint(size: Size.square(22), painter: TagPainter(tab == 2 ? LumaColors.text : LumaColors.textTertiary))))),
           ]),
         ),
         Divider(height: 1, color: LumaColors.hairline),
@@ -1333,7 +1333,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: TextButton(onPressed: widget.onClose, child: const Text('Cancelar', style: TextStyle(color: LumaColors.text, fontSize: 16))),
+        leading: TextButton(onPressed: widget.onClose, child: Text('Cancelar', style: TextStyle(color: LumaColors.text, fontSize: 16))),
         leadingWidth: 88,
         title: const Text('Editar perfil', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
         actions: [
@@ -1434,7 +1434,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       leading: Icon(icon),
       title: Text(title),
       subtitle: sub == null ? null : Text(sub),
-      trailing: const Icon(Icons.chevron_right, size: 20, color: LumaColors.textTertiary),
+      trailing: Icon(Icons.chevron_right, size: 20, color: LumaColors.textTertiary),
       onTap: onTap ?? () => _soon(title),
     );
   }
@@ -1445,7 +1445,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       backgroundColor: LumaColors.bg,
       appBar: AppBar(
-        leading: IconButton(onPressed: widget.onClose, icon: CustomPaint(size: const Size.square(22), painter: BackPainter(LumaColors.text))),
+        leading: IconButton(onPressed: widget.onClose, icon: CustomPaint(size: Size.square(22), painter: BackPainter(LumaColors.text))),
         title: const Text('Ajustes y actividad', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
       ),
       body: ListView(children: [
@@ -1599,8 +1599,8 @@ class SavedScreen extends StatelessWidget {
     final list = state.posts.where((p) => p.savedFor(state.me.id)).toList();
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(onPressed: onClose, icon: CustomPaint(size: const Size.square(22), painter: BackPainter(LumaColors.text))),
-        title: const Text('Guardados', style: TextStyle(fontFamily: null, fontSize: 18, fontWeight: FontWeight.w700, color: LumaColors.text)),
+        leading: IconButton(onPressed: onClose, icon: CustomPaint(size: Size.square(22), painter: BackPainter(LumaColors.text))),
+        title: Text('Guardados', style: TextStyle(fontFamily: null, fontSize: 18, fontWeight: FontWeight.w700, color: LumaColors.text)),
       ),
       body: list.isEmpty
           ? const EmptyHint('Sin guardados', 'Tocá el bookmark en una publicación para verla acá.')
@@ -1636,8 +1636,8 @@ class _CommentsScreenState extends State<CommentsScreen> {
     final author = widget.state.tryUser(post.userId);
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(onPressed: widget.onClose, icon: CustomPaint(size: const Size.square(22), painter: BackPainter(LumaColors.text))),
-        title: const Text('Comentarios', style: TextStyle(fontFamily: null, fontSize: 18, fontWeight: FontWeight.w700, color: LumaColors.text)),
+        leading: IconButton(onPressed: widget.onClose, icon: CustomPaint(size: Size.square(22), painter: BackPainter(LumaColors.text))),
+        title: Text('Comentarios', style: TextStyle(fontFamily: null, fontSize: 18, fontWeight: FontWeight.w700, color: LumaColors.text)),
       ),
       body: Column(children: [
         Expanded(
@@ -1718,8 +1718,8 @@ class PostDetailScreen extends StatelessWidget {
     final current = exists ? state.posts.firstWhere((p) => p.id == post.id) : post;
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(onPressed: onClose, icon: CustomPaint(size: const Size.square(22), painter: BackPainter(LumaColors.text))),
-        title: const Text('Publicación', style: TextStyle(fontFamily: null, fontSize: 18, fontWeight: FontWeight.w700, color: LumaColors.text)),
+        leading: IconButton(onPressed: onClose, icon: CustomPaint(size: Size.square(22), painter: BackPainter(LumaColors.text))),
+        title: Text('Publicación', style: TextStyle(fontFamily: null, fontSize: 18, fontWeight: FontWeight.w700, color: LumaColors.text)),
       ),
       body: exists
           ? ListView(children: [
@@ -1742,8 +1742,8 @@ class MessagesScreen extends StatelessWidget {
     final others = state.users.where((u) => u.id != state.me.id).toList();
     return Scaffold(
       appBar: AppBar(
-        leading: onClose == null ? null : IconButton(onPressed: onClose, icon: CustomPaint(size: const Size.square(22), painter: BackPainter(LumaColors.text))),
-        title: Text(state.me.username, style: const TextStyle(fontFamily: null, fontSize: 18, fontWeight: FontWeight.w700, color: LumaColors.text)),
+        leading: onClose == null ? null : IconButton(onPressed: onClose, icon: CustomPaint(size: Size.square(22), painter: BackPainter(LumaColors.text))),
+        title: Text(state.me.username, style: TextStyle(fontFamily: null, fontSize: 18, fontWeight: FontWeight.w700, color: LumaColors.text)),
       ),
       body: ListView(
         children: [
@@ -1855,8 +1855,8 @@ class _ChatScreenState extends State<ChatScreen> {
     final thread = widget.state.threadWith(other.id);
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(onPressed: widget.onClose, icon: CustomPaint(size: const Size.square(22), painter: BackPainter(LumaColors.text))),
-        title: Text(other.username, style: const TextStyle(fontFamily: null, fontSize: 18, fontWeight: FontWeight.w700, color: LumaColors.text)),
+        leading: IconButton(onPressed: widget.onClose, icon: CustomPaint(size: Size.square(22), painter: BackPainter(LumaColors.text))),
+        title: Text(other.username, style: TextStyle(fontFamily: null, fontSize: 18, fontWeight: FontWeight.w700, color: LumaColors.text)),
       ),
       body: Column(children: [
         Expanded(

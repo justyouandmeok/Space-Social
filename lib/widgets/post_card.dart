@@ -79,7 +79,7 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
                     children: [
                       Text(user.username, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5)),
                       if (user.id != widget.state.me.id && !widget.state.isFollowing(user.id))
-                        const Text('Sugerencia para ti', style: TextStyle(fontSize: 11.5, color: LumaColors.textSecondary)),
+                        Text('Sugerencia para ti', style: TextStyle(fontSize: 11.5, color: LumaColors.textSecondary)),
                       if (post.location.isNotEmpty)
                         Text(post.location, style: const TextStyle(fontSize: 11.5)),
                     ],
@@ -101,7 +101,7 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
               IconButton(
                 visualDensity: VisualDensity.compact,
                 onPressed: () => _sheet(context, post, user),
-                icon: CustomPaint(size: const Size.square(20), painter: MorePainter(LumaColors.text)),
+                icon: CustomPaint(size: Size.square(20), painter: MorePainter(LumaColors.text)),
               ),
             ],
           ),

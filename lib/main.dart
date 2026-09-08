@@ -355,7 +355,7 @@ class _LumaShellState extends State<LumaShell> {
           overlayComments = null;
         }),
         child: Center(
-          child: CustomPaint(size: const Size.square(27), painter: painter(LumaColors.text)),
+          child: CustomPaint(size: Size.square(27), painter: painter(LumaColors.text)),
         ),
       ),
     );
