@@ -1,7 +1,7 @@
 name: luma
 description: Space Social — red social de publicaciones.
 publish_to: "none"
-version: 1.9.4+37
+version: 1.9.5+38
 
 environment:
   sdk: ^3.8.0
@@ -21,6 +21,7 @@ dependencies:
   google_sign_in: ^6.3.0
   cached_network_image: ^3.4.1
   video_player: ^2.9.5
+  photo_manager: ^3.6.4
 
 dev_dependencies:
   flutter_test:

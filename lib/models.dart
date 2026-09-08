@@ -226,11 +226,13 @@ class Story {
     required this.userId,
     required this.imagePath,
     required this.createdAt,
+    this.overlayText = '',
   });
   final String id;
   final String userId;
   final String imagePath;
   final DateTime createdAt;
+  final String overlayText;
   bool get isLive => DateTime.now().difference(createdAt) < const Duration(hours: 24);
 
   Map<String, dynamic> toJson() => {
@@ -238,6 +240,7 @@ class Story {
         'userId': userId,
         'imagePath': imagePath,
         'createdAt': createdAt.toIso8601String(),
+        'overlayText': overlayText,
       };
 
   factory Story.fromJson(Map<String, dynamic> j) => Story(
@@ -245,5 +248,6 @@ class Story {
         userId: j['userId'] as String,
         imagePath: j['imagePath'] as String,
         createdAt: DateTime.tryParse(j['createdAt'] as String? ?? '') ?? DateTime.now(),
+        overlayText: j['overlayText'] as String? ?? '',
       );
 }

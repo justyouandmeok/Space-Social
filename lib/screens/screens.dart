@@ -1,7 +1,9 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:photo_manager/photo_manager.dart';
 import '../models.dart';
 import '../state.dart';
 import '../store.dart';
@@ -496,10 +498,55 @@ class _CreateScreenState extends State<CreateScreen> {
   bool busy = false;
   int mode = 0; // 0 post, 1 story, 2 reel
   int step = 0;
+  final overlay = TextEditingController();
+  List<AssetEntity> native = [];
+  bool nativeOk = false;
+  bool nativeLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNative();
+  }
+
+  Future<void> _loadNative() async {
+    final perm = await PhotoManager.requestPermissionExtend();
+    if (!perm.hasAccess) {
+      if (mounted) setState(() => nativeLoading = false);
+      return;
+    }
+    try {
+      final paths = await PhotoManager.getAssetPathList(type: RequestType.common, onlyAll: true);
+      if (paths.isEmpty) {
+        if (mounted) setState(() => nativeLoading = false);
+        return;
+      }
+      final list = await paths.first.getAssetListPaged(page: 0, size: 120);
+      if (!mounted) return;
+      setState(() {
+        native = list;
+        nativeOk = true;
+        nativeLoading = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => nativeLoading = false);
+    }
+  }
+
+  Future<void> _fromAsset(AssetEntity a) async {
+    final f = await a.file;
+    if (f == null) return;
+    setState(() {
+      media = f;
+      draft = f;
+      video = a.type == AssetType.video;
+    });
+  }
 
   @override
   void dispose() {
     caption.dispose();
+    overlay.dispose();
     super.dispose();
   }
 
@@ -573,7 +620,7 @@ class _CreateScreenState extends State<CreateScreen> {
     bool ok = false;
     try {
       ok = mode == 1
-          ? await widget.state.publishStory(media!).timeout(const Duration(seconds: 45), onTimeout: () => false)
+          ? await widget.state.publishStory(media!, overlayText: overlay.text.trim()).timeout(const Duration(seconds: 45), onTimeout: () => false)
           : await widget.state.publishPost(
               image: media!,
               caption: caption.text,
@@ -665,10 +712,33 @@ class _CreateScreenState extends State<CreateScreen> {
                           color: const Color(0xFF111111),
                           alignment: Alignment.center,
                           child: media == null
-                              ? const Text('Elegí de la galería', style: TextStyle(color: Colors.white54))
-                              : (video
-                                  ? const Icon(Icons.play_circle_outline, color: Colors.white, size: 72)
-                                  : Image.file(media!, fit: BoxFit.contain)),
+                              ? Text(nativeOk ? 'Elegí una foto de la galería' : 'Permití el acceso a la galería', style: const TextStyle(color: Colors.white54))
+                              : Stack(alignment: Alignment.center, children: [
+                                  Positioned.fill(child: video
+                                      ? const Center(child: Icon(Icons.play_circle_outline, color: Colors.white, size: 72))
+                                      : Image.file(media!, fit: BoxFit.contain)),
+                                  if (mode == 1)
+                                    Positioned(
+                                      left: 16, right: 16, bottom: 16,
+                                      child: Column(mainAxisSize: MainAxisSize.min, children: [
+                                        Wrap(spacing: 8, children: ['🔥', '❤️', '✨', '😂', '🌙'].map((e) => GestureDetector(
+                                          onTap: () => overlay.text = '${overlay.text}$e',
+                                          child: Text(e, style: const TextStyle(fontSize: 22)),
+                                        )).toList()),
+                                        const SizedBox(height: 6),
+                                        TextField(
+                                          controller: overlay,
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 22),
+                                          decoration: const InputDecoration(
+                                            hintText: 'Escribí en la historia',
+                                            hintStyle: TextStyle(color: Colors.white54, fontSize: 16),
+                                            border: InputBorder.none,
+                                          ),
+                                        ),
+                                      ]),
+                                    ),
+                                ]),
                         ),
                       ),
                       Container(
@@ -689,21 +759,23 @@ class _CreateScreenState extends State<CreateScreen> {
                       ),
                       Expanded(
                         flex: 2,
-                        child: GridView.builder(
+                        child: nativeLoading
+                            ? const Center(child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                            : GridView.builder(
                           padding: const EdgeInsets.all(1),
                           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 4,
                             mainAxisSpacing: 1,
                             crossAxisSpacing: 1,
                           ),
-                          itemCount: gallery.length + 2,
+                          itemCount: nativeOk ? native.length + 2 : gallery.length + 2,
                           itemBuilder: (context, i) {
                             if (i == 0) {
                               return GestureDetector(
-                                onTap: () => _pick(asVideo: false),
+                                onTap: () => _pick(asVideo: false, camera: true),
                                 child: const ColoredBox(
                                   color: Color(0xFF2A2A2A),
-                                  child: Icon(Icons.add, color: Colors.white),
+                                  child: Icon(Icons.photo_camera_outlined, color: Colors.white),
                                 ),
                               );
                             }
@@ -713,6 +785,19 @@ class _CreateScreenState extends State<CreateScreen> {
                                 child: const ColoredBox(
                                   color: Color(0xFF2A2A2A),
                                   child: Icon(Icons.videocam_outlined, color: Colors.white),
+                                ),
+                              );
+                            }
+                            if (nativeOk) {
+                              final a = native[i - 2];
+                              return GestureDetector(
+                                onTap: () => _fromAsset(a),
+                                child: FutureBuilder(
+                                  future: a.thumbnailDataWithSize(const ThumbnailSize.square(200)),
+                                  builder: (_, s) {
+                                    if (s.data == null) return const ColoredBox(color: Color(0xFF2A2A2A));
+                                    return Image.memory(s.data as Uint8List, fit: BoxFit.cover);
+                                  },
                                 ),
                               );
                             }
@@ -1854,6 +1939,14 @@ class _StoryViewerState extends State<StoryViewer> with SingleTickerProviderStat
         },
         child: Stack(fit: StackFit.expand, children: [
           NetworkPhoto(s.imagePath),
+          if (s.overlayText.isNotEmpty)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(s.overlayText, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w800, shadows: [Shadow(blurRadius: 8, color: Colors.black)]),
+                ),
+              ),
+            ),
           const DecoratedBox(decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.center, colors: [Color(0x88000000), Colors.transparent]))),
           SafeArea(
             child: Padding(

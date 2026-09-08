@@ -840,7 +840,7 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  Future<bool> publishStory(File image) async {
+  Future<bool> publishStory(File image, {String overlayText = ''}) async {
     if (!isLoggedIn) return false;
     lastError = null;
     try {
@@ -852,8 +852,9 @@ class AppState extends ChangeNotifier {
         'userId': me.id,
         'imagePath': url,
         'createdAt': created.toIso8601String(),
+        'overlayText': overlayText,
       });
-      stories = [Story(id: id, userId: me.id, imagePath: url, createdAt: created), ...stories];
+      stories = [Story(id: id, userId: me.id, imagePath: url, createdAt: created, overlayText: overlayText), ...stories];
       notifyListeners();
       return true;
     } catch (e) {
