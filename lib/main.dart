@@ -297,17 +297,17 @@ class _LumaShellState extends State<LumaShell> {
                 filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: const Color(0xE6000000),
+                    color: const Color(0xCC000000),
                     border: Border(top: BorderSide(color: LumaColors.hairline.withValues(alpha: 0.65), width: 0.3)),
                   ),
                   child: SafeArea(
                     child: SizedBox(
-                      height: 52,
+                      height: 49,
                       child: Row(
                         children: [
                       _nav(0, (c) => HomeOutlinePainter(c, filled: tab == 0)),
                       _nav(1, (c) => ReelsPainter(c, filled: tab == 1)),
-                      _nav(2, (c) => MessengerPainter(c)),
+                      _nav(2, (c) => SharePainter(c)),
                       _nav(3, (c) => SearchOutlinePainter(c, bold: tab == 3)),
                       Expanded(
                         child: GestureDetector(

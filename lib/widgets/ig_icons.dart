@@ -347,15 +347,27 @@ class ReelsPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final s = size.width;
-    final r = RRect.fromLTRBR(s * 0.14, s * 0.10, s * 0.86, s * 0.90, Radius.circular(s * 0.16));
-    canvas.drawRRect(r, _stroke(color, s * 0.08));
-    canvas.drawLine(Offset(s * 0.14, s * 0.34), Offset(s * 0.86, s * 0.34), _stroke(color, s * 0.07));
-    canvas.drawLine(Offset(s * 0.14, s * 0.66), Offset(s * 0.86, s * 0.66), _stroke(color, s * 0.07));
-    canvas.drawLine(Offset(s * 0.38, s * 0.10), Offset(s * 0.38, s * 0.90), _stroke(color, s * 0.07));
-    canvas.drawLine(Offset(s * 0.62, s * 0.10), Offset(s * 0.62, s * 0.90), _stroke(color, s * 0.07));
+    final r = RRect.fromLTRBR(s * 0.12, s * 0.12, s * 0.88, s * 0.88, Radius.circular(s * 0.22));
+    if (filled) {
+      canvas.drawRRect(r, _fill(color));
+      final tri = Path()
+        ..moveTo(s * 0.40, s * 0.32)
+        ..lineTo(s * 0.72, s * 0.50)
+        ..lineTo(s * 0.40, s * 0.68)
+        ..close();
+      canvas.drawPath(tri, _fill(const Color(0xFF000000)));
+    } else {
+      canvas.drawRRect(r, _stroke(color, s * 0.08));
+      final tri = Path()
+        ..moveTo(s * 0.42, s * 0.34)
+        ..lineTo(s * 0.70, s * 0.50)
+        ..lineTo(s * 0.42, s * 0.66)
+        ..close();
+      canvas.drawPath(tri, _fill(color));
+    }
   }
   @override
-  bool shouldRepaint(covariant ReelsPainter old) => old.color != color;
+  bool shouldRepaint(covariant ReelsPainter old) => old.color != color || old.filled != filled;
 }
 
 Widget igIcon(CustomPainter Function(Color) painter,

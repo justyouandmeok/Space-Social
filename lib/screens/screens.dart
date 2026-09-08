@@ -277,7 +277,7 @@ class FeedScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Padding(
           padding: EdgeInsets.only(left: 8),
-          child: Text('Space', style: TextStyle(fontFamily: 'GrandHotel', fontSize: 34, fontWeight: FontWeight.w400, color: LumaColors.text, height: 1)),
+          child: Text('Space Social', style: TextStyle(fontFamily: 'GrandHotel', fontSize: 30, fontWeight: FontWeight.w400, color: LumaColors.text, height: 1)),
         ),
         actions: [
           IconButton(
@@ -305,16 +305,6 @@ class FeedScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   StoryTray(state: state, onOpenProfile: onOpenProfile, onCreateStory: onCreateStory),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                    child: Row(children: [
-                      _FeedChip(label: 'Para ti', selected: state.feedMode == 0, onTap: () => state.setFeedMode(0)),
-                      const SizedBox(width: 8),
-                      _FeedChip(label: 'Siguiendo', selected: state.feedMode == 1, onTap: () => state.setFeedMode(1)),
-                      const SizedBox(width: 8),
-                      _FeedChip(label: 'Favoritos', selected: state.feedMode == 2, onTap: () => state.setFeedMode(2)),
-                    ]),
-                  ),
                 ],
               );
             }
@@ -1825,7 +1815,7 @@ class StoryTray extends StatelessWidget {
   Widget build(BuildContext context) {
     final authors = state.storyAuthors;
     return SizedBox(
-      height: 108,
+      height: 112,
       child: ListView.separated(
         padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
         scrollDirection: Axis.horizontal,
