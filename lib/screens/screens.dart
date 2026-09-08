@@ -549,12 +549,24 @@ class _CreateScreenState extends State<CreateScreen> {
     final chosen = await showModalBottomSheet<AssetPathEntity>(
       context: context,
       backgroundColor: const Color(0xFF1C1C1C),
-      builder: (ctx) => ListView(
-        children: albums.map((a) => ListTile(
-          title: Text(a.name, style: const TextStyle(color: Colors.white)),
-          onTap: () => Navigator.pop(ctx, a),
-        )).toList(),
-      ),
+      builder: (ctx) => Column(children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
+          child: Row(children: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar', style: TextStyle(color: Colors.white))),
+            const Expanded(child: Text('Seleccionar álbum', textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700))),
+            const SizedBox(width: 72),
+          ]),
+        ),
+        Expanded(
+          child: ListView(
+            children: albums.map((a) => ListTile(
+              title: Text(a.name, style: const TextStyle(color: Colors.white)),
+              onTap: () => Navigator.pop(ctx, a),
+            )).toList(),
+          ),
+        ),
+      ]),
     );
     if (chosen == null) return;
     setState(() { nativeLoading = true; media = null; });
@@ -676,11 +688,10 @@ class _CreateScreenState extends State<CreateScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
               child: Row(children: [
-                IconButton(onPressed: _back, icon: const Icon(Icons.close, color: Colors.white)),
+                IconButton(onPressed: _back, icon: const Icon(Icons.close, color: Colors.white, size: 26)),
                 Expanded(
                   child: Text(
                     mode == 2 ? 'Nuevo reel' : (mode == 1 ? 'Nueva historia' : 'Nueva publicación'),
-                    textAlign: TextAlign.center,
                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16),
                   ),
                 ),
@@ -750,7 +761,27 @@ class _CreateScreenState extends State<CreateScreen> {
                                 Text('Borradores', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
                               ]),
                             ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              decoration: BoxDecoration(color: const Color(0xFF2A2A2A), borderRadius: BorderRadius.circular(20)),
+                              child: const Row(children: [
+                                Icon(Icons.auto_awesome_mosaic_outlined, color: Colors.white, size: 16),
+                                SizedBox(width: 6),
+                                Text('Plantillas', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                              ]),
+                            ),
                           ]),
+                        ),
+                      if (mode == 0 && media != null)
+                        Expanded(
+                          flex: 3,
+                          child: ColoredBox(
+                            color: Colors.black,
+                            child: video
+                                ? const Center(child: Icon(Icons.play_circle_outline, color: Colors.white, size: 72))
+                                : Image.file(media!, fit: BoxFit.contain),
+                          ),
                         ),
                       if (mode == 1 && media != null)
                         Expanded(
@@ -824,7 +855,11 @@ class _CreateScreenState extends State<CreateScreen> {
                                 onTap: () => _pick(asVideo: mode == 2, camera: true),
                                 child: const ColoredBox(
                                   color: Color(0xFF1A1A1A),
-                                  child: Icon(Icons.photo_camera_outlined, color: Colors.white, size: 32),
+                                  child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                                    Icon(Icons.photo_camera_outlined, color: Colors.white, size: 28),
+                                    SizedBox(height: 6),
+                                    Text('Cámara', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                                  ]),
                                 ),
                               );
                             }
@@ -1615,7 +1650,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
             child: Row(children: [
               Avatar(widget.state.me.avatarPath, size: 32),
               const SizedBox(width: 10),
-              Expanded(child: TextField(controller: controller, decoration: InputDecoration(hintText: 'Comentá como ${widget.state.me.username}', border: InputBorder.none))),
+              Expanded(child: TextField(controller: controller, decoration: const InputDecoration(hintText: '¿Qué opinas sobre esto?', border: InputBorder.none))),
               TextButton(
                 onPressed: () async {
                   await widget.state.addComment(post.id, controller.text);
@@ -2255,7 +2290,7 @@ class ReelsScreen extends StatelessWidget {
                 child: Column(children: [
                   const Align(
                     alignment: Alignment.centerLeft,
-                    child: Text('Reels', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 22)),
+                    child: Text('Reels   Amigos', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 20)),
                   ),
                   const Spacer(),
                   Row(crossAxisAlignment: CrossAxisAlignment.end, children: [

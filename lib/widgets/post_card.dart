@@ -141,6 +141,15 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
               _act(HeartPainter(liked ? LumaColors.like : LumaColors.text, filled: liked),
                   () => widget.state.toggleLike(post.id), compact(post.likes.length)),
               _act(CommentPainter(LumaColors.text), () => widget.onOpenComments(post), compact(post.comments.length)),
+              InkWell(
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Republicado en tu perfil')));
+                },
+                child: const Padding(
+                  padding: EdgeInsets.fromLTRB(6, 6, 10, 6),
+                  child: Icon(Icons.repeat, size: 24),
+                ),
+              ),
               _act(SharePainter(LumaColors.text), () => _share(context, post)),
               const Spacer(),
               _act(BookmarkPainter(LumaColors.text, filled: saved),
