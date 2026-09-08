@@ -1061,14 +1061,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(onPressed: widget.onClose, icon: CustomPaint(size: const Size.square(22), painter: BackPainter(LumaColors.text))),
-        title: const Text('Editar perfil', style: TextStyle(fontFamily: null, fontSize: 18, fontWeight: FontWeight.w700, color: LumaColors.text)),
+        leading: TextButton(onPressed: widget.onClose, child: const Text('Cancelar', style: TextStyle(color: LumaColors.text, fontSize: 16))),
+        leadingWidth: 88,
+        title: const Text('Editar perfil', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
         actions: [
           TextButton(
             onPressed: busy ? null : _save,
             child: busy
                 ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Text('Guardar', style: TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w700)),
+                : const Text('Listo', style: TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w700, fontSize: 16)),
           ),
         ],
       ),
