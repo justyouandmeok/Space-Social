@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class LumaColors {
-  static const bg = Color(0xFFFFFFFF);
-  static const bgElevated = Color(0xFFFAFAFA);
-  static const text = Color(0xFF000000);
-  static const textSecondary = Color(0xFF737373);
-  static const textTertiary = Color(0xFF8E8E8E);
-  static const hairline = Color(0xFFDBDBDB);
+  static const bg = Color(0xFF000000);
+  static const bgElevated = Color(0xFF121212);
+  static const text = Color(0xFFF5F5F5);
+  static const textSecondary = Color(0xFFA8A8A8);
+  static const textTertiary = Color(0xFF737373);
+  static const hairline = Color(0xFF262626);
   static const blue = Color(0xFF0095F6);
   static const bluePressed = Color(0xFF1877F2);
-  static const link = Color(0xFF00376B);
+  static const link = Color(0xFF0095F6);
   static const like = Color(0xFFFF3040);
   static const verified = Color(0xFF0095F6);
   static const storyRing = Color(0xFFE1306C);
@@ -35,10 +35,10 @@ ThemeData buildLumaTheme() {
 
   return ThemeData(
     useMaterial3: false,
-    brightness: Brightness.light,
+    brightness: Brightness.dark,
     scaffoldBackgroundColor: LumaColors.bg,
     primaryColor: LumaColors.text,
-    colorScheme: const ColorScheme.light(
+    colorScheme: const ColorScheme.dark(
       primary: LumaColors.text,
       secondary: LumaColors.blue,
       surface: LumaColors.bg,
@@ -56,7 +56,7 @@ ThemeData buildLumaTheme() {
         letterSpacing: -0.4,
         height: 1.1,
       ),
-      systemOverlayStyle: SystemUiOverlayStyle.dark,
+      systemOverlayStyle: SystemUiOverlayStyle.light,
     ),
     dividerColor: LumaColors.hairline,
     textTheme: textTheme,

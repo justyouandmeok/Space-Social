@@ -58,7 +58,7 @@ class _LumaGateState extends State<LumaGate> {
   Widget build(BuildContext context) {
     if (!state.ready) {
       return Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: LumaColors.bg,
         body: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -284,7 +284,7 @@ class _LumaShellState extends State<LumaShell> {
                 filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.78),
+                    color: const Color(0xE6000000),
                     border: Border(top: BorderSide(color: LumaColors.hairline.withValues(alpha: 0.65), width: 0.3)),
                   ),
                   child: SafeArea(

@@ -764,9 +764,9 @@ class _CreateScreenState extends State<CreateScreen> {
                             : GridView.builder(
                           padding: const EdgeInsets.all(1),
                           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 4,
-                            mainAxisSpacing: 1,
-                            crossAxisSpacing: 1,
+                            crossAxisCount: 3,
+                            mainAxisSpacing: 1.2,
+                            crossAxisSpacing: 1.2,
                           ),
                           itemCount: nativeOk ? native.length + 2 : gallery.length + 2,
                           itemBuilder: (context, i) {
@@ -815,29 +815,32 @@ class _CreateScreenState extends State<CreateScreen> {
                       ),
                     ]),
             ),
-            Container(
-              color: const Color(0xFF1A1A1A),
-              padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: List.generate(3, (i) {
-                  final on = mode == i;
-                  return GestureDetector(
-                    onTap: () => setState(() { mode = i; step = 0; }),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                      child: Text(
-                        labels[i].toUpperCase(),
-                        style: TextStyle(
-                          color: on ? Colors.white : Colors.white54,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 13,
-                          letterSpacing: 0.6,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(color: const Color(0xFF1C1C1C), borderRadius: BorderRadius.circular(24)),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ...List.generate(3, (i) {
+                      final on = mode == i;
+                      return GestureDetector(
+                        onTap: () => setState(() { mode = i; step = 0; }),
+                        child: Text(
+                          labels[i].toUpperCase(),
+                          style: TextStyle(
+                            color: on ? Colors.white : Colors.white54,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 12,
+                            letterSpacing: 0.5,
+                          ),
                         ),
-                      ),
-                    ),
-                  );
-                }),
+                      );
+                    }),
+                    const Text('VIVO', style: TextStyle(color: Colors.white38, fontWeight: FontWeight.w800, fontSize: 12, letterSpacing: 0.5)),
+                  ],
+                ),
               ),
             ),
           ]),
@@ -1351,7 +1354,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final me = widget.state.me;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: LumaColors.bg,
       appBar: AppBar(
         leading: IconButton(onPressed: widget.onClose, icon: CustomPaint(size: const Size.square(22), painter: BackPainter(LumaColors.text))),
         title: const Text('Ajustes y actividad', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
