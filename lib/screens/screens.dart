@@ -123,7 +123,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   },
                   child: CircleAvatar(
                     radius: 42,
-                    backgroundColor: const Color(0xFFEFEFEF),
+                    backgroundColor: const Color(0xFF2A2A2A),
                     backgroundImage: avatar == null ? null : FileImage(avatar!),
                     child: avatar == null ? const Icon(Icons.add_a_photo_outlined, color: LumaColors.textSecondary) : null,
                   ),
@@ -215,7 +215,7 @@ class _AuthScreenState extends State<AuthScreen> {
         decoration: InputDecoration(
           hintText: hint,
           filled: true,
-          fillColor: const Color(0xFFFAFAFA),
+          fillColor: const Color(0xFF1C1C1C),
           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: LumaColors.hairline)),
           enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: LumaColors.hairline)),
@@ -272,7 +272,7 @@ class FeedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final items = state.feed;
+    final items = state.feed.where((p) => !p.isReel).toList();
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -1010,7 +1010,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final all = state.postsOf(user.id);
     final list = tab == 1
-        ? all.where((p) => p.isReel || p.isVideo).toList()
+        ? all.where((p) => p.isReel).toList()
         : (tab == 2 ? <Post>[] : all);
     final isMe = state.isLoggedIn && user.id == state.me.id;
     final following = state.isFollowing(user.id);
@@ -1137,7 +1137,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             height: 32,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
-                              color: following ? const Color(0xFFEFEFEF) : LumaColors.blue,
+                              color: following ? const Color(0xFF2A2A2A) : LumaColors.blue,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(following ? 'Siguiendo' : (state.isPendingFollow(user.id) ? 'Solicitado' : 'Seguir'),
@@ -1209,7 +1209,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _outlineBtn(String label) => Container(
         height: 32,
         alignment: Alignment.center,
-        decoration: BoxDecoration(color: const Color(0xFFEFEFEF), borderRadius: BorderRadius.circular(8)),
+        decoration: BoxDecoration(color: const Color(0xFF2A2A2A), borderRadius: BorderRadius.circular(8)),
         child: Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
       );
 }
@@ -1418,7 +1418,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               hintText: 'Buscar ajustes',
               prefixIcon: const Icon(Icons.search),
               filled: true,
-              fillColor: const Color(0xFFF2F2F2),
+              fillColor: const Color(0xFF1C1C1C),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
               contentPadding: const EdgeInsets.symmetric(vertical: 0),
             ),
@@ -1826,7 +1826,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   margin: const EdgeInsets.symmetric(vertical: 4),
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: mine ? const Color(0xFFEFEFEF) : const Color(0xFF3797EF),
+                    color: mine ? const Color(0xFF2A2A2A) : const Color(0xFF3797EF),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Text(m.text, style: TextStyle(color: mine ? LumaColors.text : Colors.white)),

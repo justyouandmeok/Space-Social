@@ -182,9 +182,7 @@ class AppState extends ChangeNotifier {
   }
 
   List<Post> get reels {
-    final only = posts.where((p) => p.isReel).toList();
-    final src = only.isNotEmpty ? only : posts;
-    return List<Post>.from(src)..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return posts.where((p) => p.isReel).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
   }
 
   List<Post> get explorePosts =>

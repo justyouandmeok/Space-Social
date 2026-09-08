@@ -7,7 +7,7 @@ class LumaColors {
   static const text = Color(0xFFF5F5F5);
   static const textSecondary = Color(0xFFA8A8A8);
   static const textTertiary = Color(0xFF737373);
-  static const hairline = Color(0xFF262626);
+  static const hairline = Color(0xFF3A3A3A);
   static const blue = Color(0xFF0095F6);
   static const bluePressed = Color(0xFF1877F2);
   static const link = Color(0xFF0095F6);
