@@ -500,6 +500,7 @@ class _CreateScreenState extends State<CreateScreen> {
   List<AssetEntity> native = [];
   bool nativeOk = false;
   bool nativeLoading = true;
+  String? selectedAssetId;
 
   @override
   void initState() {
@@ -540,6 +541,7 @@ class _CreateScreenState extends State<CreateScreen> {
       media = f;
       draft = f;
       video = a.type == AssetType.video;
+      selectedAssetId = a.id;
     });
   }
 
@@ -715,54 +717,56 @@ class _CreateScreenState extends State<CreateScreen> {
                       ),
                     )
                   : Column(children: [
-                      Expanded(
-                        flex: 3,
-                        child: Container(
-                          color: const Color(0xFF111111),
-                          alignment: Alignment.center,
-                          child: media == null
-                              ? Text(nativeOk ? 'Elegí una foto de la galería' : 'Permití el acceso a la galería', style: const TextStyle(color: Colors.white54))
-                              : Stack(alignment: Alignment.center, children: [
-                                  Positioned.fill(child: video
-                                      ? const Center(child: Icon(Icons.play_circle_outline, color: Colors.white, size: 72))
-                                      : Image.file(media!, fit: BoxFit.contain)),
-                                  if (mode == 1)
-                                    Positioned(
-                                      left: 16, right: 16, bottom: 16,
-                                      child: Column(mainAxisSize: MainAxisSize.min, children: [
-                                        Wrap(spacing: 8, children: ['🔥', '❤️', '✨', '😂', '🌙'].map((e) => GestureDetector(
-                                          onTap: () => overlay.text = '${overlay.text}$e',
-                                          child: Text(e, style: const TextStyle(fontSize: 22)),
-                                        )).toList()),
-                                        const SizedBox(height: 6),
-                                        TextField(
-                                          controller: overlay,
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 22),
-                                          decoration: const InputDecoration(
-                                            hintText: 'Escribí en la historia',
-                                            hintStyle: TextStyle(color: Colors.white54, fontSize: 16),
-                                            border: InputBorder.none,
-                                          ),
-                                        ),
-                                      ]),
-                                    ),
-                                ]),
+                      if (mode == 2)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+                          child: Row(children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              decoration: BoxDecoration(color: const Color(0xFF2A2A2A), borderRadius: BorderRadius.circular(20)),
+                              child: const Row(children: [
+                                Icon(Icons.layers_outlined, color: Colors.white, size: 16),
+                                SizedBox(width: 6),
+                                Text('Borradores', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                              ]),
+                            ),
+                          ]),
                         ),
-                      ),
+                      if (mode == 1 && media != null)
+                        Expanded(
+                          flex: 2,
+                          child: Stack(alignment: Alignment.center, children: [
+                            Positioned.fill(child: video
+                                ? const Center(child: Icon(Icons.play_circle_outline, color: Colors.white, size: 72))
+                                : Image.file(media!, fit: BoxFit.cover)),
+                            Positioned(
+                              left: 16, right: 16, bottom: 16,
+                              child: TextField(
+                                controller: overlay,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 22),
+                                decoration: const InputDecoration(
+                                  hintText: 'Escribí en la historia',
+                                  hintStyle: TextStyle(color: Colors.white54, fontSize: 16),
+                                  border: InputBorder.none,
+                                ),
+                              ),
+                            ),
+                          ]),
+                        ),
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
+                        padding: const EdgeInsets.fromLTRB(14, 6, 14, 8),
                         child: Row(children: [
                           const Text('Recientes', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
-                          const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 20),
+                          const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white, size: 22),
                           const Spacer(),
                           GestureDetector(
                             onTap: () => _pick(asVideo: mode == 2),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(color: const Color(0xFF2A2A2A), borderRadius: BorderRadius.circular(16)),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                              decoration: BoxDecoration(color: const Color(0xFF2C2C2C), borderRadius: BorderRadius.circular(18)),
                               child: const Row(children: [
-                                Icon(Icons.copy_outlined, color: Colors.white, size: 16),
+                                Icon(Icons.filter_none, color: Colors.white, size: 15),
                                 SizedBox(width: 6),
                                 Text('Seleccionar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
                               ]),
@@ -771,7 +775,6 @@ class _CreateScreenState extends State<CreateScreen> {
                         ]),
                       ),
                       Expanded(
-                        flex: 2,
                         child: nativeLoading
                             ? const Center(child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                             : GridView.builder(
@@ -794,6 +797,7 @@ class _CreateScreenState extends State<CreateScreen> {
                             }
                             if (nativeOk) {
                               final a = native[i - 1];
+                              final on = selectedAssetId == a.id;
                               return GestureDetector(
                                 onTap: () => _fromAsset(a),
                                 child: Stack(fit: StackFit.expand, children: [
@@ -804,6 +808,8 @@ class _CreateScreenState extends State<CreateScreen> {
                                       return Image.memory(s.data as Uint8List, fit: BoxFit.cover);
                                     },
                                   ),
+                                  if (on) Container(color: const Color(0x66FFFFFF)),
+                                  if (on) Container(decoration: BoxDecoration(border: Border.all(color: Colors.white, width: 2))),
                                   if (a.type == AssetType.video)
                                     const Positioned(right: 6, bottom: 6, child: Icon(Icons.play_circle_fill, color: Colors.white, size: 18)),
                                 ]),
@@ -823,12 +829,12 @@ class _CreateScreenState extends State<CreateScreen> {
                       ),
                     ]),
             ),
-            if (!widget.lockMode)
+            if (!widget.lockMode && step == 0)
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
+              padding: const EdgeInsets.fromLTRB(28, 10, 28, 16),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                decoration: BoxDecoration(color: const Color(0xFF1C1C1C), borderRadius: BorderRadius.circular(24)),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                decoration: BoxDecoration(color: const Color(0xE61A1A1A), borderRadius: BorderRadius.circular(28)),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
