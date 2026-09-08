@@ -153,6 +153,12 @@ class AppState extends ChangeNotifier {
   List<Post> get explorePosts =>
       List<Post>.from(posts)..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
+  List<Post> get searchPosts {
+    final q = query.trim().toLowerCase();
+    if (q.isEmpty) return [];
+    return posts.where((p) => p.caption.toLowerCase().contains(q) || (tryUser(p.userId)?.username.toLowerCase().contains(q) ?? false)).toList();
+  }
+
   List<String> followingOf(String userId) => List<String>.from(following[userId] ?? const []);
 
   List<String> followersOf(String userId) {

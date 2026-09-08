@@ -415,7 +415,7 @@ class ExploreScreen extends StatelessWidget {
                   ]),
                 ),
               ),
-            if (state.query.isNotEmpty)
+            if (state.query.isNotEmpty) ...[
               SliverList.builder(
                 itemCount: state.searchUsers.length,
                 itemBuilder: (context, i) {
@@ -428,7 +428,19 @@ class ExploreScreen extends StatelessWidget {
                     trailing: _FollowChip(following: state.isFollowing(u.id), onTap: () => state.toggleFollow(u.id)),
                   );
                 },
-              )
+              ),
+              if (state.searchPosts.isNotEmpty)
+                SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, mainAxisSpacing: 1.2, crossAxisSpacing: 1.2, childAspectRatio: 3 / 4),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, i) => GestureDetector(
+                      onTap: () => onOpenPost(state.searchPosts[i]),
+                      child: NetworkPhoto(state.searchPosts[i].imagePath),
+                    ),
+                    childCount: state.searchPosts.length,
+                  ),
+                ),
+            ]
             else if (posts.isEmpty)
               const SliverFillRemaining(child: EmptyHint('Explorar', 'Cuando alguien publique, las fotos aparecen acá.'))
             else
