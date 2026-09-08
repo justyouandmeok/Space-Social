@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config.dart';
 import 'models.dart';
@@ -102,8 +103,23 @@ class _LumaShellState extends State<LumaShell> {
   bool activity = false;
   String? editFrom;
   String? chatUserId;
+  DateTime? _lastBack;
 
   AppState get state => widget.state;
+
+  bool _popLayer() {
+    if (chatUserId != null) { setState(() => chatUserId = null); return true; }
+    if (overlayComments != null) { setState(() => overlayComments = null); return true; }
+    if (overlayPost != null) { setState(() => overlayPost = null); return true; }
+    if (creating) { setState(() => creating = false); return true; }
+    if (editing) { setState(() { editing = false; editFrom = null; }); return true; }
+    if (settings) { setState(() => settings = false); return true; }
+    if (saved) { setState(() => saved = false); return true; }
+    if (activity) { setState(() => activity = false); return true; }
+    if (overlayUser != null) { setState(() => overlayUser = null); return true; }
+    if (tab != 0) { setState(() => tab = 0); return true; }
+    return false;
+  }
 
   void _openUser(String id) {
     setState(() {
@@ -237,7 +253,20 @@ class _LumaShellState extends State<LumaShell> {
     final hideNav = creating || activity || saved || settings || editing || chatUserId != null || overlayComments != null || overlayPost != null ||
         (overlayUser != null && overlayUser!.id != state.me.id);
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        if (_popLayer()) return;
+        final now = DateTime.now();
+        if (_lastBack != null && now.difference(_lastBack!) < const Duration(seconds: 2)) {
+          SystemNavigator.pop();
+          return;
+        }
+        _lastBack = now;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tocá atrás otra vez para salir')));
+      },
+      child: Scaffold(
       body: body,
       bottomNavigationBar: hideNav
           ? null
@@ -284,6 +313,7 @@ class _LumaShellState extends State<LumaShell> {
             ),
           ),
         ),
+    ),
     );
   }
 

@@ -465,6 +465,7 @@ class ExploreScreen extends StatelessWidget {
   }
 }
 
+
 class CreateScreen extends StatefulWidget {
   const CreateScreen({super.key, required this.state, required this.onPublished, this.onClose});
   final AppState state;
@@ -476,185 +477,189 @@ class CreateScreen extends StatefulWidget {
 
 class _CreateScreenState extends State<CreateScreen> {
   File? media;
+  File? draft;
   bool video = false;
   final caption = TextEditingController();
-  final location = TextEditingController();
   bool busy = false;
-  int? mode;
+  int mode = 0; // 0 post, 1 story, 2 reel
+  int step = 0;
 
   @override
   void dispose() {
     caption.dispose();
-    location.dispose();
     super.dispose();
   }
 
-  double get _ratio => (mode == 1 || mode == 2) ? 9 / 16 : 1;
+  Future<void> _pick({required bool asVideo}) async {
+    final f = asVideo ? await pickVideoFile() : await pickImage();
+    if (f == null) return;
+    setState(() {
+      media = f;
+      draft = f;
+      video = asVideo;
+    });
+  }
 
-  Future<void> _pick({required bool fromCamera, required bool asVideo}) async {
-    final f = asVideo ? await pickVideoFile(camera: fromCamera) : await pickImage(camera: fromCamera);
-    if (f != null) setState(() { media = f; video = asVideo; });
+  void _back() {
+    if (busy) {
+      widget.onClose?.call();
+      return;
+    }
+    if (step == 1) {
+      setState(() => step = 0);
+      return;
+    }
+    if (media != null) {
+      setState(() { media = null; video = false; });
+      return;
+    }
+    widget.onClose?.call();
   }
 
   Future<void> _publish() async {
-    if (media == null || mode == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Elegí el tipo y el archivo')));
+    if (media == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Elegí una foto o un video')));
       return;
     }
     setState(() => busy = true);
-    final bool ok = mode == 1
-        ? await widget.state.publishStory(media!).timeout(const Duration(seconds: 40), onTimeout: () => false)
-        : await widget.state.publishPost(
-            image: media!,
-            caption: caption.text,
-            location: location.text,
-            isReel: mode == 2,
-            isVideo: video,
-          ).timeout(const Duration(seconds: 40), onTimeout: () => false);
+    bool ok = false;
+    try {
+      ok = mode == 1
+          ? await widget.state.publishStory(media!).timeout(const Duration(seconds: 45), onTimeout: () => false)
+          : await widget.state.publishPost(
+              image: media!,
+              caption: caption.text,
+              isReel: mode == 2,
+              isVideo: video,
+            ).timeout(const Duration(seconds: 45), onTimeout: () => false);
+    } catch (_) {
+      ok = false;
+    }
     if (!mounted) return;
-    setState(() => busy = false);
     if (!ok) {
+      setState(() => busy = false);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(widget.state.lastError ?? 'No se pudo publicar')));
       return;
     }
-    setState(() { media = null; video = false; caption.clear(); location.clear(); mode = null; });
     widget.onPublished();
-  }
-
-  Widget _typeCard(int i, String title, String sub, IconData icon) {
-    return GestureDetector(
-      onTap: () => setState(() => mode = i),
-      child: Container(
-        width: double.infinity,
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFAFAFA),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: LumaColors.hairline),
-        ),
-        child: Row(children: [
-          Icon(icon, size: 28),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-              const SizedBox(height: 2),
-              Text(sub, style: const TextStyle(color: LumaColors.textSecondary, fontSize: 13)),
-            ]),
-          ),
-          const Icon(Icons.chevron_right),
-        ]),
-      ),
-    );
-  }
-
-  Widget _srcBtn(String label, VoidCallback onTap) {
-    return TextButton(
-      style: TextButton.styleFrom(
-        backgroundColor: Colors.white,
-        foregroundColor: LumaColors.text,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      ),
-      onPressed: busy ? null : onTap,
-      child: Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    const titles = ['Nueva publicación', 'Nueva historia', 'Nuevo reel'];
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-                onPressed: busy
-                    ? null
-                    : () {
-                          if (media != null) {
-                            setState(() { media = null; video = false; });
-                          } else if (mode != null) {
-                            setState(() => mode = null);
-                          } else {
-                            widget.onClose?.call();
-                          }
-                        },
-                icon: const Icon(Icons.close),
-              ),
-        title: Text(mode == null ? 'Crear' : titles[mode!], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-        actions: [
-          if (mode != null)
-            TextButton(
-              onPressed: busy ? null : _publish,
-              child: busy
-                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Compartir', style: TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w700)),
-            ),
-        ],
-      ),
-      body: mode == null
-          ? ListView(
-              padding: const EdgeInsets.fromLTRB(16, 18, 16, 24),
-              children: [
-                const Text('¿Qué vas a crear?', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
-                const SizedBox(height: 6),
-                const Text('Elegí el formato. Después la foto o el video.', style: TextStyle(color: LumaColors.textSecondary)),
-                const SizedBox(height: 18),
-                _typeCard(0, 'Publicación', 'Foto o video en cuadrado 1:1', Icons.crop_square),
-                _typeCard(1, 'Historia', 'Vertical 9:16, dura 24 horas', Icons.circle_outlined),
-                _typeCard(2, 'Reel', 'Vertical para el tab de Reels', Icons.movie_outlined),
-              ],
-            )
-          : ListView(
-              children: [
-                AspectRatio(
-                  aspectRatio: _ratio,
-                  child: media == null
-                      ? Container(
-                          color: Colors.black,
-                          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                            const Icon(Icons.photo_library_outlined, color: Colors.white, size: 42),
-                            const SizedBox(height: 14),
-                            Wrap(spacing: 8, runSpacing: 8, alignment: WrapAlignment.center, children: [
-                              _srcBtn('Galería foto', () => _pick(fromCamera: false, asVideo: false)),
-                              _srcBtn('Cámara foto', () => _pick(fromCamera: true, asVideo: false)),
-                              _srcBtn('Galería video', () => _pick(fromCamera: false, asVideo: true)),
-                              _srcBtn('Cámara video', () => _pick(fromCamera: true, asVideo: true)),
-                            ]),
-                          ]),
-                        )
-                      : Stack(fit: StackFit.expand, children: [
-                          if (video)
-                            const ColoredBox(
-                              color: Colors.black,
-                              child: Center(child: Icon(Icons.play_circle_outline, color: Colors.white, size: 64)),
-                            )
-                          else
-                            Image.file(media!, fit: BoxFit.cover),
-                          Positioned(
-                            right: 10,
-                            bottom: 10,
-                            child: TextButton(
-                              onPressed: busy ? null : () => setState(() { media = null; video = false; }),
-                              child: const Text('Cambiar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-                            ),
-                          ),
-                        ]),
+    final labels = ['Publicación', 'Historia', 'Reel'];
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (did, _) {
+        if (!did) _back();
+      },
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: SafeArea(
+          child: Column(children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+              child: Row(children: [
+                IconButton(onPressed: _back, icon: const Icon(Icons.close, color: Colors.white)),
+                Expanded(
+                  child: Text(
+                    step == 1 ? 'Nueva ${labels[mode].toLowerCase()}' : 'Borradores',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16),
+                  ),
                 ),
-                if (mode != 1)
-                  Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(children: [
-                      TextField(controller: caption, maxLines: 3, decoration: const InputDecoration(hintText: 'Escribí un pie...', border: InputBorder.none)),
-                      TextField(controller: location, decoration: const InputDecoration(hintText: 'Ubicación (opcional)', prefixIcon: Icon(Icons.place_outlined), border: InputBorder.none)),
-                    ]),
+                if (draft != null && media == null)
+                  TextButton(
+                    onPressed: () => setState(() { media = draft; }),
+                    child: const Text('Usar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                  )
+                else if (media != null && step == 0 && mode != 1)
+                  TextButton(
+                    onPressed: () => setState(() => step = 1),
+                    child: const Text('Siguiente', style: TextStyle(color: Color(0xFF0095F6), fontWeight: FontWeight.w700)),
+                  )
+                else if (media != null)
+                  TextButton(
+                    onPressed: busy ? null : _publish,
+                    child: busy
+                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : const Text('Compartir', style: TextStyle(color: Color(0xFF0095F6), fontWeight: FontWeight.w700)),
                   )
                 else
-                  const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text('La historia se ve 24 horas en la bandeja del inicio.', style: TextStyle(color: LumaColors.textSecondary)),
-                  ),
-              ],
+                  const SizedBox(width: 64),
+              ]),
             ),
+            Expanded(
+              child: step == 1
+                  ? Container(
+                      color: Colors.white,
+                      child: ListView(
+                        padding: const EdgeInsets.all(16),
+                        children: [
+                          if (media != null)
+                            AspectRatio(
+                              aspectRatio: mode == 0 ? 1 : 9 / 16,
+                              child: video
+                                  ? const ColoredBox(color: Colors.black, child: Center(child: Icon(Icons.play_circle, color: Colors.white, size: 48)))
+                                  : Image.file(media!, fit: BoxFit.cover),
+                            ),
+                          TextField(
+                            controller: caption,
+                            maxLines: 4,
+                            decoration: const InputDecoration(hintText: 'Escribí un pie de foto...', border: InputBorder.none),
+                          ),
+                        ],
+                      ),
+                    )
+                  : GestureDetector(
+                      onTap: () => _pick(asVideo: mode == 2 || video),
+                      child: Container(
+                        color: const Color(0xFF111111),
+                        alignment: Alignment.center,
+                        child: media == null
+                            ? Column(mainAxisSize: MainAxisSize.min, children: [
+                                const Icon(Icons.photo_library_outlined, color: Colors.white70, size: 52),
+                                const SizedBox(height: 12),
+                                const Text('Tocá para abrir la galería', style: TextStyle(color: Colors.white70)),
+                                const SizedBox(height: 16),
+                                Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                                  TextButton(onPressed: () => _pick(asVideo: false), child: const Text('Foto', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700))),
+                                  TextButton(onPressed: () => _pick(asVideo: true), child: const Text('Video', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700))),
+                                ]),
+                              ])
+                            : (video
+                                ? const Icon(Icons.play_circle_outline, color: Colors.white, size: 72)
+                                : Image.file(media!, fit: BoxFit.contain)),
+                      ),
+                    ),
+            ),
+            Container(
+              color: const Color(0xFF1A1A1A),
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: List.generate(3, (i) {
+                  final on = mode == i;
+                  return GestureDetector(
+                    onTap: () => setState(() { mode = i; step = 0; }),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                      child: Text(
+                        labels[i].toUpperCase(),
+                        style: TextStyle(
+                          color: on ? Colors.white : Colors.white54,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 13,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+          ]),
+        ),
+      ),
     );
   }
 }
@@ -1647,6 +1652,7 @@ class _StoryViewerState extends State<StoryViewer> with SingleTickerProviderStat
   late AnimationController bar;
   final reply = TextEditingController();
   bool held = false;
+  DateTime? _down;
 
   List<Story> get currentStories => widget.state.storiesOf(authors[userIndex].id);
 
@@ -1660,9 +1666,9 @@ class _StoryViewerState extends State<StoryViewer> with SingleTickerProviderStat
     userIndex = authors.indexWhere((u) => u.id == widget.startUserId);
     if (userIndex < 0) userIndex = 0;
     widget.state.markStoriesSeen(authors[userIndex].id);
-    bar = AnimationController(vsync: this, duration: const Duration(seconds: 5))
+    bar = AnimationController(vsync: this, duration: const Duration(seconds: 15))
       ..addStatusListener((s) {
-        if (s == AnimationStatus.completed) _next();
+        if (s == AnimationStatus.completed && !held) _next();
       })
       ..forward();
   }
@@ -1676,7 +1682,7 @@ class _StoryViewerState extends State<StoryViewer> with SingleTickerProviderStat
 
   void _restartBar() {
     bar
-      ..duration = const Duration(seconds: 5)
+      ..duration = const Duration(seconds: 15)
       ..forward(from: 0);
   }
 
@@ -1727,22 +1733,29 @@ class _StoryViewerState extends State<StoryViewer> with SingleTickerProviderStat
     final s = stories[storyIndex];
     return Scaffold(
       backgroundColor: Colors.black,
-      body: GestureDetector(
-        onLongPressStart: (_) {
+      body: Listener(
+        behavior: HitTestBehavior.translucent,
+        onPointerDown: (_) {
+          _down = DateTime.now();
           held = true;
           bar.stop();
         },
-        onLongPressEnd: (_) {
+        onPointerUp: (e) {
+          final d = DateTime.now().difference(_down ?? DateTime.now());
           held = false;
-          bar.forward();
+          if (d.inMilliseconds < 280) {
+            if (e.position.dx < MediaQuery.sizeOf(context).width * 0.35) {
+              _prev();
+            } else {
+              _next();
+            }
+          } else {
+            bar.forward();
+          }
         },
         child: Stack(fit: StackFit.expand, children: [
           NetworkPhoto(s.imagePath),
           const DecoratedBox(decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.center, colors: [Color(0x88000000), Colors.transparent]))),
-          Row(children: [
-            Expanded(child: GestureDetector(behavior: HitTestBehavior.translucent, onTap: _prev)),
-            Expanded(child: GestureDetector(behavior: HitTestBehavior.translucent, onTap: _next)),
-          ]),
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
