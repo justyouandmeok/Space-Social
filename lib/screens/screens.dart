@@ -257,6 +257,7 @@ class FeedScreen extends StatelessWidget {
     required this.onOpenMessages,
     this.onOpenActivity,
     this.onOpenCreate,
+    this.onCreateStory,
     this.active = true,
   });
   final AppState state;
@@ -266,6 +267,7 @@ class FeedScreen extends StatelessWidget {
   final VoidCallback onOpenMessages;
   final VoidCallback? onOpenActivity;
   final VoidCallback? onOpenCreate;
+  final VoidCallback? onCreateStory;
   final bool active;
 
   @override
@@ -275,7 +277,7 @@ class FeedScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Padding(
           padding: EdgeInsets.only(left: 8),
-          child: Text('Space', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, letterSpacing: -1.2, color: LumaColors.text, height: 1)),
+          child: Text('Space', style: TextStyle(fontFamily: 'GrandHotel', fontSize: 34, fontWeight: FontWeight.w400, color: LumaColors.text, height: 1)),
         ),
         actions: [
           IconButton(
@@ -302,7 +304,7 @@ class FeedScreen extends StatelessWidget {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  StoryTray(state: state, onOpenProfile: onOpenProfile),
+                  StoryTray(state: state, onOpenProfile: onOpenProfile, onCreateStory: onCreateStory),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
                     child: Row(children: [
@@ -483,10 +485,12 @@ class ExploreScreen extends StatelessWidget {
 
 
 class CreateScreen extends StatefulWidget {
-  const CreateScreen({super.key, required this.state, required this.onPublished, this.onClose});
+  const CreateScreen({super.key, required this.state, required this.onPublished, this.onClose, this.initialMode, this.lockMode = false});
   final AppState state;
   final VoidCallback onPublished;
   final VoidCallback? onClose;
+  final int? initialMode;
+  final bool lockMode;
   @override
   State<CreateScreen> createState() => _CreateScreenState();
 }
@@ -498,7 +502,7 @@ class _CreateScreenState extends State<CreateScreen> {
   bool video = false;
   final caption = TextEditingController();
   bool busy = false;
-  int mode = 0; // 0 post, 1 story, 2 reel
+  late int mode; // 0 post, 1 story, 2 reel
   int step = 0;
   final overlay = TextEditingController();
   List<AssetEntity> native = [];
@@ -508,6 +512,7 @@ class _CreateScreenState extends State<CreateScreen> {
   @override
   void initState() {
     super.initState();
+    mode = widget.initialMode ?? 0;
     _loadNative();
   }
 
@@ -817,6 +822,7 @@ class _CreateScreenState extends State<CreateScreen> {
                       ),
                     ]),
             ),
+            if (!widget.lockMode)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
               child: Container(
@@ -1810,9 +1816,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
 
 class StoryTray extends StatelessWidget {
-  const StoryTray({super.key, required this.state, required this.onOpenProfile});
+  const StoryTray({super.key, required this.state, required this.onOpenProfile, this.onCreateStory});
   final AppState state;
   final void Function(String userId) onOpenProfile;
+  final VoidCallback? onCreateStory;
 
   @override
   Widget build(BuildContext context) {
@@ -1832,8 +1839,12 @@ class StoryTray extends StatelessWidget {
           return GestureDetector(
             onTap: () async {
               if (mine && !has) {
-                final f = await pickImage();
-                if (f != null) await state.publishStory(f);
+                if (onCreateStory != null) {
+                  onCreateStory!();
+                } else {
+                  final f = await pickImage();
+                  if (f != null) await state.publishStory(f);
+                }
                 return;
               }
               if (has) {
@@ -1859,8 +1870,28 @@ class StoryTray extends StatelessWidget {
                     ),
                     child: Container(
                       padding: const EdgeInsets.all(2),
-                      decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                      child: Avatar(u.avatarPath, size: 56),
+                      decoration: const BoxDecoration(color: Color(0xFF000000), shape: BoxShape.circle),
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Avatar(u.avatarPath, size: 56),
+                          if (mine && !has)
+                            Positioned(
+                              right: -2,
+                              bottom: -2,
+                              child: Container(
+                                width: 18,
+                                height: 18,
+                                decoration: BoxDecoration(
+                                  color: LumaColors.blue,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: LumaColors.bg, width: 2),
+                                ),
+                                child: const Icon(Icons.add, size: 12, color: Colors.white),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 4),

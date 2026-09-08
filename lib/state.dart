@@ -171,6 +171,8 @@ class AppState extends ChangeNotifier {
       seen.add(me.id);
     }
     for (final s in liveStories) {
+      if (s.userId == me.id) continue;
+      if (!isFollowing(s.userId)) continue;
       if (seen.add(s.userId)) {
         final u = tryUser(s.userId);
         if (u != null) out.add(u);

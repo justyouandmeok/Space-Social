@@ -96,6 +96,8 @@ class _LumaShellState extends State<LumaShell> {
   Post? overlayPost;
   Post? overlayComments;
   bool creating = false;
+  int? createMode;
+  bool createLocked = false;
   bool messages = false;
   bool editing = false;
   bool settings = false;
@@ -174,7 +176,11 @@ class _LumaShellState extends State<LumaShell> {
     chatUserId = null;
   }
 
-  void _openCreate() => setState(() => creating = true);
+  void _openCreate({int? mode, bool lock = false}) => setState(() {
+        creating = true;
+        createMode = mode;
+        createLocked = lock;
+      });
 
   @override
   Widget build(BuildContext context) {
@@ -223,7 +229,13 @@ class _LumaShellState extends State<LumaShell> {
         onOpenProfile: _openUser,
       );
     } else if (creating) {
-      body = CreateScreen(state: state, onPublished: () => setState(() => creating = false), onClose: () => setState(() => creating = false));
+      body = CreateScreen(
+        state: state,
+        initialMode: createMode,
+        lockMode: createLocked,
+        onPublished: () => setState(() { creating = false; createMode = null; createLocked = false; }),
+        onClose: () => setState(() { creating = false; createMode = null; createLocked = false; }),
+      );
     } else {
       body = IndexedStack(
         index: tab,
@@ -235,7 +247,8 @@ class _LumaShellState extends State<LumaShell> {
             onOpenPost: _openPost,
             onOpenMessages: () => setState(() => tab = 2),
             onOpenActivity: () => setState(() => activity = true),
-            onOpenCreate: _openCreate,
+            onOpenCreate: () => _openCreate(),
+            onCreateStory: () => _openCreate(mode: 1, lock: true),
             active: tab == 0,
           ),
           ReelsScreen(state: state, onOpenProfile: _openUser, onOpenComments: _openComments, playing: tab == 1),
