@@ -167,7 +167,7 @@ class _LumaShellState extends State<LumaShell> {
     } else if (saved) {
       body = SavedScreen(state: state, onClose: () => setState(() => saved = false), onOpenPost: (p) => setState(() { saved = false; overlayPost = p; }));
     } else if (settings) {
-      body = SettingsScreen(state: state, onClose: () => setState(() => settings = false), onEdit: () => setState(() { settings = false; editing = true; editFrom = 'settings'; }), onSaved: () => setState(() { settings = false; saved = true; }), onLogout: () { setState(() => settings = false); state.logout(); });
+      body = SettingsScreen(state: state, onClose: () => setState(() => settings = false), onEdit: () => setState(() { settings = false; editing = true; editFrom = 'settings'; }), onSaved: () => setState(() { settings = false; saved = true; }), onActivity: () => setState(() { settings = false; activity = true; }), onLogout: () { setState(() => settings = false); state.logout(); });
     } else if (editing) {
       body = EditProfileScreen(state: state, onClose: () => setState(() {
         editing = false;

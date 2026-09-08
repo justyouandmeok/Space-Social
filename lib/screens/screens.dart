@@ -939,8 +939,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            ListTile(leading: const Icon(Icons.settings_outlined), title: const Text('Ajustes y actividad'), onTap: () { Navigator.pop(context); widget.onSettings?.call(); }),
             ListTile(leading: const Icon(Icons.edit_outlined), title: const Text('Editar perfil'), onTap: () { Navigator.pop(context); widget.onEdit?.call(); }),
-            ListTile(leading: const Icon(Icons.settings_outlined), title: const Text('Ajustes'), onTap: () { Navigator.pop(context); widget.onSettings?.call(); }),
             ListTile(leading: const Icon(Icons.logout), title: const Text('Cerrar sesión'), onTap: () { Navigator.pop(context); widget.onLogout?.call(); }),
           ],
         ),
@@ -1104,12 +1104,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 }
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key, required this.state, required this.onClose, required this.onLogout, this.onEdit, this.onSaved});
+  const SettingsScreen({super.key, required this.state, required this.onClose, required this.onLogout, this.onEdit, this.onSaved, this.onActivity});
   final AppState state;
   final VoidCallback onClose;
   final VoidCallback onLogout;
   final VoidCallback? onEdit;
   final VoidCallback? onSaved;
+  final VoidCallback? onActivity;
   @override
   Widget build(BuildContext context) {
     final me = state.me;
@@ -1146,42 +1147,62 @@ class SettingsScreen extends StatelessWidget {
         ListTile(
           leading: const Icon(Icons.bookmark_border),
           title: const Text('Guardados'),
-          subtitle: const Text('Publicaciones que marcaste'),
           trailing: const Icon(Icons.chevron_right),
           onTap: onSaved,
         ),
         ListTile(
+          leading: const Icon(Icons.history),
+          title: const Text('Tu actividad'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: onActivity,
+        ),
+        ListTile(
           leading: const Icon(Icons.notifications_none),
           title: const Text('Notificaciones'),
-          subtitle: const Text('Likes, comentarios y seguidores en tiempo real'),
-          onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Las notificaciones ya están activas en la app'))),
+          subtitle: const Text('Likes, comentarios y seguidores'),
+          onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Las notificaciones están en la campana del inicio'))),
+        ),
+        const Divider(height: 24),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: Text('Quién puede verte', style: TextStyle(color: LumaColors.textSecondary, fontWeight: FontWeight.w600, fontSize: 13)),
         ),
         ListTile(
           leading: const Icon(Icons.lock_outline),
           title: const Text('Privacidad de la cuenta'),
-          subtitle: const Text('Tu perfil es público en toda la plataforma'),
-          onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Por ahora todas las cuentas son públicas'))),
+          subtitle: const Text('Pública: cualquiera puede ver tus posts y seguirte'),
+          onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Las cuentas privadas llegan en otra versión'))),
         ),
         ListTile(
-          leading: const Icon(Icons.sd_storage_outlined),
-          title: const Text('Almacenamiento'),
-          subtitle: const Text('Las fotos quedan en caché para abrir más rápido'),
+          leading: const Icon(Icons.alternate_email),
+          title: const Text('Usuario'),
+          subtitle: Text('@${me.username} · único, reservado 3 meses si lo cambiás'),
         ),
         ListTile(
           leading: const Icon(Icons.lock_reset_outlined),
           title: const Text('Contraseña'),
-          subtitle: const Text('Si tu cuenta es de email, podés resetearla'),
-          onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Usá “olvidé contraseña” en el login o el mail de Firebase'))),
+          subtitle: const Text('Te mandamos un mail para cambiarla'),
+          onTap: () async {
+            final ok = await state.sendReset(me.email);
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(ok ? 'Revisá ${me.email}' : (state.lastError ?? 'No se pudo'))));
+            }
+          },
+        ),
+        const Divider(height: 24),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: Text('App', style: TextStyle(color: LumaColors.textSecondary, fontWeight: FontWeight.w600, fontSize: 13)),
         ),
         const ListTile(
-          leading: Icon(Icons.badge_outlined),
-          title: Text('Usuario único'),
-          subtitle: Text('Nadie puede repetir tu @. Si lo cambiás, queda reservado 3 meses'),
+          leading: Icon(Icons.sd_storage_outlined),
+          title: Text('Almacenamiento'),
+          subtitle: Text('Las fotos quedan en caché para abrir más rápido'),
         ),
         const ListTile(
           leading: Icon(Icons.info_outline),
           title: Text('Space Social'),
-          subtitle: Text('Versión 1.6.3'),
+          subtitle: Text('Versión 1.8.6'),
         ),
         const Divider(height: 24),
         ListTile(
