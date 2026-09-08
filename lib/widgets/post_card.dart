@@ -77,22 +77,27 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(children: [
-                        Text(user.username, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5)),
-                        if (user.id != widget.state.me.id && !widget.state.isFollowing(user.id)) ...[
-                          const Text('  ·  ', style: TextStyle(fontWeight: FontWeight.w700)),
-                          GestureDetector(
-                            onTap: () => widget.state.toggleFollow(user.id),
-                            child: const Text('Seguir', style: TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w700, fontSize: 13.5)),
-                          ),
-                        ],
-                      ]),
+                      Text(user.username, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5)),
+                      if (user.id != widget.state.me.id && !widget.state.isFollowing(user.id))
+                        const Text('Sugerencia para ti', style: TextStyle(fontSize: 11.5, color: LumaColors.textSecondary)),
                       if (post.location.isNotEmpty)
                         Text(post.location, style: const TextStyle(fontSize: 11.5)),
                     ],
                   ),
                 ),
               ),
+              if (user.id != widget.state.me.id && !widget.state.isFollowing(user.id))
+                Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: GestureDetector(
+                    onTap: () => widget.state.toggleFollow(user.id),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(color: const Color(0xFF2A2A2A), borderRadius: BorderRadius.circular(8)),
+                      child: const Text('Seguir', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                    ),
+                  ),
+                ),
               IconButton(
                 visualDensity: VisualDensity.compact,
                 onPressed: () => _sheet(context, post, user),
@@ -134,8 +139,8 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
           child: Row(
             children: [
               _act(HeartPainter(liked ? LumaColors.like : LumaColors.text, filled: liked),
-                  () => widget.state.toggleLike(post.id)),
-              _act(CommentPainter(LumaColors.text), () => widget.onOpenComments(post)),
+                  () => widget.state.toggleLike(post.id), compact(post.likes.length)),
+              _act(CommentPainter(LumaColors.text), () => widget.onOpenComments(post), compact(post.comments.length)),
               _act(SharePainter(LumaColors.text), () => _share(context, post)),
               const Spacer(),
               _act(BookmarkPainter(LumaColors.text, filled: saved),
@@ -146,7 +151,10 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
         if (!widget.state.hideLikes)
           Padding(
             padding: const EdgeInsets.fromLTRB(14, 2, 14, 0),
-            child: Text('${compact(post.likes.length)} Me gusta',
+            child: Text(
+                post.likes.isEmpty
+                    ? 'Sé el primero en dar Me gusta'
+                    : 'Les gusta a ${post.likes.length == 1 ? '1 persona' : '${compact(post.likes.length)} personas'}',
                 style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
           ),
         if (post.caption.isNotEmpty)
@@ -185,13 +193,19 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _act(CustomPainter painter, VoidCallback onTap) {
+  Widget _act(CustomPainter painter, VoidCallback onTap, [String? count]) {
     return InkWell(
       customBorder: const CircleBorder(),
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.all(6),
-        child: CustomPaint(size: const Size.square(24), painter: painter),
+        padding: const EdgeInsets.fromLTRB(6, 6, 10, 6),
+        child: Row(children: [
+          CustomPaint(size: const Size.square(26), painter: painter),
+          if (count != null && count != '0') ...[
+            const SizedBox(width: 4),
+            Text(count, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+          ],
+        ]),
       ),
     );
   }
@@ -200,7 +214,7 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
     final people = widget.state.users.where((u) => u.id != widget.state.me.id).toList();
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF1C1C1C),
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (_) => SafeArea(
         child: ListView(
@@ -228,7 +242,7 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
   void _share(BuildContext context, Post post) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF1C1C1C),
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (_) => Padding(
         padding: const EdgeInsets.fromLTRB(16, 10, 16, 28),
@@ -274,7 +288,7 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
     final mine = user.id == widget.state.me.id;
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF1C1C1C),
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (_) => Padding(
         padding: const EdgeInsets.fromLTRB(8, 10, 8, 24),
