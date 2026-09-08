@@ -16,6 +16,7 @@ class PostCard extends StatefulWidget {
     required this.onOpenProfile,
     required this.onOpenComments,
     required this.onOpenPost,
+    this.active = true,
   });
 
   final Post post;
@@ -23,6 +24,7 @@ class PostCard extends StatefulWidget {
   final void Function(String userId) onOpenProfile;
   final void Function(Post post) onOpenComments;
   final void Function(Post post) onOpenPost;
+  final bool active;
 
   @override
   State<PostCard> createState() => _PostCardState();
@@ -107,7 +109,7 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
             child: Stack(
               alignment: Alignment.center,
               children: [
-                Positioned.fill(child: MediaView(post.imagePath, video: post.isVideo)),
+                Positioned.fill(child: MediaView(post.imagePath, video: post.isVideo, active: widget.active)),
                 if (_burst)
                   FadeTransition(
                     opacity: Tween(begin: 1.0, end: 0.0).animate(
@@ -304,6 +306,26 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
                   widget.state.toggleFollow(user.id);
                 },
               ),
+            ListTile(
+              leading: const Icon(Icons.info_outline),
+              title: const Text('Ver información'),
+              onTap: () {
+                Navigator.pop(context);
+                final d = post.createdAt.toLocal();
+                showDialog(
+                  context: this.context,
+                  builder: (_) => AlertDialog(
+                    title: const Text('Información'),
+                    content: Text(
+                      'Subida el ${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year} a las ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}.\n'
+                      '${post.likes.length} Me gusta · ${post.comments.length} comentarios'
+                      '${post.isReel ? '\nTipo: Reel' : ''}${post.isVideo ? '\nVideo' : ''}',
+                    ),
+                    actions: [TextButton(onPressed: () => Navigator.pop(this.context), child: const Text('Listo'))],
+                  ),
+                );
+              },
+            ),
             ListTile(
               title: const Text('Ir a la publicación'),
               onTap: () {

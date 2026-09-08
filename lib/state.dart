@@ -143,7 +143,7 @@ class AppState extends ChangeNotifier {
   }
 
   List<Story> get liveStories =>
-      stories.where((s) => s.isLive).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      stories.where((s) => s.isLive && !archived.contains(s.id)).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
   List<Story> storiesOf(String userId) =>
       liveStories.where((s) => s.userId == userId).toList();
@@ -861,6 +861,15 @@ class AppState extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+  }
+
+  Future<void> deleteStory(String storyId) async {
+    if (!isLoggedIn) return;
+    final found = stories.where((s) => s.id == storyId);
+    if (found.isEmpty || found.first.userId != me.id) return;
+    await _db.collection('stories').doc(storyId).delete();
+    stories.removeWhere((s) => s.id == storyId);
+    notifyListeners();
   }
 
   Future<void> deletePost(String postId) async {

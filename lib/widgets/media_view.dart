@@ -3,10 +3,11 @@ import 'package:video_player/video_player.dart';
 import 'network_photo.dart';
 
 class MediaView extends StatefulWidget {
-  const MediaView(this.url, {super.key, this.video = false, this.autoplay = false});
+  const MediaView(this.url, {super.key, this.video = false, this.autoplay = false, this.active = true});
   final String url;
   final bool video;
   final bool autoplay;
+  final bool active;
 
   @override
   State<MediaView> createState() => _MediaViewState();
@@ -34,7 +35,7 @@ class _MediaViewState extends State<MediaView> {
       final c = VideoPlayerController.networkUrl(Uri.parse(widget.url.split('?').first));
       await c.initialize();
       c.setLooping(true);
-      if (widget.autoplay) await c.play();
+      if (widget.autoplay && widget.active) await c.play();
       if (!mounted) {
         await c.dispose();
         return;
@@ -47,7 +48,19 @@ class _MediaViewState extends State<MediaView> {
   }
 
   @override
+  void didUpdateWidget(covariant MediaView old) {
+    super.didUpdateWidget(old);
+    if (_c == null) return;
+    if (!widget.active) {
+      _c!.pause();
+    } else if (widget.autoplay && !_c!.value.isPlaying) {
+      _c!.play();
+    }
+  }
+
+  @override
   void dispose() {
+    _c?.pause();
     _c?.dispose();
     super.dispose();
   }

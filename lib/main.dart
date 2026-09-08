@@ -232,8 +232,9 @@ class _LumaShellState extends State<LumaShell> {
             onOpenMessages: () => setState(() => tab = 2),
             onOpenActivity: () => setState(() => activity = true),
             onOpenCreate: _openCreate,
+            active: tab == 0,
           ),
-          ReelsScreen(state: state, onOpenProfile: _openUser, onOpenComments: _openComments),
+          ReelsScreen(state: state, onOpenProfile: _openUser, onOpenComments: _openComments, playing: tab == 1),
           MessagesScreen(state: state, onOpenChat: (id) => setState(() => chatUserId = id)),
           ExploreScreen(state: state, onOpenPost: _openPost, onOpenProfile: _openUser),
           ProfileScreen(
@@ -257,6 +258,10 @@ class _LumaShellState extends State<LumaShell> {
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+          return;
+        }
         if (_popLayer()) return;
         final now = DateTime.now();
         if (_lastBack != null && now.difference(_lastBack!) < const Duration(seconds: 2)) {
@@ -280,7 +285,7 @@ class _LumaShellState extends State<LumaShell> {
                   ),
                   child: SafeArea(
                     child: SizedBox(
-                      height: 48,
+                      height: 52,
                       child: Row(
                         children: [
                       _nav(0, (c) => HomeOutlinePainter(c, filled: tab == 0)),
@@ -328,7 +333,7 @@ class _LumaShellState extends State<LumaShell> {
           overlayComments = null;
         }),
         child: Center(
-          child: CustomPaint(size: const Size.square(25), painter: painter(LumaColors.text)),
+          child: CustomPaint(size: const Size.square(27), painter: painter(LumaColors.text)),
         ),
       ),
     );

@@ -246,6 +246,7 @@ class FeedScreen extends StatelessWidget {
     required this.onOpenMessages,
     this.onOpenActivity,
     this.onOpenCreate,
+    this.active = true,
   });
   final AppState state;
   final void Function(String userId) onOpenProfile;
@@ -254,6 +255,7 @@ class FeedScreen extends StatelessWidget {
   final VoidCallback onOpenMessages;
   final VoidCallback? onOpenActivity;
   final VoidCallback? onOpenCreate;
+  final bool active;
 
   @override
   Widget build(BuildContext context) {
@@ -313,6 +315,7 @@ class FeedScreen extends StatelessWidget {
               onOpenProfile: onOpenProfile,
               onOpenComments: onOpenComments,
               onOpenPost: onOpenPost,
+              active: active,
             );
           },
         ),
@@ -1791,6 +1794,63 @@ class _StoryViewerState extends State<StoryViewer> with SingleTickerProviderStat
                   const SizedBox(width: 8),
                   Text(timeAgo(s.createdAt), style: const TextStyle(color: Colors.white70, fontSize: 12)),
                   const Spacer(),
+                  IconButton(
+                    onPressed: () {
+                      bar.stop();
+                      showModalBottomSheet(
+                        context: context,
+                        backgroundColor: Colors.white,
+                        builder: (_) => SafeArea(
+                          child: Column(mainAxisSize: MainAxisSize.min, children: [
+                            if (user.id == widget.state.me.id) ...[
+                              ListTile(
+                                leading: const Icon(Icons.inventory_2_outlined),
+                                title: const Text('Archivar'),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  widget.state.toggleArchive(s.id);
+                                  Navigator.pop(this.context);
+                                },
+                              ),
+                              ListTile(
+                                leading: const Icon(Icons.delete_outline, color: Color(0xFFED4956)),
+                                title: const Text('Eliminar', style: TextStyle(color: Color(0xFFED4956))),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  widget.state.deleteStory(s.id);
+                                  Navigator.pop(this.context);
+                                },
+                              ),
+                            ] else
+                              ListTile(
+                                title: Text(widget.state.isFollowing(user.id) ? 'Dejar de seguir' : 'Seguir'),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  widget.state.toggleFollow(user.id);
+                                },
+                              ),
+                            ListTile(
+                              leading: const Icon(Icons.info_outline),
+                              title: const Text('Ver información'),
+                              onTap: () {
+                                Navigator.pop(context);
+                                final d = s.createdAt.toLocal();
+                                showDialog(
+                                  context: this.context,
+                                  builder: (_) => AlertDialog(
+                                    title: const Text('Historia'),
+                                    content: Text('Subida el ${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year} a las ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}'),
+                                    actions: [TextButton(onPressed: () => Navigator.pop(this.context), child: const Text('Listo'))],
+                                  ),
+                                );
+                              },
+                            ),
+                          ]),
+                        ),
+                      ).whenComplete(() { if (mounted && !held) bar.forward(); });
+                    },
+                    icon: const Icon(Icons.more_horiz, color: Colors.white),
+                  ),
                   GestureDetector(onTap: () => Navigator.pop(context), child: const Icon(Icons.close, color: Colors.white)),
                 ]),
                 const Spacer(),
@@ -1829,10 +1889,11 @@ class _StoryViewerState extends State<StoryViewer> with SingleTickerProviderStat
 }
 
 class ReelsScreen extends StatelessWidget {
-  const ReelsScreen({super.key, required this.state, required this.onOpenProfile, required this.onOpenComments});
+  const ReelsScreen({super.key, required this.state, required this.onOpenProfile, required this.onOpenComments, this.playing = true});
   final AppState state;
   final void Function(String userId) onOpenProfile;
   final void Function(Post post) onOpenComments;
+  final bool playing;
 
   @override
   Widget build(BuildContext context) {
@@ -1862,7 +1923,7 @@ class ReelsScreen extends StatelessWidget {
           final liked = post.likedBy(state.me.id);
           final saved = post.savedFor(state.me.id);
           return Stack(fit: StackFit.expand, children: [
-            MediaView(post.imagePath, video: post.isVideo, autoplay: true),
+            MediaView(post.imagePath, video: post.isVideo, autoplay: playing, active: playing),
             const DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -1925,6 +1986,45 @@ class ReelsScreen extends StatelessWidget {
                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reel listo para compartir')));
                         },
                         icon: const Icon(Icons.send_outlined, color: Colors.white, size: 26),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          final mine = post.userId == state.me.id;
+                          final d = post.createdAt.toLocal();
+                          showModalBottomSheet(
+                            context: context,
+                            backgroundColor: Colors.white,
+                            builder: (_) => SafeArea(
+                              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                                if (mine) ...[
+                                  ListTile(
+                                    title: Text(state.archived.contains(post.id) ? 'Desarchivar' : 'Archivar'),
+                                    onTap: () { Navigator.pop(context); state.toggleArchive(post.id); },
+                                  ),
+                                  ListTile(
+                                    title: const Text('Eliminar', style: TextStyle(color: Color(0xFFED4956))),
+                                    onTap: () { Navigator.pop(context); state.deletePost(post.id); },
+                                  ),
+                                ],
+                                ListTile(
+                                  title: const Text('Ver información'),
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    showDialog(
+                                      context: context,
+                                      builder: (_) => AlertDialog(
+                                        title: const Text('Reel'),
+                                        content: Text('Subido el ${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year} a las ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}\n${post.likes.length} Me gusta · ${post.comments.length} comentarios'),
+                                        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Listo'))],
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ]),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.more_horiz, color: Colors.white, size: 28),
                       ),
                       const SizedBox(height: 16),
                       Container(
