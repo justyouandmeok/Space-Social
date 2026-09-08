@@ -105,7 +105,7 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
           onDoubleTap: _doubleTap,
           onTap: () => widget.onOpenPost(post),
           child: AspectRatio(
-            aspectRatio: 1,
+            aspectRatio: 4 / 5,
             child: Stack(
               alignment: Alignment.center,
               children: [

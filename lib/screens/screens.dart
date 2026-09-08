@@ -714,7 +714,7 @@ class _CreateScreenState extends State<CreateScreen> {
                         children: [
                           if (media != null)
                             AspectRatio(
-                              aspectRatio: mode == 0 ? 1 : 9 / 16,
+                              aspectRatio: mode == 0 ? 4 / 5 : 9 / 16,
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(8),
                                 child: video
@@ -2251,7 +2251,7 @@ class ReelsScreen extends StatelessWidget {
             ),
             SafeArea(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 8, 10, 16),
+                padding: const EdgeInsets.fromLTRB(12, 8, 10, 72),
                 child: Column(children: [
                   const Align(
                     alignment: Alignment.centerLeft,
