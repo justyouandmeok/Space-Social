@@ -498,8 +498,11 @@ class _CreateScreenState extends State<CreateScreen> {
   int step = 0;
   final overlay = TextEditingController();
   List<AssetEntity> native = [];
+  List<AssetPathEntity> albums = [];
+  AssetPathEntity? album;
   bool nativeOk = false;
   bool nativeLoading = true;
+  bool limitedAccess = false;
   String? selectedAssetId;
 
   @override
@@ -509,29 +512,53 @@ class _CreateScreenState extends State<CreateScreen> {
     _loadNative();
   }
 
-  Future<void> _loadNative() async {
+  Future<void> _loadNative({AssetPathEntity? path}) async {
     final perm = await PhotoManager.requestPermissionExtend();
     if (!perm.hasAccess) {
-      if (mounted) setState(() => nativeLoading = false);
+      if (mounted) setState(() { nativeLoading = false; nativeOk = false; });
       return;
     }
     try {
-      final paths = await PhotoManager.getAssetPathList(type: RequestType.common, onlyAll: true);
+      final paths = await PhotoManager.getAssetPathList(type: RequestType.common);
       if (paths.isEmpty) {
-        if (mounted) setState(() => nativeLoading = false);
+        if (mounted) setState(() { nativeLoading = false; nativeOk = false; });
         return;
       }
-      final list = await paths.first.getAssetListPaged(page: 0, size: 120);
+      final chosen = path ?? paths.firstWhere((p) => p.isAll, orElse: () => paths.first);
+      final page0 = await chosen.getAssetListPaged(page: 0, size: 80);
+      final page1 = await chosen.getAssetListPaged(page: 1, size: 80);
+      final page2 = await chosen.getAssetListPaged(page: 2, size: 80);
+      final list = [...page0, ...page1, ...page2];
       if (!mounted) return;
       setState(() {
+        albums = paths;
+        album = chosen;
         native = list;
         nativeOk = true;
         nativeLoading = false;
+        limitedAccess = perm == PermissionState.limited;
       });
       if (media == null && list.isNotEmpty) await _fromAsset(list.first);
     } catch (_) {
       if (mounted) setState(() => nativeLoading = false);
     }
+  }
+
+  Future<void> _pickAlbum() async {
+    if (albums.isEmpty) return;
+    final chosen = await showModalBottomSheet<AssetPathEntity>(
+      context: context,
+      backgroundColor: const Color(0xFF1C1C1C),
+      builder: (ctx) => ListView(
+        children: albums.map((a) => ListTile(
+          title: Text(a.name, style: const TextStyle(color: Colors.white)),
+          onTap: () => Navigator.pop(ctx, a),
+        )).toList(),
+      ),
+    );
+    if (chosen == null) return;
+    setState(() { nativeLoading = true; media = null; });
+    await _loadNative(path: chosen);
   }
 
   Future<void> _fromAsset(AssetEntity a) async {
@@ -618,27 +645,20 @@ class _CreateScreenState extends State<CreateScreen> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Elegí una foto o un video')));
       return;
     }
-    setState(() => busy = true);
-    bool ok = false;
-    try {
-      ok = mode == 1
-          ? await widget.state.publishStory(media!, overlayText: overlay.text.trim()).timeout(const Duration(seconds: 45), onTimeout: () => false)
-          : await widget.state.publishPost(
-              image: media!,
-              caption: caption.text,
-              isReel: mode == 2,
-              isVideo: video,
-            ).timeout(const Duration(seconds: 45), onTimeout: () => false);
-    } catch (_) {
-      ok = false;
-    }
-    if (!mounted) return;
-    if (!ok) {
-      setState(() => busy = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(widget.state.lastError ?? 'No se pudo publicar')));
-      return;
-    }
+    final file = media!;
+    final cap = caption.text;
+    final ov = overlay.text.trim();
+    final asReel = mode == 2;
+    final asStory = mode == 1;
+    final asVideo = video;
     widget.onPublished();
+    try {
+      if (asStory) {
+        await widget.state.publishStory(file, overlayText: ov);
+      } else {
+        await widget.state.publishPost(image: file, caption: cap, isReel: asReel, isVideo: asVideo);
+      }
+    } catch (_) {}
   }
 
   @override
@@ -757,9 +777,22 @@ class _CreateScreenState extends State<CreateScreen> {
                       Padding(
                         padding: const EdgeInsets.fromLTRB(14, 6, 14, 8),
                         child: Row(children: [
-                          const Text('Recientes', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
-                          const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white, size: 22),
+                          GestureDetector(
+                            onTap: _pickAlbum,
+                            child: Row(children: [
+                              Text(album?.name.isNotEmpty == true ? album!.name : 'Recientes', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+                              const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white, size: 22),
+                            ]),
+                          ),
                           const Spacer(),
+                          if (limitedAccess)
+                            IconButton(
+                              onPressed: () async {
+                                await PhotoManager.presentLimited();
+                                await _loadNative(path: album);
+                              },
+                              icon: const Icon(Icons.add_photo_alternate_outlined, color: Colors.white),
+                            ),
                           GestureDetector(
                             onTap: () => _pick(asVideo: mode == 2),
                             child: Container(
