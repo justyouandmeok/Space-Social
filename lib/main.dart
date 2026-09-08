@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -240,18 +241,21 @@ class _LumaShellState extends State<LumaShell> {
       body: body,
       bottomNavigationBar: hideNav
           ? null
-          : DecoratedBox(
-              decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: LumaColors.hairline, width: 0.4)),
-                color: Colors.white,
-              ),
-              child: SafeArea(
-                child: SizedBox(
-                  height: 50,
-                  child: Row(
-                    children: [
+          : ClipRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.78),
+                    border: Border(top: BorderSide(color: LumaColors.hairline.withValues(alpha: 0.65), width: 0.3)),
+                  ),
+                  child: SafeArea(
+                    child: SizedBox(
+                      height: 48,
+                      child: Row(
+                        children: [
                       _nav(0, (c) => HomeOutlinePainter(c, filled: tab == 0)),
-                      _nav(1, (c) => CommentPainter(c)),
+                      _nav(1, (c) => ReelsPainter(c, filled: tab == 1)),
                       _nav(2, (c) => MessengerPainter(c)),
                       _nav(3, (c) => SearchOutlinePainter(c, bold: tab == 3)),
                       Expanded(
@@ -278,6 +282,8 @@ class _LumaShellState extends State<LumaShell> {
                 ),
               ),
             ),
+          ),
+        ),
     );
   }
 
