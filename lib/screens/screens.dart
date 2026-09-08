@@ -24,6 +24,15 @@ Future<File?> pickVideoFile({bool camera = false}) async {
   }
 }
 
+Future<List<File>> pickImages() async {
+  try {
+    final xs = await ImagePicker().pickMultiImage(imageQuality: 85, maxWidth: 1600);
+    return xs.map((x) => File(x.path)).toList();
+  } catch (_) {
+    return [];
+  }
+}
+
 Future<File?> pickImage({bool camera = false}) async {
   try {
     final x = await ImagePicker().pickImage(
@@ -481,6 +490,7 @@ class CreateScreen extends StatefulWidget {
 class _CreateScreenState extends State<CreateScreen> {
   File? media;
   File? draft;
+  final gallery = <File>[];
   bool video = false;
   final caption = TextEditingController();
   bool busy = false;
@@ -493,13 +503,48 @@ class _CreateScreenState extends State<CreateScreen> {
     super.dispose();
   }
 
-  Future<void> _pick({required bool asVideo}) async {
-    final f = asVideo ? await pickVideoFile() : await pickImage();
-    if (f == null) return;
+  Future<void> _pick({required bool asVideo, bool camera = false}) async {
+    if (asVideo) {
+      final f = await pickVideoFile(camera: camera);
+      if (f == null) return;
+      setState(() {
+        media = f;
+        draft = f;
+        video = true;
+        gallery
+          ..clear()
+          ..add(f);
+      });
+      return;
+    }
+    if (camera) {
+      final f = await pickImage(camera: true);
+      if (f == null) return;
+      setState(() {
+        gallery.add(f);
+        media = f;
+        draft = f;
+        video = false;
+      });
+      return;
+    }
+    final files = await pickImages();
+    if (files.isEmpty) return;
+    setState(() {
+      gallery
+        ..clear()
+        ..addAll(files);
+      media = files.first;
+      draft = files.first;
+      video = false;
+    });
+  }
+
+  void _select(File f) {
     setState(() {
       media = f;
       draft = f;
-      video = asVideo;
+      video = false;
     });
   }
 
@@ -565,7 +610,7 @@ class _CreateScreenState extends State<CreateScreen> {
                 IconButton(onPressed: _back, icon: const Icon(Icons.close, color: Colors.white)),
                 Expanded(
                   child: Text(
-                    step == 1 ? 'Nueva ${labels[mode].toLowerCase()}' : 'Borradores',
+                    step == 1 ? 'Nueva ${labels[mode].toLowerCase()}' : 'Recientes',
                     textAlign: TextAlign.center,
                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16),
                   ),
@@ -613,27 +658,77 @@ class _CreateScreenState extends State<CreateScreen> {
                         ],
                       ),
                     )
-                  : GestureDetector(
-                      onTap: () => _pick(asVideo: mode == 2 || video),
-                      child: Container(
-                        color: const Color(0xFF111111),
-                        alignment: Alignment.center,
-                        child: media == null
-                            ? Column(mainAxisSize: MainAxisSize.min, children: [
-                                const Icon(Icons.photo_library_outlined, color: Colors.white70, size: 52),
-                                const SizedBox(height: 12),
-                                const Text('Tocá para abrir la galería', style: TextStyle(color: Colors.white70)),
-                                const SizedBox(height: 16),
-                                Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                                  TextButton(onPressed: () => _pick(asVideo: false), child: const Text('Foto', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700))),
-                                  TextButton(onPressed: () => _pick(asVideo: true), child: const Text('Video', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700))),
-                                ]),
-                              ])
-                            : (video
-                                ? const Icon(Icons.play_circle_outline, color: Colors.white, size: 72)
-                                : Image.file(media!, fit: BoxFit.contain)),
+                  : Column(children: [
+                      Expanded(
+                        flex: 3,
+                        child: Container(
+                          color: const Color(0xFF111111),
+                          alignment: Alignment.center,
+                          child: media == null
+                              ? const Text('Elegí de la galería', style: TextStyle(color: Colors.white54))
+                              : (video
+                                  ? const Icon(Icons.play_circle_outline, color: Colors.white, size: 72)
+                                  : Image.file(media!, fit: BoxFit.contain)),
+                        ),
                       ),
-                    ),
+                      Container(
+                        color: const Color(0xFF111111),
+                        padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
+                        child: Row(children: [
+                          const Text('Recientes', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                          const Spacer(),
+                          IconButton(
+                            onPressed: () => _pick(asVideo: false, camera: true),
+                            icon: const Icon(Icons.photo_camera_outlined, color: Colors.white),
+                          ),
+                          IconButton(
+                            onPressed: () => _pick(asVideo: mode == 2),
+                            icon: const Icon(Icons.photo_library_outlined, color: Colors.white),
+                          ),
+                        ]),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: GridView.builder(
+                          padding: const EdgeInsets.all(1),
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 4,
+                            mainAxisSpacing: 1,
+                            crossAxisSpacing: 1,
+                          ),
+                          itemCount: gallery.length + 2,
+                          itemBuilder: (context, i) {
+                            if (i == 0) {
+                              return GestureDetector(
+                                onTap: () => _pick(asVideo: false),
+                                child: const ColoredBox(
+                                  color: Color(0xFF2A2A2A),
+                                  child: Icon(Icons.add, color: Colors.white),
+                                ),
+                              );
+                            }
+                            if (i == 1) {
+                              return GestureDetector(
+                                onTap: () => _pick(asVideo: true),
+                                child: const ColoredBox(
+                                  color: Color(0xFF2A2A2A),
+                                  child: Icon(Icons.videocam_outlined, color: Colors.white),
+                                ),
+                              );
+                            }
+                            final f = gallery[i - 2];
+                            final on = media?.path == f.path;
+                            return GestureDetector(
+                              onTap: () => _select(f),
+                              child: Stack(fit: StackFit.expand, children: [
+                                Image.file(f, fit: BoxFit.cover),
+                                if (on) Container(color: const Color(0x660095F6)),
+                              ]),
+                            );
+                          },
+                        ),
+                      ),
+                    ]),
             ),
             Container(
               color: const Color(0xFF1A1A1A),
