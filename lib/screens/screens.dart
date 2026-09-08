@@ -1134,6 +1134,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$name: todavía no está en Space Social')));
   }
 
+  void _people(String title, List<String> ids, Future<void> Function(String) toggle) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => PrefsPeopleScreen(state: widget.state, title: title, selected: ids, onToggle: toggle),
+    ));
+  }
+
   Widget _h(String t) => Padding(
         padding: const EdgeInsets.fromLTRB(16, 18, 16, 6),
         child: Text(t, style: const TextStyle(color: LumaColors.textSecondary, fontWeight: FontWeight.w600, fontSize: 13)),
@@ -1185,27 +1191,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         _h('Cómo usás Space Social'),
         _i(Icons.bookmark_border, 'Guardado', onTap: widget.onSaved),
-        _i(Icons.inventory_2_outlined, 'Archivo'),
+        _i(Icons.inventory_2_outlined, 'Archivo', onTap: () {
+          Navigator.of(context).push(MaterialPageRoute(builder: (_) => ArchiveScreen(state: widget.state)));
+        }),
         _i(Icons.history, 'Tu actividad', onTap: widget.onActivity),
-        _i(Icons.notifications_none, 'Notificaciones', sub: 'Likes, comentarios y seguidores en la campana'),
-        _i(Icons.schedule, 'Tiempo en la app'),
+        SwitchListTile(
+          secondary: const Icon(Icons.notifications_none),
+          title: const Text('Notificaciones'),
+          value: widget.state.notificationsOn,
+          onChanged: (_) => widget.state.toggleNotificationsPref(),
+        ),
         _h('Quién puede ver tu contenido'),
-        _i(Icons.lock_outline, 'Privacidad de la cuenta', sub: 'Pública'),
-        _i(Icons.star_outline, 'Amigos cercanos'),
-        _i(Icons.block, 'Cuentas bloqueadas'),
-        _i(Icons.visibility_off_outlined, 'Ocultar historias'),
-        _h('Cómo pueden interactuar con vos'),
-        _i(Icons.chat_bubble_outline, 'Mensajes y respuestas a historias'),
-        _i(Icons.alternate_email, 'Etiquetas y menciones'),
-        _i(Icons.mode_comment_outlined, 'Comentarios'),
-        _i(Icons.movie_filter_outlined, 'Remix y recortes'),
-        _i(Icons.person_off_outlined, 'Cuentas restringidas'),
-        _i(Icons.tune, 'Limitar interacciones'),
+        SwitchListTile(
+          secondary: const Icon(Icons.lock_outline),
+          title: const Text('Cuenta privada'),
+          subtitle: Text(me.privateAccount ? 'Solo quienes te siguen ven tus posts' : 'Cualquiera puede ver tus posts'),
+          value: me.privateAccount,
+          onChanged: (_) => widget.state.togglePrivate(),
+        ),
+        _i(Icons.star_outline, 'Amigos cercanos', onTap: () => _people('Amigos cercanos', widget.state.closeFriends.toList(), widget.state.toggleCloseFriend)),
+        _i(Icons.block, 'Cuentas bloqueadas', onTap: () => _people('Bloqueados', widget.state.blocked.toList(), widget.state.toggleBlock)),
         _h('Qué ves'),
-        _i(Icons.star, 'Favoritos'),
-        _i(Icons.volume_off_outlined, 'Cuentas silenciadas'),
-        _i(Icons.auto_awesome, 'Tu algoritmo'),
-        _i(Icons.favorite_border, 'Cantidad de Me gusta'),
+        _i(Icons.star, 'Favoritos', onTap: () => _people('Favoritos', widget.state.favorites.toList(), widget.state.toggleFavorite)),
+        _i(Icons.volume_off_outlined, 'Cuentas silenciadas', onTap: () => _people('Silenciados', widget.state.muted.toList(), widget.state.toggleMute)),
+        SwitchListTile(
+          secondary: const Icon(Icons.favorite_border),
+          title: const Text('Ocultar cantidad de Me gusta'),
+          value: widget.state.hideLikes,
+          onChanged: (_) => widget.state.toggleHideLikes(),
+        ),
         _h('Tu app y contenido'),
         _i(Icons.phone_android, 'Permisos del dispositivo'),
         _i(Icons.download_outlined, 'Descargar información'),
@@ -1229,6 +1243,60 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         const SizedBox(height: 24),
       ]),
+    );
+  }
+}
+
+class ArchiveScreen extends StatelessWidget {
+  const ArchiveScreen({super.key, required this.state});
+  final AppState state;
+  @override
+  Widget build(BuildContext context) {
+    final items = state.posts.where((p) => p.userId == state.me.id && state.archived.contains(p.id)).toList();
+    return Scaffold(
+      appBar: AppBar(title: const Text('Archivo')),
+      body: items.isEmpty
+          ? const EmptyHint('Archivo vacío', 'Desde los tres puntos de tu post podés archivarlo.')
+          : GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, mainAxisSpacing: 1.2, crossAxisSpacing: 1.2, childAspectRatio: 3 / 4),
+              itemCount: items.length,
+              itemBuilder: (context, i) => GestureDetector(
+                onLongPress: () => state.toggleArchive(items[i].id),
+                child: NetworkPhoto(items[i].imagePath),
+              ),
+            ),
+    );
+  }
+}
+
+class PrefsPeopleScreen extends StatelessWidget {
+  const PrefsPeopleScreen({super.key, required this.state, required this.title, required this.selected, required this.onToggle});
+  final AppState state;
+  final String title;
+  final List<String> selected;
+  final Future<void> Function(String) onToggle;
+  @override
+  Widget build(BuildContext context) {
+    final people = state.users.where((u) => u.id != state.me.id && !u.username.startsWith('_merged_')).toList();
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: ListenableBuilder(
+        listenable: state,
+        builder: (_, __) => ListView(
+        children: people.map((u) {
+          final on = title.contains('Bloq') ? state.blocked.contains(u.id)
+              : title.contains('Silenc') ? state.muted.contains(u.id)
+              : title.contains('Favor') ? state.favorites.contains(u.id)
+              : state.closeFriends.contains(u.id);
+          return ListTile(
+            leading: Avatar(u.avatarPath, size: 40),
+            title: Text(u.username),
+            trailing: Text(on ? 'Quitar' : 'Agregar', style: const TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w700)),
+            onTap: () => onToggle(u.id),
+          );
+        }).toList(),
+      ),
+      ),
     );
   }
 }

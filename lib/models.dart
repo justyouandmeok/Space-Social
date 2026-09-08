@@ -10,6 +10,7 @@ class UserAccount {
     this.bio = '',
     this.website = '',
     this.createdAt,
+    this.privateAccount = false,
   });
 
   final String id;
@@ -22,6 +23,7 @@ class UserAccount {
   final String bio;
   final String website;
   final DateTime? createdAt;
+  final bool privateAccount;
 
   UserAccount copyWith({
     String? email,
@@ -58,6 +60,7 @@ class UserAccount {
         'bio': bio,
         'website': website,
         'createdAt': (createdAt ?? DateTime.now()).toIso8601String(),
+        'privateAccount': privateAccount,
       };
 
   factory UserAccount.fromJson(Map<String, dynamic> j) => UserAccount(
@@ -71,6 +74,7 @@ class UserAccount {
         bio: j['bio'] as String? ?? '',
         website: j['website'] as String? ?? '',
         createdAt: DateTime.tryParse(j['createdAt'] as String? ?? ''),
+        privateAccount: j['privateAccount'] == true,
       );
 }
 

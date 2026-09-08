@@ -55,6 +55,13 @@ class AppState extends ChangeNotifier {
   bool followingOnly = false;
   String query = '';
   String? lastError;
+  bool hideLikes = false;
+  bool notificationsOn = true;
+  Set<String> blocked = {};
+  Set<String> muted = {};
+  Set<String> favorites = {};
+  Set<String> closeFriends = {};
+  Set<String> archived = {};
 
   bool get isLoggedIn => currentUserId != null;
 
@@ -81,8 +88,18 @@ class AppState extends ChangeNotifier {
     return null;
   }
 
+  bool canSee(String userId) {
+    if (!isLoggedIn) return true;
+    if (userId == me.id) return true;
+    if (blocked.contains(userId)) return false;
+    final u = tryUser(userId);
+    if (u != null && u.privateAccount && !isFollowing(userId)) return false;
+    return true;
+  }
+
   List<Post> postsOf(String userId) =>
-      posts.where((p) => p.userId == userId).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      posts.where((p) => p.userId == userId && !archived.contains(p.id)).toList()
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
   List<Post> get feed {
     if (!isLoggedIn) return List<Post>.from(posts)..sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -97,9 +114,13 @@ class AppState extends ChangeNotifier {
       s += (p.likes.length * 0.15).clamp(0, 4);
       return s;
     }
-    var list = List<Post>.from(posts);
+    var list = List<Post>.from(posts).where((p) {
+      if (archived.contains(p.id)) return false;
+      if (blocked.contains(p.userId) || muted.contains(p.userId)) return false;
+      return canSee(p.userId);
+    }).toList();
     if (followingOnly) {
-      list = list.where((p) => ids.contains(p.userId)).toList();
+      list = list.where((p) => ids.contains(p.userId) || favorites.contains(p.userId)).toList();
     }
     list.sort((a, b) => score(b).compareTo(score(a)));
     return list;
@@ -307,6 +328,19 @@ class AppState extends ChangeNotifier {
   Future<void> _refresh() async {
     final usersSnap = await _db.collection('users').get();
     users = usersSnap.docs.map((d) => UserAccount.fromJson({...d.data(), 'id': d.id})).toList();
+    if (currentUserId != null) {
+      for (final d in usersSnap.docs) {
+        if (d.id != currentUserId) continue;
+        final data = d.data();
+        hideLikes = data['hideLikes'] == true;
+        notificationsOn = data['notificationsOn'] != false;
+        blocked = {...List<String>.from(data['blocked'] ?? const [])};
+        muted = {...List<String>.from(data['muted'] ?? const [])};
+        favorites = {...List<String>.from(data['favorites'] ?? const [])};
+        closeFriends = {...List<String>.from(data['closeFriends'] ?? const [])};
+        archived = {...List<String>.from(data['archived'] ?? const [])};
+      }
+    }
 
     final postsSnap = await _db.collection('posts').get();
     posts = postsSnap.docs.map((d) {
@@ -951,5 +985,83 @@ class AppState extends ChangeNotifier {
     });
     await _refresh();
     notifyListeners();
+  }
+
+  Future<void> _savePrefs({bool? privateAccount}) async {
+    if (!isLoggedIn) return;
+    await _db.collection('users').doc(me.id).set({
+      if (privateAccount != null) 'privateAccount': privateAccount,
+      'hideLikes': hideLikes,
+      'notificationsOn': notificationsOn,
+      'blocked': blocked.toList(),
+      'muted': muted.toList(),
+      'favorites': favorites.toList(),
+      'closeFriends': closeFriends.toList(),
+      'archived': archived.toList(),
+    }, SetOptions(merge: true));
+    notifyListeners();
+  }
+
+  Future<void> togglePrivate() async {
+    final next = !me.privateAccount;
+    await _savePrefs(privateAccount: next);
+    await _refresh();
+    notifyListeners();
+  }
+
+  Future<void> toggleHideLikes() async {
+    hideLikes = !hideLikes;
+    await _savePrefs();
+  }
+
+  Future<void> toggleNotificationsPref() async {
+    notificationsOn = !notificationsOn;
+    await _savePrefs();
+  }
+
+  Future<void> toggleBlock(String userId) async {
+    if (userId == me.id) return;
+    if (blocked.contains(userId)) {
+      blocked.remove(userId);
+    } else {
+      blocked.add(userId);
+    }
+    await _savePrefs();
+  }
+
+  Future<void> toggleMute(String userId) async {
+    if (muted.contains(userId)) {
+      muted.remove(userId);
+    } else {
+      muted.add(userId);
+    }
+    await _savePrefs();
+  }
+
+  Future<void> toggleFavorite(String userId) async {
+    if (favorites.contains(userId)) {
+      favorites.remove(userId);
+    } else {
+      favorites.add(userId);
+    }
+    await _savePrefs();
+  }
+
+  Future<void> toggleCloseFriend(String userId) async {
+    if (closeFriends.contains(userId)) {
+      closeFriends.remove(userId);
+    } else {
+      closeFriends.add(userId);
+    }
+    await _savePrefs();
+  }
+
+  Future<void> toggleArchive(String postId) async {
+    if (archived.contains(postId)) {
+      archived.remove(postId);
+    } else {
+      archived.add(postId);
+    }
+    await _savePrefs();
   }
 }

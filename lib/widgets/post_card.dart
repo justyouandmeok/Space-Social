@@ -141,11 +141,12 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
             ],
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(14, 2, 14, 0),
-          child: Text('${compact(post.likes.length)} Me gusta',
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-        ),
+        if (!widget.state.hideLikes)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 2, 14, 0),
+            child: Text('${compact(post.likes.length)} Me gusta',
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+          ),
         if (post.caption.isNotEmpty)
           Padding(
             padding: const EdgeInsets.fromLTRB(14, 4, 14, 0),
@@ -278,14 +279,22 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (mine)
+            if (mine) ...[
+              ListTile(
+                title: Text(widget.state.archived.contains(post.id) ? 'Desarchivar' : 'Archivar'),
+                onTap: () {
+                  Navigator.pop(context);
+                  widget.state.toggleArchive(post.id);
+                },
+              ),
               ListTile(
                 title: const Text('Eliminar', style: TextStyle(color: LumaColors.like)),
                 onTap: () {
                   Navigator.pop(context);
                   widget.state.deletePost(post.id);
                 },
-              )
+              ),
+            ]
             else
               ListTile(
                 title: Text(widget.state.isFollowing(user.id) ? 'Dejar de seguir' : 'Seguir',
