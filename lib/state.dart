@@ -53,6 +53,9 @@ class AppState extends ChangeNotifier {
   List<Story> stories = [];
   Set<String> seenStories = {};
   bool followingOnly = false;
+  int feedMode = 0; // 0 para ti, 1 siguiendo, 2 favoritos
+  Set<String> pendingFollows = {};
+  final notes = <Map<String, dynamic>>[];
   String query = '';
   String? lastError;
   bool hideLikes = false;
@@ -119,8 +122,10 @@ class AppState extends ChangeNotifier {
       if (blocked.contains(p.userId) || muted.contains(p.userId)) return false;
       return canSee(p.userId);
     }).toList();
-    if (followingOnly) {
-      list = list.where((p) => ids.contains(p.userId) || favorites.contains(p.userId)).toList();
+    if (feedMode == 1 || followingOnly) {
+      list = list.where((p) => ids.contains(p.userId)).toList();
+    } else if (feedMode == 2) {
+      list = list.where((p) => favorites.contains(p.userId) || p.userId == me.id).toList();
     }
     list.sort((a, b) => score(b).compareTo(score(a)));
     return list;
@@ -128,8 +133,17 @@ class AppState extends ChangeNotifier {
 
   void setFollowingOnly(bool v) {
     followingOnly = v;
+    feedMode = v ? 1 : 0;
     notifyListeners();
   }
+
+  void setFeedMode(int mode) {
+    feedMode = mode;
+    followingOnly = mode == 1;
+    notifyListeners();
+  }
+
+  bool isPendingFollow(String userId) => pendingFollows.contains(userId);
 
   bool storyUnseen(String userId) =>
       storiesOf(userId).any((s) => !seenStories.contains(s.id));
@@ -352,14 +366,28 @@ class AppState extends ChangeNotifier {
 
     final followSnap = await _db.collection('follows').get();
     following = {};
+    pendingFollows = {};
     for (final d in followSnap.docs) {
       final data = d.data();
       final from = data['from'] as String? ?? '';
       final to = data['to'] as String? ?? '';
       if (from.isEmpty || to.isEmpty) continue;
+      if (data['status'] == 'PENDING') {
+        if (from == currentUserId) pendingFollows.add(to);
+        continue;
+      }
       following.putIfAbsent(from, () => []);
       if (!following[from]!.contains(to)) following[from]!.add(to);
     }
+    try {
+      final nSnap = await _db.collection('notes').get();
+      notes
+        ..clear()
+        ..addAll(nSnap.docs.map((d) => {...d.data(), 'id': d.id}).where((n) {
+          final t = DateTime.tryParse('${n['createdAt']}') ?? DateTime.fromMillisecondsSinceEpoch(0);
+          return DateTime.now().difference(t) < const Duration(hours: 24);
+        }));
+    } catch (_) {}
 
     try {
       final stSnap = await _db.collection('stories').get();
@@ -966,10 +994,16 @@ class AppState extends ChangeNotifier {
     if (snap.exists) {
       await ref.delete();
     } else {
-      await ref.set({'from': me.id, 'to': userId});
+      final target = tryUser(userId);
+      final pending = target?.privateAccount == true;
+      await ref.set({
+        'from': me.id,
+        'to': userId,
+        'status': pending ? 'PENDING' : 'ACCEPTED',
+      });
       await _db.collection('activity').add({
         'actorId': me.id,
-        'text': 'empezó a seguirte.',
+        'text': pending ? 'pidió seguirte.' : 'empezó a seguirte.',
         'createdAt': DateTime.now().toIso8601String(),
         'isFollow': true,
         'targetId': userId,
@@ -982,6 +1016,17 @@ class AppState extends ChangeNotifier {
   Future<void> sharePostTo(String toId, Post post) async {
     final who = tryUser(post.userId)?.username ?? 'alguien';
     await sendMessage(toId, 'Te compartió una publicación de @$who: ${post.caption.isEmpty ? post.id : post.caption}');
+  }
+
+  Future<void> publishNote(String text) async {
+    if (!isLoggedIn || text.trim().isEmpty) return;
+    await _db.collection('notes').add({
+      'userId': me.id,
+      'content': text.trim().length > 60 ? text.trim().substring(0, 60) : text.trim(),
+      'createdAt': DateTime.now().toIso8601String(),
+    });
+    await _refresh();
+    notifyListeners();
   }
 
   Future<void> sendMessage(String toId, String text) async {

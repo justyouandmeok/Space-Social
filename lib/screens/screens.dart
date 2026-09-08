@@ -306,9 +306,11 @@ class FeedScreen extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
                     child: Row(children: [
-                      _FeedChip(label: 'Para ti', selected: !state.followingOnly, onTap: () => state.setFollowingOnly(false)),
+                      _FeedChip(label: 'Para ti', selected: state.feedMode == 0, onTap: () => state.setFeedMode(0)),
                       const SizedBox(width: 8),
-                      _FeedChip(label: 'Siguiendo', selected: state.followingOnly, onTap: () => state.setFollowingOnly(true)),
+                      _FeedChip(label: 'Siguiendo', selected: state.feedMode == 1, onTap: () => state.setFeedMode(1)),
+                      const SizedBox(width: 8),
+                      _FeedChip(label: 'Favoritos', selected: state.feedMode == 2, onTap: () => state.setFeedMode(2)),
                     ]),
                   ),
                 ],
@@ -439,7 +441,7 @@ class ExploreScreen extends StatelessWidget {
                     leading: Avatar(u.avatarPath, size: 44),
                     title: Text(u.username, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                     subtitle: Text(u.name, style: const TextStyle(color: LumaColors.textSecondary, fontSize: 13)),
-                    trailing: _FollowChip(following: state.isFollowing(u.id), onTap: () => state.toggleFollow(u.id)),
+                    trailing: _FollowChip(following: state.isFollowing(u.id), pending: state.isPendingFollow(u.id), onTap: () => state.toggleFollow(u.id)),
                   );
                 },
               ),
@@ -893,7 +895,7 @@ class ActivityScreen extends StatelessWidget {
                     ),
                   ),
                   trailing: a.isFollow
-                      ? _FollowChip(following: state.isFollowing(u.id), onTap: () => state.toggleFollow(u.id))
+                      ? _FollowChip(following: state.isFollowing(u.id), pending: state.isPendingFollow(u.id), onTap: () => state.toggleFollow(u.id))
                       : (thumb == null ? null : SizedBox(width: 44, height: 44, child: NetworkPhoto(thumb.imagePath))),
                 );
               },
@@ -903,18 +905,20 @@ class ActivityScreen extends StatelessWidget {
 }
 
 class _FollowChip extends StatelessWidget {
-  const _FollowChip({required this.following, required this.onTap});
+  const _FollowChip({required this.following, required this.onTap, this.pending = false});
   final bool following;
+  final bool pending;
   final VoidCallback onTap;
   @override
   Widget build(BuildContext context) {
+    final label = following ? 'Siguiendo' : (pending ? 'Solicitado' : 'Seguir');
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-        decoration: BoxDecoration(color: following ? const Color(0xFFEFEFEF) : LumaColors.blue, borderRadius: BorderRadius.circular(8)),
-        child: Text(following ? 'Siguiendo' : 'Seguir',
-            style: TextStyle(color: following ? LumaColors.text : Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
+        decoration: BoxDecoration(color: following || pending ? const Color(0xFF262626) : LumaColors.blue, borderRadius: BorderRadius.circular(8)),
+        child: Text(label,
+            style: TextStyle(color: following || pending ? LumaColors.text : Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
       ),
     );
   }
@@ -1090,8 +1094,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               color: following ? const Color(0xFFEFEFEF) : LumaColors.blue,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Text(following ? 'Siguiendo' : 'Seguir',
-                                style: TextStyle(color: following ? LumaColors.text : Colors.white, fontWeight: FontWeight.w600)),
+                            child: Text(following ? 'Siguiendo' : (state.isPendingFollow(user.id) ? 'Solicitado' : 'Seguir'),
+                                style: TextStyle(color: following || state.isPendingFollow(user.id) ? LumaColors.text : Colors.white, fontWeight: FontWeight.w600)),
                           ),
                         ),
                       ),
@@ -1651,6 +1655,55 @@ class MessagesScreen extends StatelessWidget {
       ),
       body: ListView(
         children: [
+          SizedBox(
+            height: 96,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+              children: [
+                GestureDetector(
+                  onTap: () async {
+                    final c = TextEditingController();
+                    final ok = await showDialog<bool>(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        title: const Text('Nota'),
+                        content: TextField(controller: c, maxLength: 60, decoration: const InputDecoration(hintText: 'Hasta 60 caracteres')),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
+                          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Compartir')),
+                        ],
+                      ),
+                    );
+                    if (ok == true && c.text.trim().isNotEmpty) await state.publishNote(c.text);
+                  },
+                  child: SizedBox(
+                    width: 72,
+                    child: Column(children: [
+                      Avatar(state.me.avatarPath, size: 52),
+                      const SizedBox(height: 4),
+                      const Text('Tu nota', style: TextStyle(fontSize: 11)),
+                    ]),
+                  ),
+                ),
+                ...state.notes.map((n) {
+                  final u = state.tryUser('${n['userId']}');
+                  if (u == null) return const SizedBox.shrink();
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 12),
+                    child: SizedBox(
+                      width: 88,
+                      child: Column(children: [
+                        Avatar(u.avatarPath, size: 52),
+                        const SizedBox(height: 4),
+                        Text('${n['content']}', maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11)),
+                      ]),
+                    ),
+                  );
+                }),
+              ],
+            ),
+          ),
           if (partners.isEmpty)
             const Padding(
               padding: EdgeInsets.all(24),
@@ -2262,7 +2315,7 @@ class PeopleScreen extends StatelessWidget {
                   leading: Avatar(u.avatarPath, size: 44),
                   title: Text(u.username, style: const TextStyle(fontWeight: FontWeight.w600)),
                   subtitle: Text(u.name, style: const TextStyle(color: LumaColors.textSecondary)),
-                  trailing: u.id == state.me.id ? null : _FollowChip(following: state.isFollowing(u.id), onTap: () => state.toggleFollow(u.id)),
+                  trailing: u.id == state.me.id ? null : _FollowChip(following: state.isFollowing(u.id), pending: state.isPendingFollow(u.id), onTap: () => state.toggleFollow(u.id)),
                 );
               },
             ),
