@@ -171,7 +171,7 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
             padding: const EdgeInsets.fromLTRB(14, 4, 14, 0),
             child: RichText(
               text: TextSpan(
-                style: const TextStyle(color: LumaColors.text, fontSize: 14, height: 1.3),
+                style: TextStyle(color: LumaColors.text, fontSize: 14, height: 1.3),
                 children: [
                   TextSpan(text: user.username, style: const TextStyle(fontWeight: FontWeight.w600)),
                   const TextSpan(text: '  '),
@@ -189,14 +189,14 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
                 post.comments.length == 1
                     ? 'Ver el comentario'
                     : 'Ver los ${post.comments.length} comentarios',
-                style: const TextStyle(color: LumaColors.textSecondary, fontSize: 14),
+                style: TextStyle(color: LumaColors.textSecondary, fontSize: 14),
               ),
             ),
           ),
         Padding(
           padding: const EdgeInsets.fromLTRB(14, 4, 14, 14),
           child: Text(timeAgo(post.createdAt).toUpperCase(),
-              style: const TextStyle(color: LumaColors.textTertiary, fontSize: 10.5, letterSpacing: 0.2)),
+              style: TextStyle(color: LumaColors.textTertiary, fontSize: 10.5, letterSpacing: 0.2)),
         ),
       ],
     );
@@ -323,7 +323,7 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
             else
               ListTile(
                 title: Text(widget.state.isFollowing(user.id) ? 'Dejar de seguir' : 'Seguir',
-                    style: const TextStyle(color: LumaColors.like)),
+                    style: TextStyle(color: LumaColors.like)),
                 onTap: () {
                   Navigator.pop(context);
                   widget.state.toggleFollow(user.id);

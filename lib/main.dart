@@ -27,6 +27,7 @@ class LumaApp extends StatelessWidget {
       title: 'Space Social',
       debugShowCheckedModeBanner: false,
       theme: buildLumaTheme(),
+      darkTheme: buildLumaTheme(),
       home: const LumaGate(),
     );
   }
@@ -271,7 +272,10 @@ class _LumaShellState extends State<LumaShell> {
     final hideNav = creating || activity || saved || settings || editing || chatUserId != null || overlayComments != null || overlayPost != null ||
         (overlayUser != null && overlayUser!.id != state.me.id);
 
-    return PopScope(
+    LumaColors.dark = state.darkMode;
+    return Theme(
+      data: buildLumaTheme(),
+      child: PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
@@ -335,6 +339,7 @@ class _LumaShellState extends State<LumaShell> {
             ),
           ),
         ),
+      ),
     ),
     );
   }

@@ -133,6 +133,7 @@ class Post {
   bool savedFor(String uid) => savedBy.contains(uid);
 
   Post copyWith({
+    String? imagePath,
     List<String>? likes,
     List<Comment>? comments,
     List<String>? savedBy,
@@ -140,7 +141,7 @@ class Post {
     return Post(
       id: id,
       userId: userId,
-      imagePath: imagePath,
+      imagePath: imagePath ?? this.imagePath,
       caption: caption,
       location: location,
       createdAt: createdAt,

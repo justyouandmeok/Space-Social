@@ -9,6 +9,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 import 'config.dart';
 import 'models.dart';
 import 'store.dart';
+import 'theme.dart';
 
 class ChatMessage {
   const ChatMessage({
@@ -59,6 +60,7 @@ class AppState extends ChangeNotifier {
   String query = '';
   String? lastError;
   bool hideLikes = false;
+  bool darkMode = true;
   bool notificationsOn = true;
   Set<String> blocked = {};
   Set<String> muted = {};
@@ -347,6 +349,8 @@ class AppState extends ChangeNotifier {
         if (d.id != currentUserId) continue;
         final data = d.data();
         hideLikes = data['hideLikes'] == true;
+        darkMode = data['darkMode'] != false;
+        LumaColors.dark = darkMode;
         notificationsOn = data['notificationsOn'] != false;
         blocked = {...List<String>.from(data['blocked'] ?? const [])};
         muted = {...List<String>.from(data['muted'] ?? const [])};
@@ -837,10 +841,13 @@ class AppState extends ChangeNotifier {
   Future<bool> publishPost({required File image, required String caption, String location = '', bool isReel = false, bool isVideo = false}) async {
     if (!isLoggedIn) return false;
     lastError = null;
+    final id = newId();
+    final created = DateTime.now();
+    final local = Post(id: id, userId: me.id, imagePath: image.path, caption: caption.trim(), location: location.trim(), createdAt: created, isReel: isReel, isVideo: isVideo);
+    posts = [local, ...posts];
+    notifyListeners();
     try {
       final url = await _upload(image, SpaceConfig.postsBucket, me.id);
-      final id = newId();
-      final created = DateTime.now();
       await _db.collection('posts').doc(id).set({
         'id': id,
         'userId': me.id,
@@ -854,10 +861,7 @@ class AppState extends ChangeNotifier {
         'isReel': isReel,
         'isVideo': isVideo,
       });
-      posts = [
-        Post(id: id, userId: me.id, imagePath: url, caption: caption.trim(), location: location.trim(), createdAt: created, isReel: isReel, isVideo: isVideo),
-        ...posts,
-      ];
+      posts = posts.map((p) => p.id == id ? p.copyWith(imagePath: url) : p).toList();
       notifyListeners();
       unawaited(_refresh().then((_) => _saveCache()));
       return true;
@@ -1047,6 +1051,7 @@ class AppState extends ChangeNotifier {
     await _db.collection('users').doc(me.id).set({
       if (privateAccount != null) 'privateAccount': privateAccount,
       'hideLikes': hideLikes,
+      'darkMode': darkMode,
       'notificationsOn': notificationsOn,
       'blocked': blocked.toList(),
       'muted': muted.toList(),
@@ -1062,6 +1067,13 @@ class AppState extends ChangeNotifier {
     await _savePrefs(privateAccount: next);
     await _refresh();
     notifyListeners();
+  }
+
+  Future<void> toggleDarkMode() async {
+    darkMode = !darkMode;
+    LumaColors.dark = darkMode;
+    notifyListeners();
+    unawaited(_saveCache());
   }
 
   Future<void> toggleHideLikes() async {

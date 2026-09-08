@@ -112,7 +112,7 @@ class _AuthScreenState extends State<AuthScreen> {
             const SizedBox(height: 8),
             Text(register ? 'Creá tu cuenta para publicar.' : 'Entrá con tu cuenta.',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: LumaColors.textSecondary)),
+                style: TextStyle(color: LumaColors.textSecondary)),
             const SizedBox(height: 24),
             if (register) ...[
               Center(
@@ -239,7 +239,7 @@ class EmptyHint extends StatelessWidget {
           children: [
             Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18)),
             const SizedBox(height: 8),
-            Text(subtitle, textAlign: TextAlign.center, style: const TextStyle(color: LumaColors.textSecondary)),
+            Text(subtitle, textAlign: TextAlign.center, style: TextStyle(color: LumaColors.textSecondary)),
           ],
         ),
       ),
@@ -272,7 +272,11 @@ class FeedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final items = state.feed.where((p) => !p.isReel).toList();
+    final seen = <String>{};
+    final items = <Post>[];
+    for (final p in [...state.posts.where((p) => p.userId == state.me.id), ...state.feed]) {
+      if (seen.add(p.id) && !state.archived.contains(p.id)) items.add(p);
+    }
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -434,7 +438,7 @@ class ExploreScreen extends StatelessWidget {
                     onTap: () => onOpenProfile(u.id),
                     leading: Avatar(u.avatarPath, size: 44),
                     title: Text(u.username, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                    subtitle: Text(u.name, style: const TextStyle(color: LumaColors.textSecondary, fontSize: 13)),
+                    subtitle: Text(u.name, style: TextStyle(color: LumaColors.textSecondary, fontSize: 13)),
                     trailing: _FollowChip(following: state.isFollowing(u.id), pending: state.isPendingFollow(u.id), onTap: () => state.toggleFollow(u.id)),
                   );
                 },
@@ -967,11 +971,11 @@ class ActivityScreen extends StatelessWidget {
                   leading: Avatar(u.avatarPath, size: 44),
                   title: RichText(
                     text: TextSpan(
-                      style: const TextStyle(color: LumaColors.text, fontSize: 14, height: 1.25),
+                      style: TextStyle(color: LumaColors.text, fontSize: 14, height: 1.25),
                       children: [
                         TextSpan(text: u.username, style: const TextStyle(fontWeight: FontWeight.w600)),
                         TextSpan(text: ' ${a.text} '),
-                        TextSpan(text: timeAgo(a.createdAt), style: const TextStyle(color: LumaColors.textSecondary)),
+                        TextSpan(text: timeAgo(a.createdAt), style: TextStyle(color: LumaColors.textSecondary)),
                       ],
                     ),
                   ),
@@ -1142,7 +1146,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text(user.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
                   if (user.bio.isNotEmpty) Text(user.bio, style: const TextStyle(fontSize: 14, height: 1.3)),
                   if (user.website.isNotEmpty)
-                    Text(user.website, style: const TextStyle(color: LumaColors.link, fontWeight: FontWeight.w600, fontSize: 14)),
+                    Text(user.website, style: TextStyle(color: LumaColors.link, fontWeight: FontWeight.w600, fontSize: 14)),
                 ],
               ),
             ),
@@ -1270,7 +1274,7 @@ class _TabsHeader extends SliverPersistentHeaderDelegate {
             Expanded(child: GestureDetector(onTap: () => onTab?.call(2), child: Center(child: CustomPaint(size: const Size.square(22), painter: TagPainter(tab == 2 ? LumaColors.text : LumaColors.textTertiary))))),
           ]),
         ),
-        const Divider(height: 1, color: LumaColors.hairline),
+        Divider(height: 1, color: LumaColors.hairline),
       ]),
     );
   }
@@ -1370,7 +1374,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
           ),
           const SizedBox(height: 18),
-          const Divider(height: 1, color: LumaColors.hairline),
+          Divider(height: 1, color: LumaColors.hairline),
           _igRow('Nombre', name),
           _igRow('Usuario', username),
           _igRow('Presentación', bio, maxLines: 3),
@@ -1383,7 +1387,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget _igRow(String label, TextEditingController c, {int maxLines = 1}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: LumaColors.hairline, width: 0.4))),
+      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: LumaColors.hairline, width: 0.4))),
       child: Row(crossAxisAlignment: maxLines > 1 ? CrossAxisAlignment.start : CrossAxisAlignment.center, children: [
         SizedBox(width: 110, child: Padding(padding: EdgeInsets.only(top: maxLines > 1 ? 12 : 0), child: Text(label, style: const TextStyle(fontSize: 16)))),
         Expanded(child: TextField(controller: c, maxLines: maxLines, decoration: const InputDecoration(border: InputBorder.none, isDense: true))),
@@ -1419,7 +1423,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _h(String t) => Padding(
         padding: const EdgeInsets.fromLTRB(16, 18, 16, 6),
-        child: Text(t, style: const TextStyle(color: LumaColors.textSecondary, fontWeight: FontWeight.w600, fontSize: 13)),
+        child: Text(t, style: TextStyle(color: LumaColors.textSecondary, fontWeight: FontWeight.w600, fontSize: 13)),
       );
 
   Widget _i(IconData icon, String title, {String? sub, VoidCallback? onTap}) {
@@ -1477,6 +1481,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           title: const Text('Notificaciones'),
           value: widget.state.notificationsOn,
           onChanged: (_) => widget.state.toggleNotificationsPref(),
+        ),
+        SwitchListTile(
+          secondary: const Icon(Icons.dark_mode_outlined),
+          title: const Text('Tema oscuro'),
+          subtitle: const Text('Igual que Instagram: oscuro o claro'),
+          value: widget.state.darkMode,
+          onChanged: (_) => widget.state.toggleDarkMode(),
         ),
         _h('Quién puede ver tu contenido'),
         SwitchListTile(
@@ -1568,7 +1579,7 @@ class PrefsPeopleScreen extends StatelessWidget {
           return ListTile(
             leading: Avatar(u.avatarPath, size: 40),
             title: Text(u.username),
-            trailing: Text(on ? 'Quitar' : 'Agregar', style: const TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w700)),
+            trailing: Text(on ? 'Quitar' : 'Agregar', style: TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w700)),
             onTap: () => onToggle(u.id),
           );
         }).toList(),
@@ -1676,7 +1687,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             RichText(
               text: TextSpan(
-                style: const TextStyle(color: LumaColors.text, fontSize: 14, height: 1.3),
+                style: TextStyle(color: LumaColors.text, fontSize: 14, height: 1.3),
                 children: [
                   TextSpan(text: u.username, style: const TextStyle(fontWeight: FontWeight.w600)),
                   const TextSpan(text: '  '),
@@ -1685,7 +1696,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
               ),
             ),
             const SizedBox(height: 4),
-            Text(time, style: const TextStyle(color: LumaColors.textSecondary, fontSize: 12)),
+            Text(time, style: TextStyle(color: LumaColors.textSecondary, fontSize: 12)),
           ]),
         ),
       ]),
@@ -1941,11 +1952,11 @@ class StoryTray extends StatelessWidget {
                       gradient: unseen
                           ? const LinearGradient(colors: [Color(0xFFF58529), Color(0xFFDD2A7B), Color(0xFF8134AF)])
                           : null,
-                      border: Border.all(color: unseen ? Colors.transparent : (has ? const Color(0xFFC7C7C7) : LumaColors.hairline)),
+                      border: Border.all(color: unseen ? Colors.transparent : const Color(0xFFB8B8B8), width: 1.6),
                     ),
                     child: Container(
                       padding: const EdgeInsets.all(2),
-                      decoration: const BoxDecoration(color: Color(0xFF000000), shape: BoxShape.circle),
+                      decoration: BoxDecoration(color: LumaColors.bg, shape: BoxShape.circle),
                       child: Stack(
                         clipBehavior: Clip.none,
                         children: [
@@ -2420,7 +2431,7 @@ class PeopleScreen extends StatelessWidget {
                   },
                   leading: Avatar(u.avatarPath, size: 44),
                   title: Text(u.username, style: const TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: Text(u.name, style: const TextStyle(color: LumaColors.textSecondary)),
+                  subtitle: Text(u.name, style: TextStyle(color: LumaColors.textSecondary)),
                   trailing: u.id == state.me.id ? null : _FollowChip(following: state.isFollowing(u.id), pending: state.isPendingFollow(u.id), onTap: () => state.toggleFollow(u.id)),
                 );
               },
