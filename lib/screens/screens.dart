@@ -275,18 +275,20 @@ class FeedScreen extends StatelessWidget {
     final items = state.feed;
     return Scaffold(
       appBar: AppBar(
-        title: const Padding(
-          padding: EdgeInsets.only(left: 8),
-          child: Text('Space Social', style: TextStyle(fontFamily: 'GrandHotel', fontSize: 30, fontWeight: FontWeight.w400, color: LumaColors.text, height: 1)),
+        centerTitle: true,
+        leadingWidth: 48,
+        leading: IconButton(
+          onPressed: onOpenCreate,
+          icon: CustomPaint(size: const Size.square(26), painter: AddBoxPainter(LumaColors.text)),
+        ),
+        title: const Text(
+          'Space Social',
+          style: TextStyle(fontFamily: 'GrandHotel', fontSize: 32, fontWeight: FontWeight.w400, color: LumaColors.text, height: 1),
         ),
         actions: [
           IconButton(
-            onPressed: onOpenCreate,
-            icon: CustomPaint(size: const Size.square(24), painter: AddBoxPainter(LumaColors.text)),
-          ),
-          IconButton(
             onPressed: onOpenActivity,
-            icon: CustomPaint(size: const Size.square(24), painter: HeartPainter(LumaColors.text)),
+            icon: CustomPaint(size: const Size.square(26), painter: HeartPainter(LumaColors.text)),
           ),
         ],
         bottom: const PreferredSize(
