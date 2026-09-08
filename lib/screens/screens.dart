@@ -1103,7 +1103,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 }
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key, required this.state, required this.onClose, required this.onLogout, this.onEdit, this.onSaved, this.onActivity});
   final AppState state;
   final VoidCallback onClose;
@@ -1112,104 +1112,110 @@ class SettingsScreen extends StatelessWidget {
   final VoidCallback? onSaved;
   final VoidCallback? onActivity;
   @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  String q = '';
+
+  void _soon(String name) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$name: todavía no está en Space Social')));
+  }
+
+  Widget _h(String t) => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 18, 16, 6),
+        child: Text(t, style: const TextStyle(color: LumaColors.textSecondary, fontWeight: FontWeight.w600, fontSize: 13)),
+      );
+
+  Widget _i(IconData icon, String title, {String? sub, VoidCallback? onTap}) {
+    if (q.isNotEmpty && !title.toLowerCase().contains(q) && !(sub ?? '').toLowerCase().contains(q)) {
+      return const SizedBox.shrink();
+    }
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(title),
+      subtitle: sub == null ? null : Text(sub),
+      trailing: const Icon(Icons.chevron_right, size: 20, color: LumaColors.textTertiary),
+      onTap: onTap ?? () => _soon(title),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final me = state.me;
+    final me = widget.state.me;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        leading: IconButton(onPressed: onClose, icon: CustomPaint(size: const Size.square(22), painter: BackPainter(LumaColors.text))),
-        title: const Text('Ajustes y actividad', style: TextStyle(fontFamily: null, fontSize: 18, fontWeight: FontWeight.w700, color: LumaColors.text)),
+        leading: IconButton(onPressed: widget.onClose, icon: CustomPaint(size: const Size.square(22), painter: BackPainter(LumaColors.text))),
+        title: const Text('Ajustes y actividad', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
       ),
       body: ListView(children: [
-        const Padding(
-          padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: Text('Tu cuenta', style: TextStyle(color: LumaColors.textSecondary, fontWeight: FontWeight.w600, fontSize: 13)),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          child: TextField(
+            onChanged: (v) => setState(() => q = v.toLowerCase()),
+            decoration: InputDecoration(
+              hintText: 'Buscar ajustes',
+              prefixIcon: const Icon(Icons.search),
+              filled: true,
+              fillColor: const Color(0xFFF2F2F2),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+              contentPadding: const EdgeInsets.symmetric(vertical: 0),
+            ),
+          ),
         ),
         ListTile(
-          leading: Avatar(me.avatarPath, size: 52),
-          title: Text(me.name.isEmpty ? me.username : me.name, style: const TextStyle(fontWeight: FontWeight.w700)),
-          subtitle: Text('@${me.username}\n${me.email}'),
-          isThreeLine: true,
+          leading: Avatar(me.avatarPath, size: 48),
+          title: const Text('Cuentas', style: TextStyle(fontWeight: FontWeight.w700)),
+          subtitle: Text('Contraseña, email y @${me.username}'),
           trailing: const Icon(Icons.chevron_right),
-          onTap: onEdit,
+          onTap: widget.onEdit,
         ),
-        ListTile(
-          leading: const Icon(Icons.person_outline),
-          title: const Text('Editar perfil'),
-          subtitle: const Text('Foto, nombre, usuario y bio'),
-          onTap: onEdit,
-        ),
-        const Divider(height: 24),
-        const Padding(
-          padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
-          child: Text('Cómo usás Space Social', style: TextStyle(color: LumaColors.textSecondary, fontWeight: FontWeight.w600, fontSize: 13)),
-        ),
-        ListTile(
-          leading: const Icon(Icons.bookmark_border),
-          title: const Text('Guardados'),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: onSaved,
-        ),
-        ListTile(
-          leading: const Icon(Icons.history),
-          title: const Text('Tu actividad'),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: onActivity,
-        ),
-        ListTile(
-          leading: const Icon(Icons.notifications_none),
-          title: const Text('Notificaciones'),
-          subtitle: const Text('Likes, comentarios y seguidores'),
-          onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Las notificaciones están en la campana del inicio'))),
-        ),
-        const Divider(height: 24),
-        const Padding(
-          padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
-          child: Text('Quién puede verte', style: TextStyle(color: LumaColors.textSecondary, fontWeight: FontWeight.w600, fontSize: 13)),
-        ),
-        ListTile(
-          leading: const Icon(Icons.lock_outline),
-          title: const Text('Privacidad de la cuenta'),
-          subtitle: const Text('Pública: cualquiera puede ver tus posts y seguirte'),
-          onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Las cuentas privadas llegan en otra versión'))),
-        ),
-        ListTile(
-          leading: const Icon(Icons.alternate_email),
-          title: const Text('Usuario'),
-          subtitle: Text('@${me.username} · único, reservado 3 meses si lo cambiás'),
-        ),
-        ListTile(
-          leading: const Icon(Icons.lock_reset_outlined),
-          title: const Text('Contraseña'),
-          subtitle: const Text('Te mandamos un mail para cambiarla'),
-          onTap: () async {
-            final ok = await state.sendReset(me.email);
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(ok ? 'Revisá ${me.email}' : (state.lastError ?? 'No se pudo'))));
-            }
-          },
-        ),
-        const Divider(height: 24),
-        const Padding(
-          padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
-          child: Text('App', style: TextStyle(color: LumaColors.textSecondary, fontWeight: FontWeight.w600, fontSize: 13)),
-        ),
-        const ListTile(
-          leading: Icon(Icons.sd_storage_outlined),
-          title: Text('Almacenamiento'),
-          subtitle: Text('Las fotos quedan en caché para abrir más rápido'),
-        ),
-        const ListTile(
-          leading: Icon(Icons.info_outline),
-          title: Text('Space Social'),
-          subtitle: Text('Versión 1.8.6'),
-        ),
+        _h('Cómo usás Space Social'),
+        _i(Icons.bookmark_border, 'Guardado', onTap: widget.onSaved),
+        _i(Icons.inventory_2_outlined, 'Archivo'),
+        _i(Icons.history, 'Tu actividad', onTap: widget.onActivity),
+        _i(Icons.notifications_none, 'Notificaciones', sub: 'Likes, comentarios y seguidores en la campana'),
+        _i(Icons.schedule, 'Tiempo en la app'),
+        _h('Quién puede ver tu contenido'),
+        _i(Icons.lock_outline, 'Privacidad de la cuenta', sub: 'Pública'),
+        _i(Icons.star_outline, 'Amigos cercanos'),
+        _i(Icons.block, 'Cuentas bloqueadas'),
+        _i(Icons.visibility_off_outlined, 'Ocultar historias'),
+        _h('Cómo pueden interactuar con vos'),
+        _i(Icons.chat_bubble_outline, 'Mensajes y respuestas a historias'),
+        _i(Icons.alternate_email, 'Etiquetas y menciones'),
+        _i(Icons.mode_comment_outlined, 'Comentarios'),
+        _i(Icons.movie_filter_outlined, 'Remix y recortes'),
+        _i(Icons.person_off_outlined, 'Cuentas restringidas'),
+        _i(Icons.tune, 'Limitar interacciones'),
+        _h('Qué ves'),
+        _i(Icons.star, 'Favoritos'),
+        _i(Icons.volume_off_outlined, 'Cuentas silenciadas'),
+        _i(Icons.auto_awesome, 'Tu algoritmo'),
+        _i(Icons.favorite_border, 'Cantidad de Me gusta'),
+        _h('Tu app y contenido'),
+        _i(Icons.phone_android, 'Permisos del dispositivo'),
+        _i(Icons.download_outlined, 'Descargar información'),
+        _i(Icons.accessibility_new, 'Accesibilidad'),
+        _i(Icons.translate, 'Idioma'),
+        _i(Icons.sd_storage_outlined, 'Uso de datos y almacenamiento', sub: 'Caché de fotos activado'),
+        _h('Para profesionales'),
+        _i(Icons.insights_outlined, 'Cambiar a cuenta profesional'),
+        _h('Más información y asistencia'),
+        _i(Icons.help_outline, 'Ayuda'),
+        _i(Icons.privacy_tip_outlined, 'Privacidad del centro'),
+        _i(Icons.info_outline, 'Información de la app', sub: 'Space Social 1.8.7'),
         const Divider(height: 24),
         ListTile(
-          leading: const Icon(Icons.logout, color: Color(0xFFED4956)),
+          title: const Text('Agregar cuenta', style: TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w600)),
+          onTap: () => _soon('Agregar cuenta'),
+        ),
+        ListTile(
           title: const Text('Cerrar sesión', style: TextStyle(color: Color(0xFFED4956), fontWeight: FontWeight.w600)),
-          onTap: onLogout,
+          onTap: widget.onLogout,
         ),
+        const SizedBox(height: 24),
       ]),
     );
   }
