@@ -527,6 +527,7 @@ class _CreateScreenState extends State<CreateScreen> {
         nativeOk = true;
         nativeLoading = false;
       });
+      if (media == null && list.isNotEmpty) await _fromAsset(list.first);
     } catch (_) {
       if (mounted) setState(() => nativeLoading = false);
     }
@@ -656,7 +657,7 @@ class _CreateScreenState extends State<CreateScreen> {
                 IconButton(onPressed: _back, icon: const Icon(Icons.close, color: Colors.white)),
                 Expanded(
                   child: Text(
-                    step == 1 ? 'Nueva ${labels[mode].toLowerCase()}' : 'Recientes',
+                    mode == 2 ? 'Nuevo reel' : (mode == 1 ? 'Nueva historia' : 'Nueva publicación'),
                     textAlign: TextAlign.center,
                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16),
                   ),
@@ -685,21 +686,30 @@ class _CreateScreenState extends State<CreateScreen> {
             Expanded(
               child: step == 1
                   ? Container(
-                      color: Colors.white,
+                      color: Colors.black,
                       child: ListView(
                         padding: const EdgeInsets.all(16),
                         children: [
                           if (media != null)
                             AspectRatio(
                               aspectRatio: mode == 0 ? 1 : 9 / 16,
-                              child: video
-                                  ? const ColoredBox(color: Colors.black, child: Center(child: Icon(Icons.play_circle, color: Colors.white, size: 48)))
-                                  : Image.file(media!, fit: BoxFit.cover),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: video
+                                    ? const ColoredBox(color: Color(0xFF111111), child: Center(child: Icon(Icons.play_circle, color: Colors.white, size: 48)))
+                                    : Image.file(media!, fit: BoxFit.cover),
+                              ),
                             ),
+                          const SizedBox(height: 12),
                           TextField(
                             controller: caption,
                             maxLines: 4,
-                            decoration: const InputDecoration(hintText: 'Escribí un pie de foto...', border: InputBorder.none),
+                            style: const TextStyle(color: Colors.white),
+                            decoration: const InputDecoration(
+                              hintText: 'Escribí un pie de foto...',
+                              hintStyle: TextStyle(color: Colors.white54),
+                              border: InputBorder.none,
+                            ),
                           ),
                         ],
                       ),
@@ -740,19 +750,23 @@ class _CreateScreenState extends State<CreateScreen> {
                                 ]),
                         ),
                       ),
-                      Container(
-                        color: const Color(0xFF111111),
-                        padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
                         child: Row(children: [
-                          const Text('Recientes', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                          const Text('Recientes', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+                          const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 20),
                           const Spacer(),
-                          IconButton(
-                            onPressed: () => _pick(asVideo: false, camera: true),
-                            icon: const Icon(Icons.photo_camera_outlined, color: Colors.white),
-                          ),
-                          IconButton(
-                            onPressed: () => _pick(asVideo: mode == 2),
-                            icon: const Icon(Icons.photo_library_outlined, color: Colors.white),
+                          GestureDetector(
+                            onTap: () => _pick(asVideo: mode == 2),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(color: const Color(0xFF2A2A2A), borderRadius: BorderRadius.circular(16)),
+                              child: const Row(children: [
+                                Icon(Icons.copy_outlined, color: Colors.white, size: 16),
+                                SizedBox(width: 6),
+                                Text('Seleccionar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
+                              ]),
+                            ),
                           ),
                         ]),
                       ),
@@ -767,40 +781,35 @@ class _CreateScreenState extends State<CreateScreen> {
                             mainAxisSpacing: 1.2,
                             crossAxisSpacing: 1.2,
                           ),
-                          itemCount: nativeOk ? native.length + 2 : gallery.length + 2,
+                          itemCount: (nativeOk ? native.length : gallery.length) + 1,
                           itemBuilder: (context, i) {
                             if (i == 0) {
                               return GestureDetector(
-                                onTap: () => _pick(asVideo: false, camera: true),
+                                onTap: () => _pick(asVideo: mode == 2, camera: true),
                                 child: const ColoredBox(
-                                  color: Color(0xFF2A2A2A),
-                                  child: Icon(Icons.photo_camera_outlined, color: Colors.white),
-                                ),
-                              );
-                            }
-                            if (i == 1) {
-                              return GestureDetector(
-                                onTap: () => _pick(asVideo: true),
-                                child: const ColoredBox(
-                                  color: Color(0xFF2A2A2A),
-                                  child: Icon(Icons.videocam_outlined, color: Colors.white),
+                                  color: Color(0xFF1A1A1A),
+                                  child: Icon(Icons.photo_camera_outlined, color: Colors.white, size: 32),
                                 ),
                               );
                             }
                             if (nativeOk) {
-                              final a = native[i - 2];
+                              final a = native[i - 1];
                               return GestureDetector(
                                 onTap: () => _fromAsset(a),
-                                child: FutureBuilder(
-                                  future: a.thumbnailDataWithSize(const ThumbnailSize.square(200)),
-                                  builder: (_, s) {
-                                    if (s.data == null) return const ColoredBox(color: Color(0xFF2A2A2A));
-                                    return Image.memory(s.data as Uint8List, fit: BoxFit.cover);
-                                  },
-                                ),
+                                child: Stack(fit: StackFit.expand, children: [
+                                  FutureBuilder(
+                                    future: a.thumbnailDataWithSize(const ThumbnailSize.square(300)),
+                                    builder: (_, s) {
+                                      if (s.data == null) return const ColoredBox(color: Color(0xFF2A2A2A));
+                                      return Image.memory(s.data as Uint8List, fit: BoxFit.cover);
+                                    },
+                                  ),
+                                  if (a.type == AssetType.video)
+                                    const Positioned(right: 6, bottom: 6, child: Icon(Icons.play_circle_fill, color: Colors.white, size: 18)),
+                                ]),
                               );
                             }
-                            final f = gallery[i - 2];
+                            final f = gallery[i - 1];
                             final on = media?.path == f.path;
                             return GestureDetector(
                               onTap: () => _select(f),
