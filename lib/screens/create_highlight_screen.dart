@@ -90,7 +90,7 @@ class _CreateHighlightScreenState extends State<CreateHighlightScreen> {
                   autofocus: true,
                   textAlign: TextAlign.center,
                   style: TextStyle(color: SpaceColors.text, fontSize: 18),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'Nombre de la historia',
                     hintStyle: TextStyle(color: SpaceColors.textMuted),
                     enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: SpaceColors.hairline)),
@@ -132,7 +132,7 @@ class _CreateHighlightScreenState extends State<CreateHighlightScreen> {
                               color: isSelected ? SpaceColors.cosmicCyan : Colors.black45,
                               border: Border.all(color: SpaceColors.text, width: 1.5),
                             ),
-                            child: isSelected ? const Icon(Icons.check, size: 14, color: Colors.black) : null,
+                            child: isSelected ? Icon(Icons.check, size: 14, color: Colors.black) : null,
                           ),
                         ),
                       ]),

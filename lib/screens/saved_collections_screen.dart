@@ -46,7 +46,7 @@ class _SavedCollectionsScreenState extends State<SavedCollectionsScreen> {
         content: TextField(
           controller: controller,
           style: TextStyle(color: SpaceColors.text),
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             hintText: 'Nombre de la colección',
             hintStyle: TextStyle(color: SpaceColors.textMuted),
             enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: SpaceColors.cosmicCyan)),

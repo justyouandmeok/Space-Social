@@ -70,7 +70,7 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
         maxChildSize: 0.95,
         builder: (_, scrollController) {
           return Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: SpaceColors.darkMatter,
               borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
@@ -140,7 +140,7 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
               ),
               Container(
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: SpaceColors.deepSpace,
                   border: Border(top: BorderSide(color: SpaceColors.hairline)),
                 ),
@@ -151,7 +151,7 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                     child: TextField(
                       controller: _commentController,
                       style: TextStyle(color: SpaceColors.text),
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         hintText: 'Añade un comentario...',
                         hintStyle: TextStyle(color: SpaceColors.textMuted, fontSize: 14),
                         border: InputBorder.none,

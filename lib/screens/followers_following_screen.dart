@@ -72,7 +72,7 @@ class _FollowersFollowingScreenState extends State<FollowersFollowingScreen> {
                 controller: _searchController,
                 onChanged: (v) => setState(() => _q = v.toLowerCase()),
                 style: TextStyle(color: SpaceColors.text, fontSize: 14),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   prefixIcon: Icon(Icons.search, color: SpaceColors.textMuted, size: 20),
                   hintText: 'Buscar...',
                   hintStyle: TextStyle(color: SpaceColors.textMuted, fontSize: 14),

@@ -86,7 +86,7 @@ class _SearchScreenState extends State<SearchScreen> {
             onChanged: (_) => setState(() {}),
             onSubmitted: (v) => _remember(v.trim()),
             style: TextStyle(color: SpaceColors.text),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               prefixIcon: Icon(Icons.search, color: SpaceColors.cosmicCyan, size: 20),
               hintText: 'Buscar cuentas, hashtags o temas...',
               hintStyle: TextStyle(color: SpaceColors.textMuted, fontSize: 14),

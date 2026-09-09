@@ -15,7 +15,7 @@ class ShareSheet {
         child: SizedBox(
           height: 420,
           child: Column(children: [
-            const Padding(
+            Padding(
               padding: EdgeInsets.all(12),
               child: Text('Enviar', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
             ),

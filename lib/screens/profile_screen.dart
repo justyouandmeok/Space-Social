@@ -217,7 +217,7 @@ class ProfileScreen extends StatelessWidget {
             SliverPersistentHeader(
               pinned: true,
               delegate: _TabBarDelegate(
-                tabBar: const TabBar(
+                tabBar: TabBar(
                   indicatorColor: Colors.white,
                   tabs: [
                     Tab(icon: Icon(Icons.grid_on, color: SpaceColors.text)),
@@ -270,7 +270,7 @@ class ProfileScreen extends StatelessWidget {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Destacada “$name” creada')));
           }
         },
-        child: const Column(children: [
+        child: Column(children: [
           CircleAvatar(radius: 28, backgroundColor: Color(0xFF1A1A1A), child: Icon(Icons.add, color: SpaceColors.text)),
           SizedBox(height: 4),
           Text('Nueva', style: TextStyle(color: SpaceColors.text, fontSize: 11)),
@@ -358,7 +358,7 @@ class ProfileScreen extends StatelessWidget {
             left: 6,
             child: Container(
               padding: const EdgeInsets.all(3),
-              decoration: const BoxDecoration(color: Color(0x99000000), shape: BoxShape.circle),
+              decoration: BoxDecoration(color: Color(0x99000000), shape: BoxShape.circle),
               child: Icon(Icons.person_pin_outlined, color: SpaceColors.text, size: 14),
             ),
           ),
@@ -399,7 +399,7 @@ class ProfileScreen extends StatelessWidget {
                 right: 6,
                 child: Container(
                   padding: const EdgeInsets.all(3),
-                  decoration: const BoxDecoration(color: Color(0x99000000), shape: BoxShape.circle),
+                  decoration: BoxDecoration(color: Color(0x99000000), shape: BoxShape.circle),
                   child: Icon(Icons.push_pin, color: SpaceColors.text, size: 14),
                 ),
               )
@@ -409,7 +409,7 @@ class ProfileScreen extends StatelessWidget {
                 right: 6,
                 child: Container(
                   padding: const EdgeInsets.all(3),
-                  decoration: const BoxDecoration(color: Color(0x99000000), shape: BoxShape.circle),
+                  decoration: BoxDecoration(color: Color(0x99000000), shape: BoxShape.circle),
                   child: Icon(p.isReel ? Icons.collections : Icons.play_arrow, color: SpaceColors.text, size: 14),
                 ),
               ),
@@ -556,7 +556,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 onTap: _pick,
                 child: Container(
                   padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(colors: [SpaceColors.cosmicCyan, SpaceColors.nebulaPurple]),
                   ),

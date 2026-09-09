@@ -38,7 +38,7 @@ class LinksBottomSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final links = _links;
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: SpaceColors.darkMatter,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -53,7 +53,7 @@ class LinksBottomSheet extends StatelessWidget {
             Text('Enlaces', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 8),
             if (links.isEmpty)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(bottom: 16),
                 child: Text('No hay enlaces en este perfil', style: TextStyle(color: SpaceColors.textMuted)),
               )
