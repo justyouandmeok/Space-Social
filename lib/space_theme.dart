@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class SpaceColors {
-  static bool dark = true;
+  static bool dark = false;
 
   static const cosmicCyan = Color(0xFF5CE1E6);
   static const nebulaPurple = Color(0xFF9B5DE5);
@@ -12,13 +12,13 @@ class SpaceColors {
   static const deepSpace = Color(0xFF000000);
   static const like = Color(0xFFFF3040);
 
-  static Color get bg => dark ? const Color(0xFF000000) : const Color(0xFFFFFFFF);
-  static Color get surface => dark ? const Color(0xFF121212) : const Color(0xFFF2F2F2);
-  static Color get text => dark ? const Color(0xFFF5F5F5) : const Color(0xFF262626);
-  static Color get textMuted => dark ? const Color(0x99FFFFFF) : const Color(0x99262626);
-  static Color get hairline => dark ? const Color(0x22FFFFFF) : const Color(0x22000000);
-  static Color get nav => dark ? const Color(0xFF000000) : const Color(0xFFFFFFFF);
-  static Color get icon => dark ? Colors.white : const Color(0xFF262626);
+  static Color get bg => const Color(0xFFFFFFFF);
+  static Color get surface => const Color(0xFFEFEEF1);
+  static Color get text => const Color(0xFF000000);
+  static Color get textMuted => const Color(0xFF737373);
+  static Color get hairline => const Color(0xFFDBDBDB);
+  static Color get nav => const Color(0xFFFFFFFF);
+  static Color get icon => const Color(0xFF000000);
 }
 
 const spacePageTransitions = PageTransitionsTheme(

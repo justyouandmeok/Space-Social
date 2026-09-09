@@ -5,6 +5,7 @@ import 'config.dart';
 import 'screens/main_screen.dart';
 import 'space_theme.dart';
 import 'state.dart';
+import 'theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,13 +33,13 @@ class _SpaceSocialAppState extends State<SpaceSocialApp> {
 
   @override
   Widget build(BuildContext context) {
-    SpaceColors.dark = state.darkMode;
+    SpaceColors.dark = false;
+    LumaColors.dark = false;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Space Social',
       theme: buildSpaceTheme(dark: false),
-      darkTheme: buildSpaceTheme(dark: true),
-      themeMode: state.darkMode ? ThemeMode.dark : ThemeMode.light,
+      themeMode: ThemeMode.light,
       themeAnimationDuration: const Duration(milliseconds: 280),
       themeAnimationCurve: Curves.easeOutCubic,
       home: !state.ready

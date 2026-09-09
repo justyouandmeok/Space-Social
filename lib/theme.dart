@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class LumaColors {
-  static bool dark = true;
-  static const bg = Color(0xFF000000);
-  static const bgElevated = Color(0xFF121212);
-  static const text = Color(0xFFF5F5F5);
-  static const textSecondary = Color(0xFFB8B8B8);
+  static bool dark = false;
+  static const bg = Color(0xFFFFFFFF);
+  static const bgElevated = Color(0xFFEFEEF1);
+  static const text = Color(0xFF000000);
+  static const textSecondary = Color(0xFF737373);
   static const textTertiary = Color(0xFF8E8E8E);
-  static const hairline = Color(0xFF8E8E8E);
+  static const hairline = Color(0xFFDBDBDB);
   static const blue = Color(0xFF0095F6);
   static const bluePressed = Color(0xFF1877F2);
   static const link = Color(0xFF0095F6);

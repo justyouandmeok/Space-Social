@@ -62,7 +62,7 @@ class AppState extends ChangeNotifier {
   String query = '';
   String? lastError;
   bool hideLikes = false;
-  bool darkMode = true;
+  bool darkMode = false;
   bool notificationsOn = true;
   Set<String> blocked = {};
   Set<String> muted = {};
@@ -372,9 +372,9 @@ class AppState extends ChangeNotifier {
         if (d.id != currentUserId) continue;
         final data = d.data();
         hideLikes = data['hideLikes'] == true;
-        darkMode = data['darkMode'] != false;
-        LumaColors.dark = darkMode;
-        SpaceColors.dark = darkMode;
+        darkMode = false;
+        LumaColors.dark = false;
+        SpaceColors.dark = false;
         notificationsOn = data['notificationsOn'] != false;
         blocked = {...List<String>.from(data['blocked'] ?? const [])};
         muted = {...List<String>.from(data['muted'] ?? const [])};

@@ -254,11 +254,12 @@ class ProfileScreen extends StatelessWidget {
     return ElevatedButton(
       onPressed: onTap,
       style: ElevatedButton.styleFrom(
-        backgroundColor: SpaceColors.surface,
-        foregroundColor: SpaceColors.text,
+        backgroundColor: const Color(0xFFEFEEF1),
+        foregroundColor: Colors.black,
+        elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
-      child: Text(label),
+      child: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
     );
   }
 
@@ -682,7 +683,11 @@ class SettingsScreen extends StatelessWidget {
         SwitchListTile(secondary: Icon(Icons.favorite_border, color: SpaceColors.text), title: Text('Ocultar recuento de Me gusta', style: TextStyle(color: SpaceColors.text)), value: state.hideLikes, onChanged: (_) => state.toggleHideLikes()),
         Padding(padding: const EdgeInsets.fromLTRB(16, 16, 16, 6), child: Text('Tu app', style: TextStyle(color: SpaceColors.textMuted, fontSize: 13, fontWeight: FontWeight.w600))),
         SwitchListTile(secondary: Icon(Icons.notifications_none, color: SpaceColors.text), title: Text('Notificaciones', style: TextStyle(color: SpaceColors.text)), value: state.notificationsOn, onChanged: (_) => state.toggleNotificationsPref()),
-        SwitchListTile(secondary: Icon(Icons.dark_mode_outlined, color: SpaceColors.text), title: Text('Tema oscuro', style: TextStyle(color: SpaceColors.text)), subtitle: Text('Claro u oscuro en toda la app', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)), value: state.darkMode, onChanged: (_) => state.toggleDarkMode()),
+        ListTile(
+          leading: Icon(Icons.palette_outlined, color: SpaceColors.text),
+          title: Text('Tema', style: TextStyle(color: SpaceColors.text)),
+          subtitle: Text('Claro — fondo blanco y texto negro', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+        ),
         const Divider(height: 24),
         ListTile(
           title: Text('Cerrar sesión', style: TextStyle(color: Color(0xFFED4956), fontWeight: FontWeight.w600)),
