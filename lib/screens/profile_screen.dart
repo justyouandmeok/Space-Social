@@ -13,6 +13,7 @@ import '../widgets/account_switch_modal.dart';
 import '../widgets/profile_drawer_modal.dart';
 import '../widgets/links_bottom_sheet.dart';
 import 'create_highlight_screen.dart';
+import 'followers_following_screen.dart';
 import 'creator_insights_screen.dart';
 import 'post_detail_feed_screen.dart';
 import 'saved_collections_screen.dart';
@@ -83,8 +84,18 @@ class ProfileScreen extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               _stat(compact(posts.length + reels.length), 'Publicaciones'),
-                              _stat(compact(state.followersOf(user.id).length), 'Seguidores'),
-                              _stat(compact(state.followingOf(user.id).length), 'Siguiendo'),
+                              GestureDetector(
+                                onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (_) => FollowersFollowingScreen(state: state, user: user, initialTabIndex: 0, onOpenProfile: onOpenProfile),
+                                )),
+                                child: _stat(compact(state.followersOf(user.id).length), 'Seguidores'),
+                              ),
+                              GestureDetector(
+                                onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (_) => FollowersFollowingScreen(state: state, user: user, initialTabIndex: 1, onOpenProfile: onOpenProfile),
+                                )),
+                                child: _stat(compact(state.followingOf(user.id).length), 'Siguiendo'),
+                              ),
                             ],
                           ),
                         ),
