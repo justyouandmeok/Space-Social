@@ -4,6 +4,7 @@ import '../state.dart';
 import '../widgets/comments_bottom_sheet.dart';
 import '../widgets/space_post_card.dart';
 import '../widgets/story_bubble.dart';
+import 'direct_messages_screen.dart';
 import 'notifications_screen.dart';
 import 'post_screen.dart';
 
@@ -34,7 +35,9 @@ class FeedScreen extends StatelessWidget {
           IconButton(icon: const Icon(Icons.favorite_border, color: Colors.white), onPressed: () {
             Navigator.of(context).push(MaterialPageRoute(builder: (_) => NotificationsScreen(state: state, onOpenProfile: onOpenProfile)));
           }),
-          IconButton(icon: const Icon(Icons.send_outlined, color: Colors.white), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.send_outlined, color: Colors.white), onPressed: () {
+            Navigator.of(context).push(MaterialPageRoute(builder: (_) => DirectMessagesScreen(state: state, onOpenProfile: onOpenProfile)));
+          }),
         ],
       ),
       body: RefreshIndicator(
