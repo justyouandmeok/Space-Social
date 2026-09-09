@@ -4,6 +4,7 @@ import '../state.dart';
 import '../widgets/comments_bottom_sheet.dart';
 import '../widgets/space_post_card.dart';
 import '../widgets/story_bubble.dart';
+import 'notifications_screen.dart';
 import 'post_screen.dart';
 
 class FeedScreen extends StatelessWidget {
@@ -30,7 +31,9 @@ class FeedScreen extends StatelessWidget {
           style: TextStyle(fontFamily: 'GrandHotel', fontSize: 32, color: Colors.white),
         ),
         actions: [
-          IconButton(icon: const Icon(Icons.favorite_border, color: Colors.white), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.favorite_border, color: Colors.white), onPressed: () {
+            Navigator.of(context).push(MaterialPageRoute(builder: (_) => NotificationsScreen(state: state, onOpenProfile: onOpenProfile)));
+          }),
           IconButton(icon: const Icon(Icons.send_outlined, color: Colors.white), onPressed: () {}),
         ],
       ),
