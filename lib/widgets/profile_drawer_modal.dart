@@ -24,7 +24,7 @@ class ProfileDrawerModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: SpaceColors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),

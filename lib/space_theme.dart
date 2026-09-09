@@ -23,8 +23,8 @@ class SpaceColors {
 
 const spacePageTransitions = PageTransitionsTheme(
   builders: {
-    TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-    TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+    TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+    TargetPlatform.iOS: FadeUpwardsPageTransitionsBuilder(),
   },
 );
 

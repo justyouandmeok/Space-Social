@@ -19,7 +19,7 @@ class AccountSwitchModal extends StatelessWidget {
   Widget build(BuildContext context) {
     final me = state.me;
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: SpaceColors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),

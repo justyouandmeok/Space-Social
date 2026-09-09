@@ -3,6 +3,7 @@ import '../models.dart';
 import '../state.dart';
 import '../store.dart';
 import '../theme.dart';
+import '../space_theme.dart';
 import '../widgets/media_view.dart';
 import '../widgets/network_photo.dart';
 import '../widgets/comments_bottom_sheet.dart';
