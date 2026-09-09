@@ -30,14 +30,18 @@ class ProfileScreen extends StatelessWidget {
     final highlights = state.storiesOf(user.id);
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: SpaceColors.deepSpace,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: SpaceColors.deepSpace,
         elevation: 0,
         title: GestureDetector(
           onTap: isMe ? () => AccountSwitchModal.show(context, state) : null,
           child: Row(
             children: [
+              if (user.privateAccount) ...[
+                const Icon(Icons.lock_outline, size: 16, color: Colors.white),
+                const SizedBox(width: 6),
+              ],
               Flexible(child: Text(user.username, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white))),
               if (isMe) const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 20),
             ],
