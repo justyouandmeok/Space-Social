@@ -102,7 +102,17 @@ class ProfileScreen extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Text(user.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    Row(children: [
+                      Flexible(child: Text(user.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15))),
+                      if (isMe) ...[
+                        const SizedBox(width: 4),
+                        Container(
+                          padding: const EdgeInsets.all(1.5),
+                          decoration: const BoxDecoration(color: SpaceColors.cosmicCyan, shape: BoxShape.circle),
+                          child: const Icon(Icons.check, size: 11, color: Colors.black),
+                        ),
+                      ],
+                    ]),
                     if (user.bio.isNotEmpty) Text(user.bio, style: const TextStyle(color: Colors.white)),
                     if (user.website.isNotEmpty)
                       GestureDetector(
