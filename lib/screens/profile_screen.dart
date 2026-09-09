@@ -177,7 +177,7 @@ class ProfileScreen extends StatelessWidget {
           body: TabBarView(
             children: [
               _grid(posts),
-              _grid(reels),
+              _reelsGrid(reels),
               _taggedGrid(),
             ],
           ),
