@@ -96,7 +96,17 @@ class ProfileScreen extends StatelessWidget {
                     if (user.website.isNotEmpty)
                       GestureDetector(
                         onTap: () => LinksBottomSheet.show(context, user),
-                        child: Text(user.website, style: const TextStyle(color: LumaColors.blue, fontSize: 13)),
+                        child: Row(children: [
+                          const Icon(Icons.link, color: SpaceColors.cosmicCyan, size: 16),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              user.website.replaceFirst(RegExp(r'^https?://'), ''),
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(color: SpaceColors.cosmicCyan, fontWeight: FontWeight.w600, fontSize: 13),
+                            ),
+                          ),
+                        ]),
                       ),
                     const SizedBox(height: 12),
                     if (isMe)
