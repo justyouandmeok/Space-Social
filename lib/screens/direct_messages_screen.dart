@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models.dart';
@@ -5,6 +6,7 @@ import '../space_theme.dart';
 import '../state.dart';
 import '../store.dart';
 import '../widgets/network_photo.dart';
+import '../widgets/media_view.dart';
 
 class DirectMessagesScreen extends StatelessWidget {
   const DirectMessagesScreen({super.key, required this.state, this.onOpenProfile});
@@ -181,7 +183,11 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                           color: isMe ? SpaceColors.nebulaPurple : SpaceColors.darkMatter,
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        child: Text(msg.text, style: const TextStyle(color: Colors.white, fontSize: 14)),
+                        child: msg.text.startsWith('IMG::')
+                          ? SizedBox(width: 180, height: 180, child: MediaView(msg.text.substring(5)))
+                          : msg.text.startsWith('POST::')
+                              ? _sharedPost(widget.state, msg.text.substring(6))
+                              : Text(msg.text, style: const TextStyle(color: Colors.white, fontSize: 14)),
                       ),
                     );
                   },
@@ -194,7 +200,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
             IconButton(icon: const Icon(Icons.image_outlined, color: Colors.white70), onPressed: () async {
               final x = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
               if (x == null) return;
-              await widget.state.sendMessage(widget.user.id, '📷 ${x.name}');
+              await widget.state.sendImage(widget.user.id, File(x.path));
               if (mounted) setState(() {});
             }),
             Expanded(

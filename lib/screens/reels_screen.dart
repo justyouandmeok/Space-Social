@@ -9,6 +9,8 @@ import '../widgets/comments_bottom_sheet.dart';
 import '../widgets/share_sheet.dart';
 import 'post_screen.dart';
 
+final _countedViews = <String>{};
+
 class ReelsScreen extends StatelessWidget {
   const ReelsScreen({super.key, required this.state, required this.playing, required this.onOpenProfile});
   final AppState state;

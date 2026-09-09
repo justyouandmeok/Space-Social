@@ -120,6 +120,7 @@ class AppState extends ChangeNotifier {
       return s;
     }
     var list = List<Post>.from(posts).where((p) {
+      if (p.isReel) return false;
       if (archived.contains(p.id)) return false;
       if (blocked.contains(p.userId) || muted.contains(p.userId)) return false;
       return canSee(p.userId);
@@ -395,7 +396,7 @@ class AppState extends ChangeNotifier {
 
     try {
       final stSnap = await _db.collection('stories').get();
-      stories = stSnap.docs.map((d) => Story.fromJson({...d.data(), 'id': d.id})).where((s) => s.isLive).toList()
+      stories = stSnap.docs.map((d) => Story.fromJson({...d.data(), 'id': d.id})).where((s) => DateTime.now().difference(s.createdAt) < const Duration(days: 30)).toList()
         ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     } catch (_) {}
 
@@ -843,7 +844,8 @@ class AppState extends ChangeNotifier {
     lastError = null;
     final id = newId();
     final created = DateTime.now();
-    final local = Post(id: id, userId: me.id, imagePath: image.path, caption: caption.trim(), location: location.trim(), createdAt: created, isReel: isReel, isVideo: isVideo);
+    final tags = users.where((u) => caption.toLowerCase().contains('@${u.username}')).map((u) => u.id).toList();
+    final local = Post(id: id, userId: me.id, imagePath: image.path, caption: caption.trim(), location: location.trim(), createdAt: created, isReel: isReel, isVideo: isVideo, taggedUserIds: tags);
     posts = [local, ...posts];
     notifyListeners();
     try {
@@ -860,6 +862,8 @@ class AppState extends ChangeNotifier {
         'savedBy': <String>[],
         'isReel': isReel,
         'isVideo': isVideo,
+        'views': 0,
+        'taggedUserIds': tags,
       });
       posts = posts.map((p) => p.id == id ? p.copyWith(imagePath: url) : p).toList();
       notifyListeners();
@@ -1019,7 +1023,7 @@ class AppState extends ChangeNotifier {
 
   Future<void> sharePostTo(String toId, Post post) async {
     final who = tryUser(post.userId)?.username ?? 'alguien';
-    await sendMessage(toId, 'Te compartió una publicación de @$who: ${post.caption.isEmpty ? post.id : post.caption}');
+    await sendMessage(toId, 'POST::${post.id}');
   }
 
   Future<void> publishNote(String text) async {
@@ -1044,6 +1048,48 @@ class AppState extends ChangeNotifier {
     });
     await _refresh();
     notifyListeners();
+  }
+
+  Future<void> sendImage(String toId, File file) async {
+    if (!isLoggedIn) return;
+    final url = await _upload(file, SpaceConfig.postsBucket, 'chat/${me.id}');
+    await sendMessage(toId, 'IMG::$url');
+  }
+
+  Future<void> recordPostView(String postId) async {
+    try {
+      await _db.collection('posts').doc(postId).update({'views': FieldValue.increment(1)});
+      posts = [
+        for (final p in posts)
+          if (p.id == postId)
+            Post(
+              id: p.id,
+              userId: p.userId,
+              imagePath: p.imagePath,
+              caption: p.caption,
+              createdAt: p.createdAt,
+              location: p.location,
+              likes: p.likes,
+              comments: p.comments,
+              savedBy: p.savedBy,
+              isReel: p.isReel,
+              isVideo: p.isVideo,
+              views: p.views + 1,
+              taggedUserIds: p.taggedUserIds,
+            )
+          else
+            p
+      ];
+    } catch (_) {}
+  }
+
+  Future<void> markStoryView(String storyId) async {
+    if (!isLoggedIn) return;
+    try {
+      await _db.collection('stories').doc(storyId).update({
+        'viewedBy': FieldValue.arrayUnion([me.id]),
+      });
+    } catch (_) {}
   }
 
   Future<void> _savePrefs({bool? privateAccount}) async {

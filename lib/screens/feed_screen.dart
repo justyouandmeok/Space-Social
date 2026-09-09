@@ -18,7 +18,7 @@ class FeedScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final seen = <String>{};
     final items = <Post>[];
-    for (final p in [...state.posts.where((p) => p.userId == state.me.id), ...state.feed]) {
+    for (final p in [...state.posts.where((p) => p.userId == state.me.id && !p.isReel), ...state.feed]) {
       if (seen.add(p.id)) items.add(p);
     }
 
@@ -53,6 +53,29 @@ class FeedScreen extends StatelessWidget {
                 onAddStory: () => Navigator.of(context).push(MaterialPageRoute(
                   builder: (_) => PostScreen(state: state, initialMode: 1),
                 )),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 40,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  children: [
+                    for (final e in [(0, 'Para ti'), (1, 'Siguiendo'), (2, 'Favoritos')])
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ChoiceChip(
+                          label: Text(e.$2, style: const TextStyle(fontSize: 12)),
+                          selected: state.feedMode == e.$1,
+                          onSelected: (_) => state.setFeedMode(e.$1),
+                          selectedColor: Colors.white24,
+                          labelStyle: const TextStyle(color: Colors.white),
+                          backgroundColor: const Color(0xFF1A1A1A),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
             const SliverToBoxAdapter(child: Divider(color: Colors.white12, height: 1)),

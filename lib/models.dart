@@ -115,6 +115,8 @@ class Post {
     this.savedBy = const [],
     this.isReel = false,
     this.isVideo = false,
+    this.views = 0,
+    this.taggedUserIds = const [],
   });
 
   final String id;
@@ -128,6 +130,8 @@ class Post {
   final List<String> savedBy;
   final bool isReel;
   final bool isVideo;
+  final int views;
+  final List<String> taggedUserIds;
 
   bool likedBy(String uid) => likes.contains(uid);
   bool savedFor(String uid) => savedBy.contains(uid);
@@ -150,6 +154,8 @@ class Post {
       savedBy: savedBy ?? this.savedBy,
       isReel: isReel,
       isVideo: isVideo,
+      views: views,
+      taggedUserIds: taggedUserIds,
     );
   }
 
@@ -165,6 +171,8 @@ class Post {
         'savedBy': savedBy,
         'isReel': isReel,
         'isVideo': isVideo,
+        'views': views,
+        'taggedUserIds': taggedUserIds,
       };
 
   factory Post.fromJson(Map<String, dynamic> j) => Post(
@@ -181,6 +189,8 @@ class Post {
         savedBy: ((j['savedBy'] as List?) ?? const []).cast<String>(),
         isReel: j['isReel'] as bool? ?? false,
         isVideo: j['isVideo'] as bool? ?? false,
+        views: (j['views'] as num?)?.toInt() ?? 0,
+        taggedUserIds: ((j['taggedUserIds'] as List?) ?? const []).cast<String>(),
       );
 }
 
@@ -228,12 +238,14 @@ class Story {
     required this.imagePath,
     required this.createdAt,
     this.overlayText = '',
+    this.viewedBy = const [],
   });
   final String id;
   final String userId;
   final String imagePath;
   final DateTime createdAt;
   final String overlayText;
+  final List<String> viewedBy;
   bool get isLive => DateTime.now().difference(createdAt) < const Duration(hours: 24);
 
   Map<String, dynamic> toJson() => {
@@ -242,6 +254,7 @@ class Story {
         'imagePath': imagePath,
         'createdAt': createdAt.toIso8601String(),
         'overlayText': overlayText,
+        'viewedBy': viewedBy,
       };
 
   factory Story.fromJson(Map<String, dynamic> j) => Story(
@@ -250,5 +263,6 @@ class Story {
         imagePath: j['imagePath'] as String,
         createdAt: DateTime.tryParse(j['createdAt'] as String? ?? '') ?? DateTime.now(),
         overlayText: j['overlayText'] as String? ?? '',
+        viewedBy: ((j['viewedBy'] as List?) ?? const []).cast<String>(),
       );
 }

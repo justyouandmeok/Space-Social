@@ -11,10 +11,12 @@ class StoryViewerScreen extends StatefulWidget {
     super.key,
     required this.state,
     required this.userId,
+    this.onlyIds,
   });
 
   final AppState state;
   final String userId;
+  final List<String>? onlyIds;
 
   @override
   State<StoryViewerScreen> createState() => _StoryViewerScreenState();
@@ -28,12 +30,19 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
   bool _liked = false;
   final _reply = TextEditingController();
 
-  List<Story> get stories => widget.state.storiesOf(widget.userId);
+  List<Story> get stories {
+    if (widget.onlyIds != null) {
+      final ids = widget.onlyIds!.toSet();
+      return widget.state.stories.where((s) => ids.contains(s.id)).toList();
+    }
+    return widget.state.storiesOf(widget.userId);
+  }
 
   @override
   void initState() {
     super.initState();
     widget.state.markStoriesSeen(widget.userId);
+    _markCurrent();
     _startStoryTimer();
   }
 

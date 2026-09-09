@@ -18,6 +18,7 @@ import 'followers_following_screen.dart';
 import 'creator_insights_screen.dart';
 import 'post_detail_feed_screen.dart';
 import 'saved_collections_screen.dart';
+import 'story_viewer_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key, required this.state, required this.user, this.onOpenCreate, this.onOpenProfile});
@@ -182,7 +183,7 @@ class ProfileScreen extends StatelessWidget {
                         children: [
                           if (isMe) _highlightAdd(context),
                           ...highlights.take(8).map((s) => _highlight(s, user.username)),
-                          if (isMe) const _SavedHighlights(),
+                          if (isMe) _SavedHighlights(state: state),
                         ],
                       ),
                     ),
@@ -315,7 +316,9 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _taggedGrid() {
     final tag = '@${user.username}'.toLowerCase();
-    final items = state.posts.where((p) => p.caption.toLowerCase().contains(tag) && p.userId != user.id).toList();
+    final items = state.posts.where((p) =>
+      (p.taggedUserIds.contains(user.id) || p.caption.toLowerCase().contains(tag)) && p.userId != user.id
+    ).toList();
     if (items.isEmpty) {
       return const Center(child: Text('Todavía no hay fotos en las que te etiquetaron', style: TextStyle(color: Colors.white54)));
     }
@@ -414,7 +417,8 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
 
 
 class _SavedHighlights extends StatelessWidget {
-  const _SavedHighlights();
+  const _SavedHighlights({required this.state});
+  final AppState state;
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<String>>(
@@ -425,7 +429,15 @@ class _SavedHighlights extends StatelessWidget {
           for (final raw in rows)
             Padding(
               padding: const EdgeInsets.only(right: 14),
-              child: Column(children: [
+              child: GestureDetector(
+                onTap: () {
+                  final parts = raw.split('|');
+                  final ids = parts.length > 1 ? parts[1].split(',').where((e) => e.isNotEmpty).toList() : <String>[];
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => StoryViewerScreen(state: state, userId: state.me.id, onlyIds: ids),
+                  ));
+                },
+                child: Column(children: [
                 Container(
                   width: 56,
                   height: 56,
@@ -439,6 +451,7 @@ class _SavedHighlights extends StatelessWidget {
                   child: Text(raw.split('|').first, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 11)),
                 ),
               ]),
+              ),
             ),
         ]);
       },
