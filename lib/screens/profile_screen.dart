@@ -1,10 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models.dart';
 import '../state.dart';
+import '../store.dart';
 import '../theme.dart';
-import '../widgets/ig_icons.dart';
 import '../widgets/media_view.dart';
 import '../widgets/network_photo.dart';
 
@@ -17,90 +18,209 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final posts = state.postsOf(user.id).where((p) => !p.isReel).toList();
+    final reels = state.postsOf(user.id).where((p) => p.isReel).toList();
     final isMe = state.isLoggedIn && user.id == state.me.id;
+    final highlights = state.storiesOf(user.id);
+
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        title: Text(user.username, style: const TextStyle(fontWeight: FontWeight.w700)),
+        backgroundColor: Colors.black,
+        elevation: 0,
+        title: Row(
+          children: [
+            Flexible(child: Text(user.username, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white))),
+            const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 20),
+          ],
+        ),
         actions: [
-          if (isMe && onOpenCreate != null)
-            IconButton(onPressed: onOpenCreate, icon: CustomPaint(size: const Size.square(24), painter: AddBoxPainter(Colors.white))),
+          if (isMe)
+            IconButton(icon: const Icon(Icons.add_box_outlined, color: Colors.white), onPressed: onOpenCreate ?? () {}),
           if (isMe)
             IconButton(
+              icon: const Icon(Icons.menu, color: Colors.white),
               onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => SettingsScreen(state: state))),
-              icon: const Icon(Icons.menu),
             ),
         ],
       ),
-      body: CustomScrollView(slivers: [
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: Row(children: [
-              Avatar(user.avatarPath, size: 86),
-              const SizedBox(width: 18),
-              Expanded(
-                child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-                  _stat('${posts.length}', 'publicaciones'),
-                  _stat('${state.followersOf(user.id).length}', 'seguidores'),
-                  _stat('${state.followingOf(user.id).length}', 'seguidos'),
-                ]),
-              ),
-            ]),
-          ),
-        ),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(user.name, style: const TextStyle(fontWeight: FontWeight.w700)),
-              if (user.bio.isNotEmpty) Text(user.bio),
-              const SizedBox(height: 10),
-              if (isMe)
-                Row(children: [
-                  Expanded(child: _outline('Editar perfil', () {
-                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => EditProfileScreen(state: state)));
-                  })),
-                  const SizedBox(width: 8),
-                  Expanded(child: _outline('Compartir perfil', () {})),
-                ])
-              else
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton(
-                    onPressed: () => state.toggleFollow(user.id),
-                    style: FilledButton.styleFrom(backgroundColor: state.isFollowing(user.id) ? const Color(0xFF2A2A2A) : LumaColors.blue),
-                    child: Text(state.isFollowing(user.id) ? 'Siguiendo' : 'Seguir'),
-                  ),
+      body: DefaultTabController(
+        length: 3,
+        child: NestedScrollView(
+          headerSliverBuilder: (context, _) => [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Avatar(user.avatarPath, size: 84),
+                        const SizedBox(width: 18),
+                        Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _stat(compact(posts.length + reels.length), 'Publicaciones'),
+                              _stat(compact(state.followersOf(user.id).length), 'Seguidores'),
+                              _stat(compact(state.followingOf(user.id).length), 'Siguiendo'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(user.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    if (user.bio.isNotEmpty) Text(user.bio, style: const TextStyle(color: Colors.white)),
+                    if (user.website.isNotEmpty)
+                      Text(user.website, style: const TextStyle(color: LumaColors.blue, fontSize: 13)),
+                    const SizedBox(height: 12),
+                    if (isMe)
+                      Row(children: [
+                        Expanded(child: _btn('Editar perfil', () {
+                          Navigator.of(context).push(MaterialPageRoute(builder: (_) => EditProfileScreen(state: state)));
+                        })),
+                        const SizedBox(width: 8),
+                        Expanded(child: _btn('Compartir perfil', () {
+                          Clipboard.setData(ClipboardData(text: '@${user.username}'));
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Perfil copiado')));
+                        })),
+                      ])
+                    else
+                      Row(children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () => state.toggleFollow(user.id),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: state.isFollowing(user.id) ? Colors.grey[900] : LumaColors.blue,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                            child: Text(state.isFollowing(user.id) ? 'Siguiendo' : 'Seguir'),
+                          ),
+                        ),
+                      ]),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      height: 92,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          if (isMe) _highlightAdd(),
+                          ...highlights.take(8).map((s) => _highlight(s, user.username)),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              const SizedBox(height: 12),
-            ]),
+              ),
+            ),
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _TabBarDelegate(
+                tabBar: const TabBar(
+                  indicatorColor: Colors.white,
+                  tabs: [
+                    Tab(icon: Icon(Icons.grid_on, color: Colors.white)),
+                    Tab(icon: Icon(Icons.movie_outlined, color: Colors.white)),
+                    Tab(icon: Icon(Icons.assignment_ind_outlined, color: Colors.white)),
+                  ],
+                ),
+              ),
+            ),
+          ],
+          body: TabBarView(
+            children: [
+              _grid(posts),
+              _grid(reels),
+              const Center(child: Text('Todavía no hay fotos en las que te etiquetaron', style: TextStyle(color: Colors.white54))),
+            ],
           ),
         ),
-        SliverGrid(
-          delegate: SliverChildBuilderDelegate(
-            (_, i) => MediaView(posts[i].imagePath, video: posts[i].isVideo),
-            childCount: posts.length,
-          ),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, mainAxisSpacing: 1.2, crossAxisSpacing: 1.2, childAspectRatio: 3 / 4),
-        ),
+      ),
+    );
+  }
+
+  static Widget _stat(String count, String label) {
+    return Column(children: [
+      Text(count, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+      const SizedBox(height: 2),
+      Text(label, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+    ]);
+  }
+
+  static Widget _btn(String label, VoidCallback onTap) {
+    return ElevatedButton(
+      onPressed: onTap,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.grey[900],
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      child: Text(label),
+    );
+  }
+
+  static Widget _highlightAdd() {
+    return const Padding(
+      padding: EdgeInsets.only(right: 14),
+      child: Column(children: [
+        CircleAvatar(radius: 28, backgroundColor: Color(0xFF1A1A1A), child: Icon(Icons.add, color: Colors.white)),
+        SizedBox(height: 4),
+        Text('Nueva', style: TextStyle(color: Colors.white, fontSize: 11)),
       ]),
     );
   }
 
-  Widget _stat(String n, String l) => Column(children: [
-        Text(n, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-        Text(l, style: const TextStyle(fontSize: 12, color: Colors.white70)),
-      ]);
-
-  Widget _outline(String t, VoidCallback onTap) => GestureDetector(
-        onTap: onTap,
-        child: Container(
-          height: 32,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(color: const Color(0xFF2A2A2A), borderRadius: BorderRadius.circular(8)),
-          child: Text(t, style: const TextStyle(fontWeight: FontWeight.w700)),
+  static Widget _highlight(Story s, String name) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 14),
+      child: Column(children: [
+        Container(
+          padding: const EdgeInsets.all(2),
+          decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white38, width: 1.5)),
+          child: Avatar(s.imagePath, size: 56),
         ),
-      );
+        const SizedBox(height: 4),
+        SizedBox(width: 64, child: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 11))),
+      ]),
+    );
+  }
+
+  static Widget _grid(List<Post> items) {
+    if (items.isEmpty) {
+      return const Center(child: Text('Nada por acá todavía', style: TextStyle(color: Colors.white54)));
+    }
+    return GridView.builder(
+      padding: EdgeInsets.zero,
+      itemCount: items.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 1.5,
+        mainAxisSpacing: 1.5,
+        childAspectRatio: 3 / 4,
+      ),
+      itemBuilder: (context, index) => MediaView(items[index].imagePath, video: items[index].isVideo),
+    );
+  }
+}
+
+class _TabBarDelegate extends SliverPersistentHeaderDelegate {
+  _TabBarDelegate({required this.tabBar});
+  final TabBar tabBar;
+
+  @override
+  double get minExtent => tabBar.preferredSize.height;
+  @override
+  double get maxExtent => tabBar.preferredSize.height;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(color: Colors.black, child: tabBar);
+  }
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => false;
 }
 
 class EditProfileScreen extends StatefulWidget {
@@ -134,7 +254,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        backgroundColor: Colors.black,
         title: const Text('Editar perfil'),
         actions: [TextButton(onPressed: busy ? null : _save, child: const Text('Listo', style: TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w700)))],
       ),
@@ -152,9 +274,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ]),
           ),
         ),
-        TextField(controller: name, decoration: const InputDecoration(labelText: 'Nombre')),
-        TextField(controller: user, decoration: const InputDecoration(labelText: 'Usuario')),
-        TextField(controller: bio, maxLines: 3, decoration: const InputDecoration(labelText: 'Presentación')),
+        TextField(controller: name, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(labelText: 'Nombre', labelStyle: TextStyle(color: Colors.white70))),
+        TextField(controller: user, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(labelText: 'Usuario', labelStyle: TextStyle(color: Colors.white70))),
+        TextField(controller: bio, maxLines: 3, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(labelText: 'Presentación', labelStyle: TextStyle(color: Colors.white70))),
       ]),
     );
   }
@@ -166,7 +288,8 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Configuración y actividad')),
+      backgroundColor: Colors.black,
+      appBar: AppBar(backgroundColor: Colors.black, title: const Text('Configuración y actividad')),
       body: ListView(children: [
         SwitchListTile(title: const Text('Tema oscuro'), value: state.darkMode, onChanged: (_) => state.toggleDarkMode()),
         ListTile(
