@@ -241,6 +241,48 @@ class ProfileScreen extends StatelessWidget {
   }
 
 
+  Widget _reelsGrid(List<Post> items) {
+    if (items.isEmpty) {
+      return const Center(child: Text('Todavía no hay Reels', style: TextStyle(color: Colors.white54)));
+    }
+    return GridView.builder(
+      padding: EdgeInsets.zero,
+      itemCount: items.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 1.5,
+        mainAxisSpacing: 1.5,
+        childAspectRatio: 9 / 16,
+      ),
+      itemBuilder: (context, index) {
+        final p = items[index];
+        final views = p.likes.length + p.comments.length;
+        return GestureDetector(
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(
+            builder: (_) => PostDetailFeedScreen(state: state, posts: items, initialIndex: index, onOpenProfile: onOpenProfile ?? (_) {}),
+          )),
+          child: Stack(fit: StackFit.expand, children: [
+            MediaView(p.imagePath, video: p.isVideo),
+            const DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(colors: [Colors.transparent, Colors.black87], begin: Alignment.center, end: Alignment.bottomCenter),
+              ),
+            ),
+            Positioned(
+              bottom: 6,
+              left: 6,
+              child: Row(children: [
+                const Icon(Icons.play_arrow_outlined, color: Colors.white, size: 16),
+                const SizedBox(width: 2),
+                Text('$views', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+              ]),
+            ),
+          ]),
+        );
+      },
+    );
+  }
+
   Widget _taggedGrid() {
     final tag = '@${user.username}'.toLowerCase();
     final items = state.posts.where((p) => p.caption.toLowerCase().contains(tag) && p.userId != user.id).toList();
