@@ -90,7 +90,7 @@ class StoryBubble extends StatelessWidget {
             ),
             child: Container(
               padding: const EdgeInsets.all(2),
-              decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle),
+              decoration: BoxDecoration(color: SpaceColors.bg, shape: BoxShape.circle),
               child: Stack(clipBehavior: Clip.none, children: [
                 Avatar(user.avatarPath, size: 56),
                 if (mine && !hasStory)
@@ -100,8 +100,8 @@ class StoryBubble extends StatelessWidget {
                     child: Container(
                       width: 20,
                       height: 20,
-                      decoration: BoxDecoration(color: LumaColors.blue, shape: BoxShape.circle, border: Border.all(color: Colors.black, width: 2)),
-                      child: Icon(Icons.add, size: 12, color: SpaceColors.text),
+                      decoration: BoxDecoration(color: LumaColors.blue, shape: BoxShape.circle, border: Border.all(color: SpaceColors.bg, width: 2)),
+                      child: const Icon(Icons.add, size: 12, color: Colors.white),
                     ),
                   ),
               ]),

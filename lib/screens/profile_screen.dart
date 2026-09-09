@@ -172,7 +172,7 @@ class ProfileScreen extends StatelessWidget {
                         IconButton(
                           icon: Icon(Icons.person_add_alt, color: SpaceColors.text),
                           onPressed: () {
-                            showModalBottomSheet(context: context, backgroundColor: const Color(0xFF1C1C1C), builder: (ctx) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
+                            showModalBottomSheet(context: context, backgroundColor: SpaceColors.surface, builder: (ctx) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
                               ListTile(title: Text(state.favorites.contains(user.id) ? 'Sacar de favoritos' : 'Agregar a favoritos', style: TextStyle(color: SpaceColors.text)), onTap: () { Navigator.pop(ctx); state.toggleFavorite(user.id); }),
                               ListTile(title: Text(state.closeFriends.contains(user.id) ? 'Sacar de mejores amigos' : 'Mejores amigos', style: TextStyle(color: SpaceColors.text)), onTap: () { Navigator.pop(ctx); state.toggleCloseFriend(user.id); }),
                               ListTile(title: Text(state.blocked.contains(user.id) ? 'Desbloquear' : 'Bloquear', style: const TextStyle(color: Colors.redAccent)), onTap: () { Navigator.pop(ctx); state.toggleBlock(user.id); }),
@@ -271,7 +271,7 @@ class ProfileScreen extends StatelessWidget {
           }
         },
         child: Column(children: [
-          CircleAvatar(radius: 28, backgroundColor: Color(0xFF1A1A1A), child: Icon(Icons.add, color: SpaceColors.text)),
+          CircleAvatar(radius: 28, backgroundColor: SpaceColors.surface, child: Icon(Icons.add, color: SpaceColors.text)),
           SizedBox(height: 4),
           Text('Nueva', style: TextStyle(color: SpaceColors.text, fontSize: 11)),
         ]),
@@ -431,7 +431,7 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(color: Colors.black, child: tabBar);
+    return Container(color: SpaceColors.bg, child: tabBar);
   }
 
   @override
