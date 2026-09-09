@@ -49,10 +49,10 @@ class _FollowersFollowingScreenState extends State<FollowersFollowingScreen> {
       initialIndex: widget.initialTabIndex,
       length: 2,
       child: Scaffold(
-        backgroundColor: SpaceColors.deepSpace,
+        backgroundColor: SpaceColors.bg,
         appBar: AppBar(
-          backgroundColor: SpaceColors.deepSpace,
-          title: Text(widget.user.username, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+          backgroundColor: SpaceColors.bg,
+          title: Text(widget.user.username, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 18)),
           bottom: TabBar(
             indicatorColor: Colors.white,
             indicatorWeight: 1.5,
@@ -67,15 +67,15 @@ class _FollowersFollowingScreenState extends State<FollowersFollowingScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: Container(
               height: 38,
-              decoration: BoxDecoration(color: SpaceColors.darkMatter, borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.white12)),
+              decoration: BoxDecoration(color: SpaceColors.darkMatter, borderRadius: BorderRadius.circular(10), border: Border.all(color: SpaceColors.hairline)),
               child: TextField(
                 controller: _searchController,
                 onChanged: (v) => setState(() => _q = v.toLowerCase()),
-                style: const TextStyle(color: Colors.white, fontSize: 14),
+                style: TextStyle(color: SpaceColors.text, fontSize: 14),
                 decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.search, color: Colors.white38, size: 20),
+                  prefixIcon: Icon(Icons.search, color: SpaceColors.textMuted, size: 20),
                   hintText: 'Buscar...',
-                  hintStyle: TextStyle(color: Colors.white38, fontSize: 14),
+                  hintStyle: TextStyle(color: SpaceColors.textMuted, fontSize: 14),
                   border: InputBorder.none,
                   isDense: true,
                   contentPadding: EdgeInsets.symmetric(vertical: 8),
@@ -96,7 +96,7 @@ class _FollowersFollowingScreenState extends State<FollowersFollowingScreen> {
 
   Widget _list(List<UserAccount> list, {required bool followersTab}) {
     if (list.isEmpty) {
-      return Center(child: Text(followersTab ? 'Nadie te sigue todavía' : 'Todavía no seguís a nadie', style: const TextStyle(color: Colors.white54)));
+      return Center(child: Text(followersTab ? 'Nadie te sigue todavía' : 'Todavía no seguís a nadie', style: TextStyle(color: SpaceColors.textMuted)));
     }
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -116,8 +116,8 @@ class _FollowersFollowingScreenState extends State<FollowersFollowingScreen> {
               child: GestureDetector(
                 onTap: () => widget.onOpenProfile?.call(u.id),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(u.username, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                  Text(u.name, style: const TextStyle(color: Colors.white54, fontSize: 13)),
+                  Text(u.username, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
+                  Text(u.name, style: TextStyle(color: SpaceColors.textMuted, fontSize: 13)),
                 ]),
               ),
             ),

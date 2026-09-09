@@ -11,10 +11,10 @@ class ArchiveScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = state.posts.where((p) => state.archived.contains(p.id) && p.userId == state.me.id).toList();
     return Scaffold(
-      backgroundColor: SpaceColors.deepSpace,
-      appBar: AppBar(backgroundColor: SpaceColors.deepSpace, title: const Text('Archivo')),
+      backgroundColor: SpaceColors.bg,
+      appBar: AppBar(backgroundColor: SpaceColors.bg, title: Text('Archivo')),
       body: items.isEmpty
-          ? const Center(child: Text('El archivo está vacío', style: TextStyle(color: Colors.white54)))
+          ? Center(child: Text('El archivo está vacío', style: TextStyle(color: SpaceColors.textMuted)))
           : GridView.builder(
               padding: const EdgeInsets.all(2),
               itemCount: items.length,
@@ -43,13 +43,13 @@ class QrProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: SpaceColors.deepSpace,
-      appBar: AppBar(backgroundColor: SpaceColors.deepSpace, title: const Text('Código QR')),
+      backgroundColor: SpaceColors.bg,
+      appBar: AppBar(backgroundColor: SpaceColors.bg, title: Text('Código QR')),
       body: Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Container(
             padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+            decoration: BoxDecoration(color: SpaceColors.text, borderRadius: BorderRadius.circular(16)),
             child: Column(children: [
               const Icon(Icons.qr_code_2, size: 180, color: Colors.black),
               const SizedBox(height: 12),
@@ -57,7 +57,7 @@ class QrProfileScreen extends StatelessWidget {
             ]),
           ),
           const SizedBox(height: 16),
-          const Text('Mostrá este código para que te encuentren', style: TextStyle(color: Colors.white54)),
+          Text('Mostrá este código para que te encuentren', style: TextStyle(color: SpaceColors.textMuted)),
         ]),
       ),
     );
@@ -69,9 +69,9 @@ class OrdersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: SpaceColors.deepSpace,
-      appBar: AppBar(backgroundColor: SpaceColors.deepSpace, title: const Text('Órdenes y pagos')),
-      body: const Center(child: Text('Todavía no hay pedidos', style: TextStyle(color: Colors.white54))),
+      backgroundColor: SpaceColors.bg,
+      appBar: AppBar(backgroundColor: SpaceColors.bg, title: Text('Órdenes y pagos')),
+      body: Center(child: Text('Todavía no hay pedidos', style: TextStyle(color: SpaceColors.textMuted))),
     );
   }
 }

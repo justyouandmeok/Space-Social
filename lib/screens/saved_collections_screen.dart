@@ -41,19 +41,19 @@ class _SavedCollectionsScreenState extends State<SavedCollectionsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: SpaceColors.darkMatter,
-        title: const Text('Nueva colección', style: TextStyle(color: Colors.white)),
+        backgroundColor: SpaceColors.surface,
+        title: Text('Nueva colección', style: TextStyle(color: SpaceColors.text)),
         content: TextField(
           controller: controller,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: SpaceColors.text),
           decoration: const InputDecoration(
             hintText: 'Nombre de la colección',
-            hintStyle: TextStyle(color: Colors.white38),
+            hintStyle: TextStyle(color: SpaceColors.textMuted),
             enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: SpaceColors.cosmicCyan)),
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar', style: TextStyle(color: Colors.white54))),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Cancelar', style: TextStyle(color: SpaceColors.textMuted))),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: SpaceColors.cosmicCyan),
             onPressed: () {
@@ -99,12 +99,12 @@ class _SavedCollectionsScreenState extends State<SavedCollectionsScreen> {
     ];
 
     return Scaffold(
-      backgroundColor: SpaceColors.deepSpace,
+      backgroundColor: SpaceColors.bg,
       appBar: AppBar(
-        backgroundColor: SpaceColors.deepSpace,
-        title: const Text('Guardados', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        backgroundColor: SpaceColors.bg,
+        title: Text('Guardados', style: TextStyle(fontWeight: FontWeight.bold, color: SpaceColors.text)),
         actions: [
-          IconButton(icon: const Icon(Icons.add, color: SpaceColors.cosmicCyan, size: 28), onPressed: _createNewCollection),
+          IconButton(icon: Icon(Icons.add, color: SpaceColors.cosmicCyan, size: 28), onPressed: _createNewCollection),
         ],
       ),
       body: GridView.builder(
@@ -133,16 +133,16 @@ class _SavedCollectionsScreenState extends State<SavedCollectionsScreen> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: DecoratedBox(
-                    decoration: BoxDecoration(color: SpaceColors.darkMatter, border: Border.all(color: Colors.white12)),
+                    decoration: BoxDecoration(color: SpaceColors.darkMatter, border: Border.all(color: SpaceColors.hairline)),
                     child: path.isEmpty
-                        ? const Center(child: Icon(Icons.bookmark_border, color: Colors.white38, size: 36))
+                        ? Center(child: Icon(Icons.bookmark_border, color: SpaceColors.textMuted, size: 36))
                         : MediaView(path),
                   ),
                 ),
               ),
               const SizedBox(height: 8),
-              Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-              Text('$count elementos', style: const TextStyle(color: Colors.white38, fontSize: 12)),
+              Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
+              Text('$count elementos', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
             ]),
           );
         },

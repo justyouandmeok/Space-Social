@@ -45,10 +45,10 @@ class _PostDetailFeedScreenState extends State<PostDetailFeedScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: SpaceColors.deepSpace,
+      backgroundColor: SpaceColors.bg,
       appBar: AppBar(
-        backgroundColor: SpaceColors.deepSpace,
-        title: const Text('Publicaciones', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: SpaceColors.bg,
+        title: Text('Publicaciones', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold)),
       ),
       body: ListView.builder(
         controller: _scrollController,

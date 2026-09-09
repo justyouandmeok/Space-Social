@@ -37,30 +37,30 @@ class ProfileScreen extends StatelessWidget {
     final highlights = state.storiesOf(user.id);
 
     return Scaffold(
-      backgroundColor: SpaceColors.deepSpace,
+      backgroundColor: SpaceColors.bg,
       appBar: AppBar(
-        backgroundColor: SpaceColors.deepSpace,
+        backgroundColor: SpaceColors.bg,
         elevation: 0,
         title: GestureDetector(
           onTap: isMe ? () => AccountSwitchModal.show(context, state) : null,
           child: Row(
             children: [
               if (user.privateAccount) ...[
-                const Icon(Icons.lock_outline, size: 16, color: Colors.white),
+                Icon(Icons.lock_outline, size: 16, color: SpaceColors.text),
                 const SizedBox(width: 6),
               ],
-              Flexible(child: Text(user.username, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white))),
+              Flexible(child: Text(user.username, overflow: TextOverflow.ellipsis, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: SpaceColors.text))),
               if (user.isVerified) ...[const SizedBox(width: 6), const VerifiedBadge()],
-              if (isMe) const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 20),
+              if (isMe) Icon(Icons.keyboard_arrow_down, color: SpaceColors.text, size: 20),
             ],
           ),
         ),
         actions: [
           if (isMe)
-            IconButton(icon: const Icon(Icons.add_box_outlined, color: Colors.white), onPressed: onOpenCreate ?? () {}),
+            IconButton(icon: Icon(Icons.add_box_outlined, color: SpaceColors.text), onPressed: onOpenCreate ?? () {}),
           if (isMe)
             IconButton(
-              icon: const Icon(Icons.menu, color: Colors.white),
+              icon: Icon(Icons.menu, color: SpaceColors.text),
               onPressed: () => ProfileDrawerModal.show(
                 context,
                 state,
@@ -108,13 +108,13 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     Row(children: [
-                      Flexible(child: Text(user.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15))),
+                      Flexible(child: Text(user.name, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 15))),
                       if (user.isVerified) ...[
                         const SizedBox(width: 4),
                         const VerifiedBadge(),
                       ],
                     ]),
-                    if (user.bio.isNotEmpty) Text(user.bio, style: const TextStyle(color: Colors.white)),
+                    if (user.bio.isNotEmpty) Text(user.bio, style: TextStyle(color: SpaceColors.text)),
                     if (user.website.isNotEmpty)
                       GestureDetector(
                         onTap: () => LinksBottomSheet.show(context, user),
@@ -170,11 +170,11 @@ class ProfileScreen extends StatelessWidget {
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.person_add_alt, color: Colors.white),
+                          icon: Icon(Icons.person_add_alt, color: SpaceColors.text),
                           onPressed: () {
                             showModalBottomSheet(context: context, backgroundColor: const Color(0xFF1C1C1C), builder: (ctx) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
-                              ListTile(title: Text(state.favorites.contains(user.id) ? 'Sacar de favoritos' : 'Agregar a favoritos', style: const TextStyle(color: Colors.white)), onTap: () { Navigator.pop(ctx); state.toggleFavorite(user.id); }),
-                              ListTile(title: Text(state.closeFriends.contains(user.id) ? 'Sacar de mejores amigos' : 'Mejores amigos', style: const TextStyle(color: Colors.white)), onTap: () { Navigator.pop(ctx); state.toggleCloseFriend(user.id); }),
+                              ListTile(title: Text(state.favorites.contains(user.id) ? 'Sacar de favoritos' : 'Agregar a favoritos', style: TextStyle(color: SpaceColors.text)), onTap: () { Navigator.pop(ctx); state.toggleFavorite(user.id); }),
+                              ListTile(title: Text(state.closeFriends.contains(user.id) ? 'Sacar de mejores amigos' : 'Mejores amigos', style: TextStyle(color: SpaceColors.text)), onTap: () { Navigator.pop(ctx); state.toggleCloseFriend(user.id); }),
                               ListTile(title: Text(state.blocked.contains(user.id) ? 'Desbloquear' : 'Bloquear', style: const TextStyle(color: Colors.redAccent)), onTap: () { Navigator.pop(ctx); state.toggleBlock(user.id); }),
                             ])));
                           },
@@ -186,13 +186,13 @@ class ProfileScreen extends StatelessWidget {
                         onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CreatorInsightsScreen(state: state))),
                         child: Container(
                           padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(color: SpaceColors.darkMatter, borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.white12)),
+                          decoration: BoxDecoration(color: SpaceColors.darkMatter, borderRadius: BorderRadius.circular(10), border: Border.all(color: SpaceColors.hairline)),
                           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            const Text('Panel para profesionales', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                            Text('Panel para profesionales', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
                             const SizedBox(height: 4),
                             Text(
                               '${state.postsOf(user.id).length} publicaciones · ${state.followersOf(user.id).length} seguidores',
-                              style: const TextStyle(color: Colors.white54, fontSize: 12),
+                              style: TextStyle(color: SpaceColors.textMuted, fontSize: 12),
                             ),
                           ]),
                         ),
@@ -220,9 +220,9 @@ class ProfileScreen extends StatelessWidget {
                 tabBar: const TabBar(
                   indicatorColor: Colors.white,
                   tabs: [
-                    Tab(icon: Icon(Icons.grid_on, color: Colors.white)),
-                    Tab(icon: Icon(Icons.movie_outlined, color: Colors.white)),
-                    Tab(icon: Icon(Icons.assignment_ind_outlined, color: Colors.white)),
+                    Tab(icon: Icon(Icons.grid_on, color: SpaceColors.text)),
+                    Tab(icon: Icon(Icons.movie_outlined, color: SpaceColors.text)),
+                    Tab(icon: Icon(Icons.assignment_ind_outlined, color: SpaceColors.text)),
                   ],
                 ),
               ),
@@ -242,9 +242,9 @@ class ProfileScreen extends StatelessWidget {
 
   static Widget _stat(String count, String label) {
     return Column(children: [
-      Text(count, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+      Text(count, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 18)),
       const SizedBox(height: 2),
-      Text(label, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+      Text(label, style: TextStyle(color: SpaceColors.textMuted, fontSize: 13)),
     ]);
   }
 
@@ -271,9 +271,9 @@ class ProfileScreen extends StatelessWidget {
           }
         },
         child: const Column(children: [
-          CircleAvatar(radius: 28, backgroundColor: Color(0xFF1A1A1A), child: Icon(Icons.add, color: Colors.white)),
+          CircleAvatar(radius: 28, backgroundColor: Color(0xFF1A1A1A), child: Icon(Icons.add, color: SpaceColors.text)),
           SizedBox(height: 4),
-          Text('Nueva', style: TextStyle(color: Colors.white, fontSize: 11)),
+          Text('Nueva', style: TextStyle(color: SpaceColors.text, fontSize: 11)),
         ]),
       ),
     );
@@ -285,11 +285,11 @@ class ProfileScreen extends StatelessWidget {
       child: Column(children: [
         Container(
           padding: const EdgeInsets.all(2),
-          decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white38, width: 1.5)),
+          decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: SpaceColors.textMuted, width: 1.5)),
           child: Avatar(s.imagePath, size: 56),
         ),
         const SizedBox(height: 4),
-        SizedBox(width: 64, child: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 11))),
+        SizedBox(width: 64, child: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: TextStyle(color: SpaceColors.text, fontSize: 11))),
       ]),
     );
   }
@@ -297,7 +297,7 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _reelsGrid(List<Post> items) {
     if (items.isEmpty) {
-      return const Center(child: Text('Todavía no hay Reels', style: TextStyle(color: Colors.white54)));
+      return Center(child: Text('Todavía no hay Reels', style: TextStyle(color: SpaceColors.textMuted)));
     }
     return GridView.builder(
       padding: EdgeInsets.zero,
@@ -326,9 +326,9 @@ class ProfileScreen extends StatelessWidget {
               bottom: 6,
               left: 6,
               child: Row(children: [
-                const Icon(Icons.play_arrow_outlined, color: Colors.white, size: 16),
+                Icon(Icons.play_arrow_outlined, color: SpaceColors.text, size: 16),
                 const SizedBox(width: 2),
-                Text('$views', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                Text('$views', style: TextStyle(color: SpaceColors.text, fontSize: 12, fontWeight: FontWeight.bold)),
               ]),
             ),
           ]),
@@ -343,7 +343,7 @@ class ProfileScreen extends StatelessWidget {
       (p.taggedUserIds.contains(user.id) || p.caption.toLowerCase().contains(tag)) && p.userId != user.id
     ).toList();
     if (items.isEmpty) {
-      return const Center(child: Text('Todavía no hay fotos en las que te etiquetaron', style: TextStyle(color: Colors.white54)));
+      return Center(child: Text('Todavía no hay fotos en las que te etiquetaron', style: TextStyle(color: SpaceColors.textMuted)));
     }
     return GridView.builder(
       padding: EdgeInsets.zero,
@@ -359,7 +359,7 @@ class ProfileScreen extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(3),
               decoration: const BoxDecoration(color: Color(0x99000000), shape: BoxShape.circle),
-              child: const Icon(Icons.person_pin_outlined, color: Colors.white, size: 14),
+              child: Icon(Icons.person_pin_outlined, color: SpaceColors.text, size: 14),
             ),
           ),
         ]);
@@ -368,7 +368,7 @@ class ProfileScreen extends StatelessWidget {
   }
   Widget _grid(List<Post> items) {
     if (items.isEmpty) {
-      return const Center(child: Text('Nada por acá todavía', style: TextStyle(color: Colors.white54)));
+      return Center(child: Text('Nada por acá todavía', style: TextStyle(color: SpaceColors.textMuted)));
     }
     return GridView.builder(
       padding: EdgeInsets.zero,
@@ -400,7 +400,7 @@ class ProfileScreen extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(3),
                   decoration: const BoxDecoration(color: Color(0x99000000), shape: BoxShape.circle),
-                  child: const Icon(Icons.push_pin, color: Colors.white, size: 14),
+                  child: Icon(Icons.push_pin, color: SpaceColors.text, size: 14),
                 ),
               )
             else if (p.isVideo || p.isReel)
@@ -410,7 +410,7 @@ class ProfileScreen extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(3),
                   decoration: const BoxDecoration(color: Color(0x99000000), shape: BoxShape.circle),
-                  child: Icon(p.isReel ? Icons.collections : Icons.play_arrow, color: Colors.white, size: 14),
+                  child: Icon(p.isReel ? Icons.collections : Icons.play_arrow, color: SpaceColors.text, size: 14),
                 ),
               ),
           ]),
@@ -465,13 +465,13 @@ class _SavedHighlights extends StatelessWidget {
                   width: 56,
                   height: 56,
                   alignment: Alignment.center,
-                  decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white38)),
-                  child: const Icon(Icons.star_border, color: Colors.white70),
+                  decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: SpaceColors.textMuted)),
+                  child: Icon(Icons.star_border, color: SpaceColors.textMuted),
                 ),
                 const SizedBox(height: 4),
                 SizedBox(
                   width: 64,
-                  child: Text(raw.split('|').first, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 11)),
+                  child: Text(raw.split('|').first, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: TextStyle(color: SpaceColors.text, fontSize: 11)),
                 ),
               ]),
               ),
@@ -533,11 +533,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: SpaceColors.deepSpace,
+      backgroundColor: SpaceColors.bg,
       appBar: AppBar(
-        backgroundColor: SpaceColors.deepSpace,
-        leading: IconButton(icon: const Icon(Icons.close, color: Colors.white), onPressed: () => Navigator.pop(context)),
-        title: const Text('Editar perfil', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: SpaceColors.bg,
+        leading: IconButton(icon: Icon(Icons.close, color: SpaceColors.text), onPressed: () => Navigator.pop(context)),
+        title: Text('Editar perfil', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             icon: busy
@@ -576,7 +576,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           _field('Presentación / Bio', _bioController, maxLines: 3),
           _field('Enlaces', _linksController, prefixIcon: Icons.link),
           const SizedBox(height: 24),
-          const Divider(color: Colors.white12),
+          Divider(color: SpaceColors.hairline),
           const ListTile(
             contentPadding: EdgeInsets.zero,
             title: Text('Los cambios se ven en toda la plataforma al guardar', style: TextStyle(color: SpaceColors.cosmicCyan, fontSize: 14)),
@@ -590,14 +590,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(label, style: const TextStyle(color: Colors.white54, fontSize: 12)),
+        Text(label, style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
         TextField(
           controller: controller,
           maxLines: maxLines,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: SpaceColors.text),
           decoration: InputDecoration(
-            prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: Colors.white38, size: 20) : null,
-            enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
+            prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: SpaceColors.textMuted, size: 20) : null,
+            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: SpaceColors.hairline)),
             focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: SpaceColors.cosmicCyan)),
           ),
         ),
@@ -613,42 +613,42 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(backgroundColor: Colors.black, title: const Text('Configuración y actividad')),
+      backgroundColor: SpaceColors.bg,
+      appBar: AppBar(backgroundColor: SpaceColors.bg, title: Text('Configuración y actividad')),
       body: ListView(children: [
         ListTile(
-          leading: const Icon(Icons.bookmark_border, color: Colors.white),
-          title: const Text('Guardado', style: TextStyle(color: Colors.white)),
+          leading: Icon(Icons.bookmark_border, color: SpaceColors.text),
+          title: Text('Guardado', style: TextStyle(color: SpaceColors.text)),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(
             builder: (_) => SavedCollectionsScreen(state: state, onOpenProfile: onOpenProfile ?? (_) {}),
           )),
         ),
         ListTile(
-          leading: const Icon(Icons.insights, color: Colors.white),
-          title: const Text('Estadísticas', style: TextStyle(color: Colors.white)),
+          leading: Icon(Icons.insights, color: SpaceColors.text),
+          title: Text('Estadísticas', style: TextStyle(color: SpaceColors.text)),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CreatorInsightsScreen(state: state))),
         ),
         ListTile(
-          leading: const Icon(Icons.person_add_alt, color: Colors.white),
-          title: const Text('Solicitudes de seguimiento', style: TextStyle(color: Colors.white)),
-          subtitle: Text('${state.incomingFollows.length} pendientes', style: const TextStyle(color: Colors.white54, fontSize: 12)),
+          leading: Icon(Icons.person_add_alt, color: SpaceColors.text),
+          title: Text('Solicitudes de seguimiento', style: TextStyle(color: SpaceColors.text)),
+          subtitle: Text('${state.incomingFollows.length} pendientes', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => FollowRequestsScreen(state: state))),
         ),
         ListTile(
-          leading: const Icon(Icons.verified_outlined, color: Colors.white),
-          title: const Text('Verificación oficial', style: TextStyle(color: Colors.white)),
+          leading: Icon(Icons.verified_outlined, color: SpaceColors.text),
+          title: Text('Verificación oficial', style: TextStyle(color: SpaceColors.text)),
           subtitle: Text(
             state.me.isVerified ? 'Cuenta verificada' : state.me.verificationStatus == 'pending' ? 'Solicitud en revisión' : 'Pedí la tilde de Space Social',
-            style: const TextStyle(color: Colors.white54, fontSize: 12),
+            style: TextStyle(color: SpaceColors.textMuted, fontSize: 12),
           ),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => VerificationScreen(state: state))),
         ),
-        SwitchListTile(title: const Text('Cuenta privada'), value: state.me.privateAccount, onChanged: (_) => state.togglePrivate()),
-        SwitchListTile(title: const Text('Ocultar recuento de Me gusta'), value: state.hideLikes, onChanged: (_) => state.toggleHideLikes()),
-        SwitchListTile(title: const Text('Notificaciones'), value: state.notificationsOn, onChanged: (_) => state.toggleNotificationsPref()),
-        SwitchListTile(title: const Text('Tema oscuro'), value: state.darkMode, onChanged: (_) => state.toggleDarkMode()),
+        SwitchListTile(title: Text('Cuenta privada'), value: state.me.privateAccount, onChanged: (_) => state.togglePrivate()),
+        SwitchListTile(title: Text('Ocultar recuento de Me gusta'), value: state.hideLikes, onChanged: (_) => state.toggleHideLikes()),
+        SwitchListTile(title: Text('Notificaciones'), value: state.notificationsOn, onChanged: (_) => state.toggleNotificationsPref()),
+        SwitchListTile(title: Text('Tema oscuro'), value: state.darkMode, onChanged: (_) => state.toggleDarkMode()),
         ListTile(
-          title: const Text('Cerrar sesión', style: TextStyle(color: Colors.red)),
+          title: Text('Cerrar sesión', style: TextStyle(color: Colors.red)),
           onTap: () {
             Navigator.pop(context);
             state.logout();
@@ -668,13 +668,13 @@ class VerificationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final pending = state.users.where((u) => u.verificationStatus == 'pending' && !u.isVerified).toList();
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(backgroundColor: Colors.black, title: const Text('Verificación oficial')),
+      backgroundColor: SpaceColors.bg,
+      appBar: AppBar(backgroundColor: SpaceColors.bg, title: Text('Verificación oficial')),
       body: ListView(padding: const EdgeInsets.all(16), children: [
         if (state.me.isVerified)
-          const ListTile(leading: VerifiedBadge(size: 16), title: Text('Tu cuenta está verificada', style: TextStyle(color: Colors.white)))
+          ListTile(leading: VerifiedBadge(size: 16), title: Text('Tu cuenta está verificada', style: TextStyle(color: SpaceColors.text)))
         else if (state.me.verificationStatus == 'pending')
-          const ListTile(title: Text('Tu solicitud está en revisión', style: TextStyle(color: Colors.white70)))
+          ListTile(title: Text('Tu solicitud está en revisión', style: TextStyle(color: SpaceColors.textMuted)))
         else
           ElevatedButton(
             onPressed: () async {
@@ -688,11 +688,11 @@ class VerificationScreen extends StatelessWidget {
           ),
         if (state.isAdmin) ...[
           const SizedBox(height: 24),
-          const Text('Solicitudes', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          if (pending.isEmpty) const Text('No hay pendientes', style: TextStyle(color: Colors.white54)),
+          Text('Solicitudes', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold)),
+          if (pending.isEmpty) Text('No hay pendientes', style: TextStyle(color: SpaceColors.textMuted)),
           ...pending.map((u) => ListTile(
-                title: Text(u.username, style: const TextStyle(color: Colors.white)),
-                subtitle: Text(u.email, style: const TextStyle(color: Colors.white54)),
+                title: Text(u.username, style: TextStyle(color: SpaceColors.text)),
+                subtitle: Text(u.email, style: TextStyle(color: SpaceColors.textMuted)),
                 trailing: TextButton(onPressed: () => state.setVerified(u.id, true), child: const Text('Verificar')),
               )),
         ],
@@ -709,14 +709,14 @@ class FollowRequestsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final ids = state.incomingFollows.toList();
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(backgroundColor: Colors.black, title: const Text('Solicitudes')),
+      backgroundColor: SpaceColors.bg,
+      appBar: AppBar(backgroundColor: SpaceColors.bg, title: Text('Solicitudes')),
       body: ids.isEmpty
-          ? const Center(child: Text('No hay solicitudes', style: TextStyle(color: Colors.white54)))
+          ? Center(child: Text('No hay solicitudes', style: TextStyle(color: SpaceColors.textMuted)))
           : ListView(children: [
               for (final id in ids)
                 ListTile(
-                  title: Text(state.tryUser(id)?.username ?? id, style: const TextStyle(color: Colors.white)),
+                  title: Text(state.tryUser(id)?.username ?? id, style: TextStyle(color: SpaceColors.text)),
                   trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                     TextButton(onPressed: () => state.acceptFollow(id), child: const Text('Confirmar')),
                     TextButton(onPressed: () => state.rejectFollow(id), child: const Text('Eliminar')),

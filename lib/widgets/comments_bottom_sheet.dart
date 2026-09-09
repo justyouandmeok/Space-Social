@@ -79,13 +79,13 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                 margin: const EdgeInsets.symmetric(vertical: 10),
                 width: 40,
                 height: 4,
-                decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)),
+                decoration: BoxDecoration(color: SpaceColors.hairline, borderRadius: BorderRadius.circular(2)),
               ),
-              const Text('Comentarios', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-              const Divider(color: Colors.white12, height: 20),
+              Text('Comentarios', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
+              Divider(color: SpaceColors.hairline, height: 20),
               Expanded(
                 child: comments.isEmpty
-                    ? const Center(child: Text('Sé el primero en comentar', style: TextStyle(color: Colors.white54)))
+                    ? Center(child: Text('Sé el primero en comentar', style: TextStyle(color: SpaceColors.textMuted)))
                     : ListView.builder(
                         controller: scrollController,
                         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -107,12 +107,12 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                                 Expanded(
                                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                                     Row(children: [
-                                      Text(u?.username ?? 'usuario', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                                      Text(u?.username ?? 'usuario', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
                                       const SizedBox(width: 8),
-                                      Text(timeAgo(c.createdAt), style: const TextStyle(color: Colors.white38, fontSize: 12)),
+                                      Text(timeAgo(c.createdAt), style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
                                     ]),
                                     const SizedBox(height: 3),
-                                    Text(c.text, style: const TextStyle(color: Colors.white, fontSize: 14)),
+                                    Text(c.text, style: TextStyle(color: SpaceColors.text, fontSize: 14)),
                                     const SizedBox(height: 6),
                                     GestureDetector(
                                       onTap: () {
@@ -121,7 +121,7 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                                         _commentController.text = '@$name ';
                                         _commentController.selection = TextSelection.fromPosition(TextPosition(offset: _commentController.text.length));
                                       },
-                                      child: const Text('Responder', style: TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.w600)),
+                                      child: Text('Responder', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12, fontWeight: FontWeight.w600)),
                                     ),
                                   ]),
                                 ),
@@ -142,7 +142,7 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
                 decoration: const BoxDecoration(
                   color: SpaceColors.deepSpace,
-                  border: Border(top: BorderSide(color: Colors.white12)),
+                  border: Border(top: BorderSide(color: SpaceColors.hairline)),
                 ),
                 child: Row(children: [
                   Avatar(widget.state.me.avatarPath, size: 32),
@@ -150,10 +150,10 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                   Expanded(
                     child: TextField(
                       controller: _commentController,
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: SpaceColors.text),
                       decoration: const InputDecoration(
                         hintText: 'Añade un comentario...',
-                        hintStyle: TextStyle(color: Colors.white38, fontSize: 14),
+                        hintStyle: TextStyle(color: SpaceColors.textMuted, fontSize: 14),
                         border: InputBorder.none,
                         isDense: true,
                       ),

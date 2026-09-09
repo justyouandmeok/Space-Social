@@ -32,19 +32,19 @@ class DirectMessagesScreen extends StatelessWidget {
     final notes = [state.me, ...state.users.where((u) => u.id != me)].take(16).toList();
 
     return Scaffold(
-      backgroundColor: SpaceColors.deepSpace,
+      backgroundColor: SpaceColors.bg,
       appBar: AppBar(
-        backgroundColor: SpaceColors.deepSpace,
-        title: Text(state.me.username, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        backgroundColor: SpaceColors.bg,
+        title: Text(state.me.username, style: TextStyle(fontWeight: FontWeight.bold, color: SpaceColors.text)),
         actions: [
-          IconButton(icon: const Icon(Icons.edit_square, color: SpaceColors.cosmicCyan), onPressed: () {
+          IconButton(icon: Icon(Icons.edit_square, color: SpaceColors.cosmicCyan), onPressed: () {
             final people = state.users.where((u) => u.id != me).toList();
-            showModalBottomSheet(context: context, backgroundColor: SpaceColors.darkMatter, builder: (ctx) => SafeArea(child: ListView(
+            showModalBottomSheet(context: context, backgroundColor: SpaceColors.surface, builder: (ctx) => SafeArea(child: ListView(
               children: [
-                const ListTile(title: Text('Nuevo mensaje', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                ListTile(title: Text('Nuevo mensaje', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold))),
                 ...people.map((u) => ListTile(
                   leading: Avatar(u.avatarPath, size: 40),
-                  title: Text(u.username, style: const TextStyle(color: Colors.white)),
+                  title: Text(u.username, style: TextStyle(color: SpaceColors.text)),
                   onTap: () {
                     Navigator.pop(ctx);
                     Navigator.push(context, MaterialPageRoute(builder: (_) => ChatConversationScreen(state: state, user: u)));
@@ -59,7 +59,7 @@ class DirectMessagesScreen extends StatelessWidget {
         SizedBox(
           height: 100,
           child: notes.isEmpty
-              ? const Center(child: Text('Todavía no hay gente para escribirle', style: TextStyle(color: Colors.white38, fontSize: 12)))
+              ? Center(child: Text('Todavía no hay gente para escribirle', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)))
               : ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -75,9 +75,9 @@ class DirectMessagesScreen extends StatelessWidget {
                             onLongPress: u.id == me ? () async {
                               final c = TextEditingController();
                               final ok = await showDialog<bool>(context: context, builder: (ctx) => AlertDialog(
-                                backgroundColor: SpaceColors.darkMatter,
-                                title: const Text('Nota', style: TextStyle(color: Colors.white)),
-                                content: TextField(controller: c, maxLength: 60, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(hintText: '¿Qué estás pensando?', hintStyle: TextStyle(color: Colors.white38))),
+                                backgroundColor: SpaceColors.surface,
+                                title: Text('Nota', style: TextStyle(color: SpaceColors.text)),
+                                content: TextField(controller: c, maxLength: 60, style: TextStyle(color: SpaceColors.text), decoration: InputDecoration(hintText: '¿Qué estás pensando?', hintStyle: TextStyle(color: SpaceColors.textMuted))),
                                 actions: [
                                   TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
                                   TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Compartir')),
@@ -95,7 +95,7 @@ class DirectMessagesScreen extends StatelessWidget {
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               textAlign: TextAlign.center,
-                              style: const TextStyle(color: Colors.white70, fontSize: 10),
+                              style: TextStyle(color: SpaceColors.textMuted, fontSize: 10),
                             ),
                           ),
                         ]),
@@ -104,10 +104,10 @@ class DirectMessagesScreen extends StatelessWidget {
                   },
                 ),
         ),
-        const Divider(color: Colors.white12, height: 1),
+        Divider(color: SpaceColors.hairline, height: 1),
         Expanded(
           child: others.isEmpty
-              ? const Center(child: Text('No hay chats todavía', style: TextStyle(color: Colors.white54)))
+              ? Center(child: Text('No hay chats todavía', style: TextStyle(color: SpaceColors.textMuted)))
               : ListView.builder(
                   itemCount: others.length,
                   itemBuilder: (context, index) {
@@ -118,7 +118,7 @@ class DirectMessagesScreen extends StatelessWidget {
                     return ListTile(
                       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ChatConversationScreen(state: state, user: u))),
                       leading: Avatar(u.avatarPath, size: 48),
-                      title: Text(u.username, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      title: Text(u.username, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold)),
                       subtitle: Text(
                         last?.text ?? 'Enviar mensaje',
                         maxLines: 1,
@@ -129,7 +129,7 @@ class DirectMessagesScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text(last == null ? '' : timeAgo(last.createdAt), style: const TextStyle(color: Colors.white38, fontSize: 11)),
+                          Text(last == null ? '' : timeAgo(last.createdAt), style: TextStyle(color: SpaceColors.textMuted, fontSize: 11)),
                           if (unread > 0) ...[
                             const SizedBox(height: 4),
                             Container(
@@ -187,22 +187,22 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   Widget build(BuildContext context) {
     final messages = widget.state.threadWith(widget.user.id);
     return Scaffold(
-      backgroundColor: SpaceColors.deepSpace,
+      backgroundColor: SpaceColors.bg,
       appBar: AppBar(
-        backgroundColor: SpaceColors.darkMatter,
+        backgroundColor: SpaceColors.surface,
         title: Row(children: [
           Avatar(widget.user.avatarPath, size: 36),
           const SizedBox(width: 10),
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(widget.user.username, style: const TextStyle(fontSize: 15, color: Colors.white)),
-            Text(widget.user.name, style: const TextStyle(fontSize: 11, color: Colors.white38)),
+            Text(widget.user.username, style: TextStyle(fontSize: 15, color: SpaceColors.text)),
+            Text(widget.user.name, style: TextStyle(fontSize: 11, color: SpaceColors.textMuted)),
           ]),
         ]),
       ),
       body: Column(children: [
         Expanded(
           child: messages.isEmpty
-              ? const Center(child: Text('Empezá la conversación', style: TextStyle(color: Colors.white54)))
+              ? Center(child: Text('Empezá la conversación', style: TextStyle(color: SpaceColors.textMuted)))
               : ListView.builder(
                   padding: const EdgeInsets.all(14),
                   itemCount: messages.length,
@@ -226,7 +226,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                           ? SizedBox(width: 180, height: 180, child: MediaView(msg.text.substring(5)))
                           : msg.text.startsWith('POST::')
                               ? _sharedPost(widget.state, msg.text.substring(6))
-                              : Text(msg.text, style: const TextStyle(color: Colors.white, fontSize: 14)),
+                              : Text(msg.text, style: TextStyle(color: SpaceColors.text, fontSize: 14)),
                       ),
                       ),
                     );
@@ -237,7 +237,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           color: SpaceColors.darkMatter,
           child: Row(children: [
-            IconButton(icon: const Icon(Icons.image_outlined, color: Colors.white70), onPressed: () async {
+            IconButton(icon: Icon(Icons.image_outlined, color: SpaceColors.textMuted), onPressed: () async {
               final x = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
               if (x == null) return;
               await widget.state.sendImage(widget.user.id, File(x.path));
@@ -246,10 +246,10 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
             Expanded(
               child: TextField(
                 controller: _msgController,
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: SpaceColors.text),
                 decoration: InputDecoration(
                   hintText: 'Escribe un mensaje...',
-                  hintStyle: const TextStyle(color: Colors.white38),
+                  hintStyle: TextStyle(color: SpaceColors.textMuted),
                   filled: true,
                   fillColor: SpaceColors.deepSpace,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: BorderSide.none),
@@ -280,14 +280,14 @@ Widget _sharedPost(AppState state, String id) {
     }
   }
   if (post == null) {
-    return const Text('Publicación', style: TextStyle(color: Colors.white70));
+    return Text('Publicación', style: TextStyle(color: SpaceColors.textMuted));
   }
   return SizedBox(
     width: 180,
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       SizedBox(height: 180, child: MediaView(post.imagePath, video: post.isVideo)),
       const SizedBox(height: 4),
-      Text(post.caption, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white, fontSize: 12)),
+      Text(post.caption, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: SpaceColors.text, fontSize: 12)),
     ]),
   );
 }

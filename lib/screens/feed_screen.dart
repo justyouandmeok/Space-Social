@@ -23,26 +23,26 @@ class FeedScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: SpaceColors.bg,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: SpaceColors.bg,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Space Social',
-          style: TextStyle(fontFamily: 'GrandHotel', fontSize: 32, color: Colors.white),
+          style: TextStyle(fontFamily: 'GrandHotel', fontSize: 32, color: SpaceColors.text),
         ),
         actions: [
-          IconButton(icon: const Icon(Icons.favorite_border, color: Colors.white), onPressed: () {
+          IconButton(icon: Icon(Icons.favorite_border, color: SpaceColors.text), onPressed: () {
             Navigator.of(context).push(MaterialPageRoute(builder: (_) => NotificationsScreen(state: state, onOpenProfile: onOpenProfile)));
           }),
-          IconButton(icon: const Icon(Icons.send_outlined, color: Colors.white), onPressed: () {
+          IconButton(icon: Icon(Icons.send_outlined, color: SpaceColors.text), onPressed: () {
             Navigator.of(context).push(MaterialPageRoute(builder: (_) => DirectMessagesScreen(state: state, onOpenProfile: onOpenProfile)));
           }),
         ],
       ),
       body: RefreshIndicator(
-        color: Colors.white,
-        backgroundColor: Colors.black,
+        color: SpaceColors.text,
+        backgroundColor: SpaceColors.bg,
         onRefresh: () => state.load(),
         child: CustomScrollView(
           slivers: [
@@ -70,7 +70,7 @@ class FeedScreen extends StatelessWidget {
                           selected: state.feedMode == e.$1,
                           onSelected: (_) => state.setFeedMode(e.$1),
                           selectedColor: Colors.white24,
-                          labelStyle: const TextStyle(color: Colors.white),
+                          labelStyle: TextStyle(color: SpaceColors.text),
                           backgroundColor: const Color(0xFF1A1A1A),
                         ),
                       ),
@@ -78,7 +78,7 @@ class FeedScreen extends StatelessWidget {
                 ),
               ),
             ),
-            const SliverToBoxAdapter(child: Divider(color: Colors.white12, height: 1)),
+            SliverToBoxAdapter(child: Divider(color: SpaceColors.hairline, height: 1)),
             if (items.isEmpty)
               const SliverToBoxAdapter(
                 child: Padding(
@@ -86,7 +86,7 @@ class FeedScreen extends StatelessWidget {
                   child: Text(
                     'Todavía no hay publicaciones.\nTocá + para crear la primera.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white70),
+                    style: TextStyle(color: SpaceColors.textMuted),
                   ),
                 ),
               )

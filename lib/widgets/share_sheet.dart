@@ -10,18 +10,18 @@ class ShareSheet {
     final people = state.users.where((u) => u.id != state.me.id).toList();
     showModalBottomSheet(
       context: context,
-      backgroundColor: SpaceColors.darkMatter,
+      backgroundColor: SpaceColors.surface,
       builder: (ctx) => SafeArea(
         child: SizedBox(
           height: 420,
           child: Column(children: [
             const Padding(
               padding: EdgeInsets.all(12),
-              child: Text('Enviar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+              child: Text('Enviar', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
             ),
             ListTile(
-              leading: const Icon(Icons.copy, color: Colors.white70),
-              title: const Text('Copiar texto', style: TextStyle(color: Colors.white)),
+              leading: Icon(Icons.copy, color: SpaceColors.textMuted),
+              title: Text('Copiar texto', style: TextStyle(color: SpaceColors.text)),
               onTap: () {
                 final body = post != null ? '@${state.tryUser(post.userId)?.username ?? ''} ${post.caption}' : text;
                 Clipboard.setData(ClipboardData(text: body));
@@ -29,17 +29,17 @@ class ShareSheet {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Copiado')));
               },
             ),
-            const Divider(color: Colors.white12),
+            Divider(color: SpaceColors.hairline),
             Expanded(
               child: people.isEmpty
-                  ? const Center(child: Text('No hay a quién enviarle', style: TextStyle(color: Colors.white54)))
+                  ? Center(child: Text('No hay a quién enviarle', style: TextStyle(color: SpaceColors.textMuted)))
                   : ListView.builder(
                       itemCount: people.length,
                       itemBuilder: (_, i) {
                         final u = people[i];
                         return ListTile(
                           leading: Avatar(u.avatarPath, size: 40),
-                          title: Text(u.username, style: const TextStyle(color: Colors.white)),
+                          title: Text(u.username, style: TextStyle(color: SpaceColors.text)),
                           onTap: () async {
                             if (post != null) {
                               await state.sharePostTo(u.id, post);

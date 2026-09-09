@@ -72,9 +72,9 @@ class _MainScreenState extends State<MainScreen> {
           currentIndex: _currentIndex == 2 ? 0 : _currentIndex,
           onTap: _onTap,
           type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.black,
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.white60,
+          backgroundColor: SpaceColors.nav,
+          selectedItemColor: SpaceColors.text,
+          unselectedItemColor: SpaceColors.textMuted,
           showSelectedLabels: false,
           showUnselectedLabels: false,
           items: [
@@ -87,7 +87,7 @@ class _MainScreenState extends State<MainScreen> {
                 padding: const EdgeInsets.all(1.5),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: _currentIndex == 4 ? Colors.white : Colors.transparent, width: 1.5),
+                  border: Border.all(color: _currentIndex == 4 ? SpaceColors.text : Colors.transparent, width: 1.5),
                 ),
                 child: Avatar(state.me.avatarPath, size: 24),
               ),

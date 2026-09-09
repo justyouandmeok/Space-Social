@@ -31,13 +31,13 @@ class NotificationsScreen extends StatelessWidget {
     }).toList();
 
     return Scaffold(
-      backgroundColor: SpaceColors.deepSpace,
+      backgroundColor: SpaceColors.bg,
       appBar: AppBar(
-        backgroundColor: SpaceColors.deepSpace,
-        title: const Text('Notificaciones', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: SpaceColors.bg,
+        title: Text('Notificaciones', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold)),
       ),
       body: items.isEmpty
-          ? const Center(child: Text('Todavía no hay actividad', style: TextStyle(color: Colors.white54)))
+          ? Center(child: Text('Todavía no hay actividad', style: TextStyle(color: SpaceColors.textMuted)))
           : ListView(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
@@ -63,7 +63,7 @@ class NotificationsScreen extends StatelessWidget {
   Widget _header(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Text(title, style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 16)),
+      child: Text(title, style: TextStyle(color: SpaceColors.textMuted, fontWeight: FontWeight.bold, fontSize: 16)),
     );
   }
 
@@ -84,9 +84,9 @@ class NotificationsScreen extends StatelessWidget {
         Expanded(
           child: RichText(
             text: TextSpan(children: [
-              TextSpan(text: '${user?.username ?? 'alguien'} ', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-              TextSpan(text: a.text, style: const TextStyle(color: Colors.white70)),
-              TextSpan(text: ' ${timeAgo(a.createdAt)}', style: const TextStyle(color: Colors.white38, fontSize: 12)),
+              TextSpan(text: '${user?.username ?? 'alguien'} ', style: TextStyle(fontWeight: FontWeight.bold, color: SpaceColors.text)),
+              TextSpan(text: a.text, style: TextStyle(color: SpaceColors.textMuted)),
+              TextSpan(text: ' ${timeAgo(a.createdAt)}', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
             ]),
           ),
         ),
@@ -94,7 +94,7 @@ class NotificationsScreen extends StatelessWidget {
         if (follow && user != null && state.incomingFollows.contains(user.id))
           Row(children: [
             TextButton(onPressed: () => state.acceptFollow(user.id), child: const Text('Confirmar')),
-            TextButton(onPressed: () => state.rejectFollow(user.id), child: const Text('Eliminar', style: TextStyle(color: Colors.white54))),
+            TextButton(onPressed: () => state.rejectFollow(user.id), child: Text('Eliminar', style: TextStyle(color: SpaceColors.textMuted))),
           ])
         else if (follow && user != null)
           ElevatedButton(

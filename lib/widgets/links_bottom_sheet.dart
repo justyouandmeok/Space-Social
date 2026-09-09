@@ -48,14 +48,14 @@ class LinksBottomSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(child: Container(width: 36, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)))),
+            Center(child: Container(width: 36, height: 4, decoration: BoxDecoration(color: SpaceColors.hairline, borderRadius: BorderRadius.circular(2)))),
             const SizedBox(height: 16),
-            const Text('Enlaces', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+            Text('Enlaces', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 8),
             if (links.isEmpty)
               const Padding(
                 padding: EdgeInsets.only(bottom: 16),
-                child: Text('No hay enlaces en este perfil', style: TextStyle(color: Colors.white54)),
+                child: Text('No hay enlaces en este perfil', style: TextStyle(color: SpaceColors.textMuted)),
               )
             else
               ...links.map((link) => ListTile(
@@ -65,13 +65,13 @@ class LinksBottomSheet extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: SpaceColors.deepSpace,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.white12),
+                        border: Border.all(color: SpaceColors.hairline),
                       ),
                       child: Icon(link.$3, color: SpaceColors.cosmicCyan, size: 20),
                     ),
-                    title: Text(link.$1, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14)),
-                    subtitle: Text(link.$2, style: const TextStyle(color: Colors.white38, fontSize: 12)),
-                    trailing: const Icon(Icons.copy, size: 16, color: Colors.white38),
+                    title: Text(link.$1, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w600, fontSize: 14)),
+                    subtitle: Text(link.$2, style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+                    trailing: Icon(Icons.copy, size: 16, color: SpaceColors.textMuted),
                     onTap: () {
                       Clipboard.setData(ClipboardData(text: link.$2));
                       Navigator.pop(context);

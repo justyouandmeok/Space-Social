@@ -264,7 +264,7 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
             const SizedBox(height: 8),
             ListTile(
               leading: const Icon(Icons.send_outlined),
-              title: const Text('Enviar en un chat'),
+              title: Text('Enviar en un chat'),
               onTap: () {
                 Navigator.pop(context);
                 _shareToChat(context, post);
@@ -272,7 +272,7 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
             ),
             ListTile(
               leading: const Icon(Icons.copy),
-              title: const Text('Copiar pie de foto'),
+              title: Text('Copiar pie de foto'),
               onTap: () {
                 Clipboard.setData(ClipboardData(text: post.caption));
                 Navigator.pop(context);
@@ -281,7 +281,7 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
             ),
             ListTile(
               leading: const Icon(Icons.link),
-              title: const Text('Copiar id de publicación'),
+              title: Text('Copiar id de publicación'),
               onTap: () {
                 Clipboard.setData(ClipboardData(text: post.id));
                 Navigator.pop(context);
@@ -313,7 +313,7 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
                 },
               ),
               ListTile(
-                title: const Text('Eliminar', style: TextStyle(color: LumaColors.like)),
+                title: Text('Eliminar', style: TextStyle(color: LumaColors.like)),
                 onTap: () {
                   Navigator.pop(context);
                   widget.state.deletePost(post.id);
@@ -331,14 +331,14 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
               ),
             ListTile(
               leading: const Icon(Icons.info_outline),
-              title: const Text('Ver información'),
+              title: Text('Ver información'),
               onTap: () {
                 Navigator.pop(context);
                 final d = post.createdAt.toLocal();
                 showDialog(
                   context: this.context,
                   builder: (_) => AlertDialog(
-                    title: const Text('Información'),
+                    title: Text('Información'),
                     content: Text(
                       'Subida el ${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year} a las ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}.\n'
                       '${post.likes.length} Me gusta · ${post.comments.length} comentarios'
@@ -350,14 +350,14 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
               },
             ),
             ListTile(
-              title: const Text('Ir a la publicación'),
+              title: Text('Ir a la publicación'),
               onTap: () {
                 Navigator.pop(context);
                 widget.onOpenPost(post);
               },
             ),
             ListTile(
-              title: const Text('Copiar enlace'),
+              title: Text('Copiar enlace'),
               onTap: () {
                 Clipboard.setData(ClipboardData(text: post.id));
                 Navigator.pop(context);

@@ -9,6 +9,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 import 'config.dart';
 import 'models.dart';
 import 'store.dart';
+import 'space_theme.dart';
 import 'theme.dart';
 
 class ChatMessage {
@@ -354,6 +355,7 @@ class AppState extends ChangeNotifier {
         hideLikes = data['hideLikes'] == true;
         darkMode = data['darkMode'] != false;
         LumaColors.dark = darkMode;
+        SpaceColors.dark = darkMode;
         notificationsOn = data['notificationsOn'] != false;
         blocked = {...List<String>.from(data['blocked'] ?? const [])};
         muted = {...List<String>.from(data['muted'] ?? const [])};
@@ -1253,7 +1255,9 @@ class AppState extends ChangeNotifier {
   Future<void> toggleDarkMode() async {
     darkMode = !darkMode;
     LumaColors.dark = darkMode;
+    SpaceColors.dark = darkMode;
     notifyListeners();
+    unawaited(_savePrefs());
     unawaited(_saveCache());
   }
 

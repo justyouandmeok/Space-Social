@@ -22,15 +22,15 @@ class CreatorInsightsScreen extends StatelessWidget {
     final ranked = List<Post>.from(mine)..sort((a, b) => (b.likes.length + b.comments.length).compareTo(a.likes.length + a.comments.length));
 
     return Scaffold(
-      backgroundColor: SpaceColors.deepSpace,
+      backgroundColor: SpaceColors.bg,
       appBar: AppBar(
-        backgroundColor: SpaceColors.deepSpace,
-        title: const Text('Estadísticas', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        backgroundColor: SpaceColors.bg,
+        title: Text('Estadísticas', style: TextStyle(fontWeight: FontWeight.bold, color: SpaceColors.text)),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text('Resumen de los últimos 30 días', style: TextStyle(color: Colors.white70, fontSize: 14)),
+          Text('Resumen de los últimos 30 días', style: TextStyle(color: SpaceColors.textMuted, fontSize: 14)),
           const SizedBox(height: 12),
           Row(children: [
             Expanded(child: _card('Alcance', compact(reach), '${last30.length} posts')),
@@ -44,10 +44,10 @@ class CreatorInsightsScreen extends StatelessWidget {
             Expanded(child: _card('Comentarios', compact(comments), 'en 30 días')),
           ]),
           const SizedBox(height: 24),
-          const Text('Contenido con mejor rendimiento', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+          Text('Contenido con mejor rendimiento', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
           const SizedBox(height: 12),
           if (ranked.isEmpty)
-            const Text('Todavía no hay publicaciones para medir', style: TextStyle(color: Colors.white54))
+            Text('Todavía no hay publicaciones para medir', style: TextStyle(color: SpaceColors.textMuted))
           else
             SizedBox(
               height: 160,
@@ -74,7 +74,7 @@ class CreatorInsightsScreen extends StatelessWidget {
                           child: Row(children: [
                             const Icon(Icons.favorite, color: SpaceColors.cosmicCyan, size: 14),
                             const SizedBox(width: 4),
-                            Text('${p.likes.length}', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                            Text('${p.likes.length}', style: TextStyle(color: SpaceColors.text, fontSize: 12, fontWeight: FontWeight.bold)),
                           ]),
                         ),
                       ]),
@@ -97,9 +97,9 @@ class CreatorInsightsScreen extends StatelessWidget {
         border: Border.all(color: Colors.white10),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title, style: const TextStyle(color: Colors.white54, fontSize: 13)),
+        Text(title, style: TextStyle(color: SpaceColors.textMuted, fontSize: 13)),
         const SizedBox(height: 8),
-        Text(value, style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+        Text(value, style: TextStyle(color: SpaceColors.text, fontSize: 22, fontWeight: FontWeight.bold)),
         const SizedBox(height: 4),
         Text(hint, style: const TextStyle(color: Colors.greenAccent, fontSize: 12, fontWeight: FontWeight.bold)),
       ]),

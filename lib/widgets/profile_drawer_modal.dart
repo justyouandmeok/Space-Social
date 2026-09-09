@@ -33,7 +33,7 @@ class ProfileDrawerModal extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(width: 36, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+            Container(width: 36, height: 4, decoration: BoxDecoration(color: SpaceColors.hairline, borderRadius: BorderRadius.circular(2))),
             const SizedBox(height: 16),
             _tile(Icons.settings_outlined, 'Configuración y privacidad', () {
               Navigator.pop(context);
@@ -65,7 +65,7 @@ class ProfileDrawerModal extends StatelessWidget {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (_) => const OrdersScreen()));
             }),
-            const Divider(color: Colors.white12),
+            Divider(color: SpaceColors.hairline),
             _tile(Icons.logout, 'Cerrar sesión', () {
               Navigator.pop(context);
               state.logout();

@@ -42,13 +42,13 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: SpaceColors.bg,
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
           children: [
             const SizedBox(height: 48),
-            const Text('Space Social', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'GrandHotel', fontSize: 48, color: Colors.white)),
+            Text('Space Social', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'GrandHotel', fontSize: 48, color: SpaceColors.text)),
             const SizedBox(height: 36),
             _field(email, register ? 'Correo' : 'Correo, usuario o teléfono'),
             if (register) _field(user, 'Nombre de usuario'),
@@ -61,13 +61,13 @@ class _AuthScreenState extends State<AuthScreen> {
                 onPressed: busy ? null : _go,
                 style: FilledButton.styleFrom(backgroundColor: LumaColors.blue, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                 child: busy
-                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    ? SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: SpaceColors.text))
                     : Text(register ? 'Registrarte' : 'Entrar'),
               ),
             ),
             TextButton(
               onPressed: () => setState(() => register = !register),
-              child: Text(register ? '¿Tenés cuenta? Iniciá sesión' : '¿No tenés cuenta? Registrate', style: const TextStyle(color: Colors.white70)),
+              child: Text(register ? '¿Tenés cuenta? Iniciá sesión' : '¿No tenés cuenta? Registrate', style: TextStyle(color: SpaceColors.textMuted)),
             ),
           ],
         ),
@@ -81,10 +81,10 @@ class _AuthScreenState extends State<AuthScreen> {
       child: TextField(
         controller: c,
         obscureText: hide,
-        style: const TextStyle(color: Colors.white),
+        style: TextStyle(color: SpaceColors.text),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: const TextStyle(color: Colors.white54),
+          hintStyle: TextStyle(color: SpaceColors.textMuted),
           filled: true,
           fillColor: const Color(0xFF1C1C1C),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF8E8E8E))),

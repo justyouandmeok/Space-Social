@@ -44,11 +44,11 @@ class _CreateHighlightScreenState extends State<CreateHighlightScreen> {
   Widget build(BuildContext context) {
     final items = archive;
     return Scaffold(
-      backgroundColor: SpaceColors.deepSpace,
+      backgroundColor: SpaceColors.bg,
       appBar: AppBar(
-        backgroundColor: SpaceColors.deepSpace,
-        leading: IconButton(icon: const Icon(Icons.close, color: Colors.white), onPressed: () => Navigator.pop(context)),
-        title: Text(_isNamingStep ? 'Nueva destacada' : 'Historias', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: SpaceColors.bg,
+        leading: IconButton(icon: Icon(Icons.close, color: SpaceColors.text), onPressed: () => Navigator.pop(context)),
+        title: Text(_isNamingStep ? 'Nueva destacada' : 'Historias', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold)),
         actions: [
           TextButton(
             onPressed: _selected.isEmpty
@@ -89,18 +89,18 @@ class _CreateHighlightScreenState extends State<CreateHighlightScreen> {
                   controller: _titleController,
                   autofocus: true,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white, fontSize: 18),
+                  style: TextStyle(color: SpaceColors.text, fontSize: 18),
                   decoration: const InputDecoration(
                     hintText: 'Nombre de la historia',
-                    hintStyle: TextStyle(color: Colors.white38),
-                    enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
+                    hintStyle: TextStyle(color: SpaceColors.textMuted),
+                    enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: SpaceColors.hairline)),
                     focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: SpaceColors.cosmicCyan)),
                   ),
                 ),
               ]),
             )
           : items.isEmpty
-              ? const Center(child: Text('No hay historias para destacar', style: TextStyle(color: Colors.white54)))
+              ? Center(child: Text('No hay historias para destacar', style: TextStyle(color: SpaceColors.textMuted)))
               : GridView.builder(
                   padding: const EdgeInsets.all(2),
                   itemCount: items.length,
@@ -130,7 +130,7 @@ class _CreateHighlightScreenState extends State<CreateHighlightScreen> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: isSelected ? SpaceColors.cosmicCyan : Colors.black45,
-                              border: Border.all(color: Colors.white, width: 1.5),
+                              border: Border.all(color: SpaceColors.text, width: 1.5),
                             ),
                             child: isSelected ? const Icon(Icons.check, size: 14, color: Colors.black) : null,
                           ),

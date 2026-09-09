@@ -70,26 +70,26 @@ class _SearchScreenState extends State<SearchScreen> {
         : widget.state.users.where((u) => u.username.contains(q) || u.name.toLowerCase().contains(q)).toList();
 
     return Scaffold(
-      backgroundColor: SpaceColors.deepSpace,
+      backgroundColor: SpaceColors.bg,
       appBar: AppBar(
-        backgroundColor: SpaceColors.deepSpace,
+        backgroundColor: SpaceColors.bg,
         elevation: 0,
         title: Container(
           height: 40,
           decoration: BoxDecoration(
             color: SpaceColors.darkMatter,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.white12),
+            border: Border.all(color: SpaceColors.hairline),
           ),
           child: TextField(
             controller: _searchController,
             onChanged: (_) => setState(() {}),
             onSubmitted: (v) => _remember(v.trim()),
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: SpaceColors.text),
             decoration: const InputDecoration(
               prefixIcon: Icon(Icons.search, color: SpaceColors.cosmicCyan, size: 20),
               hintText: 'Buscar cuentas, hashtags o temas...',
-              hintStyle: TextStyle(color: Colors.white38, fontSize: 14),
+              hintStyle: TextStyle(color: SpaceColors.textMuted, fontSize: 14),
               border: InputBorder.none,
               contentPadding: EdgeInsets.symmetric(vertical: 8),
             ),
@@ -117,7 +117,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
-                  backgroundColor: SpaceColors.darkMatter,
+                  backgroundColor: SpaceColors.surface,
                   selectedColor: SpaceColors.nebulaPurple,
                   side: BorderSide(color: isSelected ? SpaceColors.cosmicCyan : Colors.white12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -131,10 +131,10 @@ class _SearchScreenState extends State<SearchScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
             child: Wrap(spacing: 8, children: [
-              const Padding(padding: EdgeInsets.only(top: 8), child: Text('Recientes', style: TextStyle(color: Colors.white54, fontSize: 12))),
+              Padding(padding: EdgeInsets.only(top: 8), child: Text('Recientes', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12))),
               ..._recent.map((s) => ActionChip(
-                    label: Text(s, style: const TextStyle(color: Colors.white)),
-                    backgroundColor: SpaceColors.darkMatter,
+                    label: Text(s, style: TextStyle(color: SpaceColors.text)),
+                    backgroundColor: SpaceColors.surface,
                     onPressed: () {
                       _searchController.text = s;
                       setState(() {});
@@ -155,7 +155,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       child: Column(children: [
                         Avatar(u.avatarPath, size: 56),
                         const SizedBox(height: 4),
-                        SizedBox(width: 64, child: Text(u.username, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, color: Colors.white))),
+                        SizedBox(width: 64, child: Text(u.username, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: TextStyle(fontSize: 11, color: SpaceColors.text))),
                       ]),
                     ),
                   )).toList(),
@@ -190,7 +190,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       const Positioned(
                         top: 6,
                         right: 6,
-                        child: Icon(Icons.movie_outlined, color: Colors.white, size: 18),
+                        child: Icon(Icons.movie_outlined, color: SpaceColors.text, size: 18),
                       ),
                   ],
                 ),

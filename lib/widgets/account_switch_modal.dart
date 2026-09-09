@@ -28,25 +28,25 @@ class AccountSwitchModal extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(width: 36, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+            Container(width: 36, height: 4, decoration: BoxDecoration(color: SpaceColors.hairline, borderRadius: BorderRadius.circular(2))),
             const SizedBox(height: 16),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: Avatar(me.avatarPath, size: 44),
-              title: Text(me.username, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-              subtitle: Text(me.name, style: const TextStyle(color: Colors.white54, fontSize: 12)),
+              title: Text(me.username, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold)),
+              subtitle: Text(me.name, style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
               trailing: const Icon(Icons.check_circle, color: SpaceColors.cosmicCyan),
               onTap: () => Navigator.pop(context),
             ),
-            const Divider(color: Colors.white12),
+            Divider(color: SpaceColors.hairline),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white24)),
-                child: const Icon(Icons.add, color: Colors.white, size: 20),
+                decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: SpaceColors.hairline)),
+                child: Icon(Icons.add, color: SpaceColors.text, size: 20),
               ),
-              title: const Text('Agregar cuenta', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+              title: Text('Agregar cuenta', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w600)),
               onTap: () {
                 Navigator.pop(context);
                 state.logout();

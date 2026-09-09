@@ -62,43 +62,43 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           if (mine) ...[
             ListTile(
-              title: Text(widget.state.archived.contains(post.id) ? 'Desarchivar' : 'Archivar', style: const TextStyle(color: Colors.white)),
+              title: Text(widget.state.archived.contains(post.id) ? 'Desarchivar' : 'Archivar', style: TextStyle(color: SpaceColors.text)),
               onTap: () { Navigator.pop(ctx); widget.state.toggleArchive(post.id); },
             ),
             ListTile(
-              title: const Text('Eliminar', style: TextStyle(color: Colors.redAccent)),
+              title: Text('Eliminar', style: TextStyle(color: Colors.redAccent)),
               onTap: () { Navigator.pop(ctx); widget.state.deletePost(post.id); },
             ),
           ] else ...[
             ListTile(
-              title: Text(widget.state.isFollowing(user.id) ? 'Dejar de seguir' : 'Seguir', style: const TextStyle(color: Colors.white)),
+              title: Text(widget.state.isFollowing(user.id) ? 'Dejar de seguir' : 'Seguir', style: TextStyle(color: SpaceColors.text)),
               onTap: () { Navigator.pop(ctx); widget.state.toggleFollow(user.id); },
             ),
             ListTile(
-              title: const Text('Silenciar', style: TextStyle(color: Colors.white)),
+              title: Text('Silenciar', style: TextStyle(color: SpaceColors.text)),
               onTap: () { Navigator.pop(ctx); widget.state.toggleMute(user.id); },
             ),
           ],
           ListTile(
-            title: const Text('Copiar pie', style: TextStyle(color: Colors.white)),
+            title: Text('Copiar pie', style: TextStyle(color: SpaceColors.text)),
             onTap: () {
               Clipboard.setData(ClipboardData(text: post.caption));
               Navigator.pop(ctx);
             },
           ),
           ListTile(
-            title: const Text('Guardar en colección', style: TextStyle(color: Colors.white)),
+            title: Text('Guardar en colección', style: TextStyle(color: SpaceColors.text)),
             onTap: () async {
               Navigator.pop(ctx);
               final prefs = await SharedPreferences.getInstance();
               final extra = prefs.getStringList('ss_collections') ?? [];
               if (!context.mounted) return;
               showModalBottomSheet(context: context, backgroundColor: const Color(0xFF1C1C1C), builder: (c2) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
-                const ListTile(title: Text('Elegí colección', style: TextStyle(color: Colors.white))),
+                ListTile(title: Text('Elegí colección', style: TextStyle(color: SpaceColors.text))),
                 ...extra.map((raw) {
                   final name = raw.split('|').first;
                   return ListTile(
-                    title: Text(name, style: const TextStyle(color: Colors.white)),
+                    title: Text(name, style: TextStyle(color: SpaceColors.text)),
                     onTap: () async {
                       final parts = raw.split('|');
                       final ids = parts.length > 1 ? parts[1].split(',').where((e) => e.isNotEmpty).toList() : <String>[];
@@ -113,7 +113,7 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
             },
           ),
           ListTile(
-            title: const Text('Enviar', style: TextStyle(color: Colors.white)),
+            title: Text('Enviar', style: TextStyle(color: SpaceColors.text)),
             onTap: () {
               Navigator.pop(ctx);
               ShareSheet.show(context, widget.state, post: post);
@@ -168,8 +168,8 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
                 if (user.isVerified) ...[const SizedBox(width: 4), const VerifiedBadge(size: 11)],
               ]),
               if (live.location.isNotEmpty)
-                Text(live.location, style: const TextStyle(color: Colors.white54, fontSize: 11)),
-              Text(timeAgo(live.createdAt), style: const TextStyle(color: Colors.white38, fontSize: 11)),
+                Text(live.location, style: TextStyle(color: SpaceColors.textMuted, fontSize: 11)),
+              Text(timeAgo(live.createdAt), style: TextStyle(color: SpaceColors.textMuted, fontSize: 11)),
             ]),
           ),
           trailing: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -179,7 +179,7 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
                 child: Text(widget.state.isPendingFollow(user.id) ? 'Solicitado' : 'Seguir', style: const TextStyle(color: SpaceColors.cosmicCyan, fontWeight: FontWeight.bold)),
               ),
             IconButton(
-              icon: const Icon(Icons.more_horiz, color: Colors.white70),
+              icon: Icon(Icons.more_horiz, color: SpaceColors.textMuted),
               onPressed: () => _options(context, live, user),
             ),
           ]),
@@ -207,10 +207,10 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
             onPressed: () => widget.state.toggleLike(live.id),
           ),
           IconButton(
-            icon: const Icon(Icons.chat_bubble_outline, color: SpaceColors.starlight),
+            icon: Icon(Icons.chat_bubble_outline, color: SpaceColors.starlight),
             onPressed: () => CommentsBottomSheet.show(context, widget.state, live.id),
           ),
-          IconButton(icon: const Icon(Icons.send_outlined, color: SpaceColors.starlight), onPressed: () => ShareSheet.show(context, widget.state, post: live)),
+          IconButton(icon: Icon(Icons.send_outlined, color: SpaceColors.starlight), onPressed: () => ShareSheet.show(context, widget.state, post: live)),
           const Spacer(),
           IconButton(
             icon: Icon(saved ? Icons.bookmark : Icons.bookmark_border, color: SpaceColors.starlight),
@@ -231,12 +231,12 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
                       child: ListView(
                         shrinkWrap: true,
                         children: [
-                          const ListTile(title: Text('Me gusta', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                          ListTile(title: Text('Me gusta', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold))),
                           ...live.likes.map((id) {
                             final u = widget.state.tryUser(id);
                             return ListTile(
                               leading: Avatar(u?.avatarPath ?? '', size: 36),
-                              title: Text(u?.username ?? id, style: const TextStyle(color: Colors.white)),
+                              title: Text(u?.username ?? id, style: TextStyle(color: SpaceColors.text)),
                               onTap: () => widget.onOpenProfile(id),
                             );
                           }),
@@ -258,8 +258,8 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
                 const SizedBox(height: 2),
                 RichText(
                   text: TextSpan(children: [
-                    TextSpan(text: '${user.username} ', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                    TextSpan(text: live.caption, style: const TextStyle(color: Colors.white70)),
+                    TextSpan(text: '${user.username} ', style: TextStyle(fontWeight: FontWeight.bold, color: SpaceColors.text)),
+                    TextSpan(text: live.caption, style: TextStyle(color: SpaceColors.textMuted)),
                   ]),
                 ),
               ],
@@ -268,7 +268,7 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
                   padding: const EdgeInsets.only(top: 4),
                   child: GestureDetector(
                     onTap: () => CommentsBottomSheet.show(context, widget.state, live.id),
-                    child: Text('Ver los ${live.comments.length} comentarios', style: const TextStyle(color: Colors.white54, fontSize: 13)),
+                    child: Text('Ver los ${live.comments.length} comentarios', style: TextStyle(color: SpaceColors.textMuted, fontSize: 13)),
                   ),
                 ),
               const SizedBox(height: 12),

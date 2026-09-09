@@ -32,16 +32,17 @@ class _SpaceSocialAppState extends State<SpaceSocialApp> {
 
   @override
   Widget build(BuildContext context) {
+    SpaceColors.dark = state.darkMode;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Space Social',
-      theme: spaceSocialThemeLight,
-      darkTheme: spaceSocialTheme,
+      theme: buildSpaceTheme(dark: false),
+      darkTheme: buildSpaceTheme(dark: true),
       themeMode: state.darkMode ? ThemeMode.dark : ThemeMode.light,
       home: !state.ready
-          ? const Scaffold(
-              backgroundColor: SpaceColors.voidBlack,
-              body: Center(child: CircularProgressIndicator(color: SpaceColors.cosmicCyan)),
+          ? Scaffold(
+              backgroundColor: SpaceColors.bg,
+              body: const Center(child: CircularProgressIndicator(color: SpaceColors.cosmicCyan)),
             )
           : MainScreen(state: state),
     );
