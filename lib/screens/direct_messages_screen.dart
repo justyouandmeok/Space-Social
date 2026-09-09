@@ -259,3 +259,24 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
     );
   }
 }
+
+Widget _sharedPost(AppState state, String id) {
+  Post? post;
+  for (final p in state.posts) {
+    if (p.id == id) {
+      post = p;
+      break;
+    }
+  }
+  if (post == null) {
+    return const Text('Publicación', style: TextStyle(color: Colors.white70));
+  }
+  return SizedBox(
+    width: 180,
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      SizedBox(height: 180, child: MediaView(post.imagePath, video: post.isVideo)),
+      const SizedBox(height: 4),
+      Text(post.caption, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white, fontSize: 12)),
+    ]),
+  );
+}

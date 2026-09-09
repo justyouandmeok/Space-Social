@@ -46,6 +46,12 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
     _startStoryTimer();
   }
 
+  void _markCurrent() {
+    final list = stories;
+    if (list.isEmpty || _currentIndex >= list.length) return;
+    widget.state.markStoryView(list[_currentIndex].id);
+  }
+
   void _startStoryTimer() {
     _timer?.cancel();
     _percent = 0.0;
@@ -65,6 +71,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
         _currentIndex++;
         _percent = 0.0;
       });
+      _markCurrent();
     } else {
       _timer?.cancel();
       if (mounted) Navigator.of(context).pop();
