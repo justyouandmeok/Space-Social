@@ -66,7 +66,11 @@ class ReelsScreen extends StatelessWidget {
               const Positioned(
                 top: 48,
                 left: 16,
-                child: Text('Reels', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                child: Row(children: [
+                  Text('Reels', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                  SizedBox(width: 16),
+                  Text('Para ti', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                ]),
               ),
               Positioned(
                 top: 48,

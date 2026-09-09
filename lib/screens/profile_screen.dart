@@ -219,7 +219,8 @@ class ProfileScreen extends StatelessWidget {
               pinned: true,
               delegate: _TabBarDelegate(
                 tabBar: TabBar(
-                  indicatorColor: Colors.white,
+                  indicatorColor: SpaceColors.text,
+                  indicatorWeight: 1,
                   tabs: [
                     Tab(icon: Icon(Icons.grid_on, color: SpaceColors.text)),
                     Tab(icon: Icon(Icons.movie_outlined, color: SpaceColors.text)),

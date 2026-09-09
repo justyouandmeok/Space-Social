@@ -104,7 +104,7 @@ class _SavedCollectionsScreenState extends State<SavedCollectionsScreen> {
         backgroundColor: SpaceColors.bg,
         title: Text('Guardados', style: TextStyle(fontWeight: FontWeight.bold, color: SpaceColors.text)),
         actions: [
-          IconButton(icon: Icon(Icons.add, color: SpaceColors.cosmicCyan, size: 28), onPressed: _createNewCollection),
+          IconButton(icon: Icon(Icons.add, color: SpaceColors.text, size: 28), onPressed: _createNewCollection),
         ],
       ),
       body: GridView.builder(
