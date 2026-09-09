@@ -48,7 +48,12 @@ class ProfileScreen extends StatelessWidget {
           if (isMe)
             IconButton(
               icon: const Icon(Icons.menu, color: Colors.white),
-              onPressed: () => ProfileDrawerModal.show(context, state, onOpenProfile: onOpenProfile),
+              onPressed: () => ProfileDrawerModal.show(
+                context,
+                state,
+                onOpenProfile: onOpenProfile,
+                onSettings: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => SettingsScreen(state: state, onOpenProfile: onOpenProfile))),
+              ),
             ),
         ],
       ),

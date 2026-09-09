@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import '../screens/creator_insights_screen.dart';
 import '../screens/notifications_screen.dart';
-import '../screens/profile_screen.dart';
 import '../screens/saved_collections_screen.dart';
 import '../space_theme.dart';
 import '../state.dart';
 
 class ProfileDrawerModal extends StatelessWidget {
-  const ProfileDrawerModal({super.key, required this.state, this.onOpenProfile});
+  const ProfileDrawerModal({super.key, required this.state, this.onOpenProfile, this.onSettings});
   final AppState state;
   final void Function(String userId)? onOpenProfile;
+  final VoidCallback? onSettings;
 
-  static void show(BuildContext context, AppState state, {void Function(String userId)? onOpenProfile}) {
+  static void show(BuildContext context, AppState state, {void Function(String userId)? onOpenProfile, VoidCallback? onSettings}) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => ProfileDrawerModal(state: state, onOpenProfile: onOpenProfile),
+      builder: (_) => ProfileDrawerModal(state: state, onOpenProfile: onOpenProfile, onSettings: onSettings),
     );
   }
 
@@ -36,7 +36,7 @@ class ProfileDrawerModal extends StatelessWidget {
             const SizedBox(height: 16),
             _tile(Icons.settings_outlined, 'Configuración y privacidad', () {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (_) => SettingsScreen(state: state, onOpenProfile: onOpenProfile)));
+              onSettings?.call();
             }),
             _tile(Icons.insights_outlined, 'Estadísticas del creador', () {
               Navigator.pop(context);
