@@ -3,6 +3,7 @@ import '../space_theme.dart';
 import '../state.dart';
 import '../widgets/media_view.dart';
 import '../widgets/network_photo.dart';
+import 'post_detail_feed_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key, required this.state, required this.onOpenProfile});
@@ -127,17 +128,27 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
             itemBuilder: (context, index) {
               final p = posts[index];
-              return Stack(
-                fit: StackFit.expand,
-                children: [
-                  MediaView(p.imagePath, video: p.isVideo),
-                  if (p.isReel)
-                    const Positioned(
-                      top: 6,
-                      right: 6,
-                      child: Icon(Icons.movie_outlined, color: Colors.white, size: 18),
-                    ),
-                ],
+              return GestureDetector(
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => PostDetailFeedScreen(
+                    state: widget.state,
+                    posts: posts,
+                    initialIndex: index,
+                    onOpenProfile: widget.onOpenProfile,
+                  ),
+                )),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    MediaView(p.imagePath, video: p.isVideo),
+                    if (p.isReel)
+                      const Positioned(
+                        top: 6,
+                        right: 6,
+                        child: Icon(Icons.movie_outlined, color: Colors.white, size: 18),
+                      ),
+                  ],
+                ),
               );
             },
           ),

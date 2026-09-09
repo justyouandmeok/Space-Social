@@ -9,6 +9,7 @@ import '../theme.dart';
 import '../widgets/media_view.dart';
 import '../widgets/network_photo.dart';
 import 'creator_insights_screen.dart';
+import 'post_detail_feed_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key, required this.state, required this.user, this.onOpenCreate});
@@ -188,7 +189,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  static Widget _grid(List<Post> items) {
+  Widget _grid(List<Post> items) {
     if (items.isEmpty) {
       return const Center(child: Text('Nada por acá todavía', style: TextStyle(color: Colors.white54)));
     }
@@ -201,7 +202,17 @@ class ProfileScreen extends StatelessWidget {
         mainAxisSpacing: 1.5,
         childAspectRatio: 3 / 4,
       ),
-      itemBuilder: (context, index) => MediaView(items[index].imagePath, video: items[index].isVideo),
+      itemBuilder: (context, index) => GestureDetector(
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => PostDetailFeedScreen(
+            state: state,
+            posts: items,
+            initialIndex: index,
+            onOpenProfile: (_) {},
+          ),
+        )),
+        child: MediaView(items[index].imagePath, video: items[index].isVideo),
+      ),
     );
   }
 }
