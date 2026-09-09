@@ -87,8 +87,8 @@ class _AuthScreenState extends State<AuthScreen> {
           hintText: hint,
           hintStyle: TextStyle(color: SpaceColors.textMuted),
           filled: true,
-          fillColor: const Color(0xFF1C1C1C),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF8E8E8E))),
+          fillColor: SpaceColors.surface,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: SpaceColors.hairline)),
         ),
       ),
     );

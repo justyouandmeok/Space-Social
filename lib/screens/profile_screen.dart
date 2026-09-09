@@ -19,6 +19,7 @@ import 'direct_messages_screen.dart';
 import 'followers_following_screen.dart';
 import 'creator_insights_screen.dart';
 import 'post_detail_feed_screen.dart';
+import 'archive_screen.dart';
 import 'saved_collections_screen.dart';
 import 'story_viewer_screen.dart';
 
@@ -614,26 +615,59 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: SpaceColors.bg,
-      appBar: AppBar(backgroundColor: SpaceColors.bg, title: Text('Configuración y actividad')),
+      appBar: AppBar(backgroundColor: SpaceColors.bg, title: Text('Configuración y actividad', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold))),
       body: ListView(children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          child: TextField(
+            readOnly: true,
+            decoration: InputDecoration(
+              hintText: 'Buscar ajustes',
+              hintStyle: TextStyle(color: SpaceColors.textMuted),
+              prefixIcon: Icon(Icons.search, color: SpaceColors.textMuted),
+              filled: true,
+              fillColor: SpaceColors.surface,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+              contentPadding: const EdgeInsets.symmetric(vertical: 0),
+            ),
+          ),
+        ),
+        ListTile(
+          leading: Avatar(state.me.avatarPath, size: 44),
+          title: Text('Cuentas', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w700)),
+          subtitle: Text('Contraseña, email y @${state.me.username}', style: TextStyle(color: SpaceColors.textMuted)),
+          trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => EditProfileScreen(state: state))),
+        ),
+        Padding(padding: const EdgeInsets.fromLTRB(16, 16, 16, 6), child: Text('Cómo usás Space Social', style: TextStyle(color: SpaceColors.textMuted, fontSize: 13, fontWeight: FontWeight.w600))),
         ListTile(
           leading: Icon(Icons.bookmark_border, color: SpaceColors.text),
           title: Text('Guardado', style: TextStyle(color: SpaceColors.text)),
+          trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(
             builder: (_) => SavedCollectionsScreen(state: state, onOpenProfile: onOpenProfile ?? (_) {}),
           )),
         ),
         ListTile(
+          leading: Icon(Icons.archive_outlined, color: SpaceColors.text),
+          title: Text('Archivo', style: TextStyle(color: SpaceColors.text)),
+          trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ArchiveScreen(state: state))),
+        ),
+        ListTile(
           leading: Icon(Icons.insights, color: SpaceColors.text),
           title: Text('Estadísticas', style: TextStyle(color: SpaceColors.text)),
+          trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CreatorInsightsScreen(state: state))),
         ),
         ListTile(
           leading: Icon(Icons.person_add_alt, color: SpaceColors.text),
           title: Text('Solicitudes de seguimiento', style: TextStyle(color: SpaceColors.text)),
           subtitle: Text('${state.incomingFollows.length} pendientes', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+          trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => FollowRequestsScreen(state: state))),
         ),
+        Padding(padding: const EdgeInsets.fromLTRB(16, 16, 16, 6), child: Text('Quién puede ver tu contenido', style: TextStyle(color: SpaceColors.textMuted, fontSize: 13, fontWeight: FontWeight.w600))),
         ListTile(
           leading: Icon(Icons.verified_outlined, color: SpaceColors.text),
           title: Text('Verificación oficial', style: TextStyle(color: SpaceColors.text)),
@@ -643,12 +677,14 @@ class SettingsScreen extends StatelessWidget {
           ),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => VerificationScreen(state: state))),
         ),
-        SwitchListTile(title: Text('Cuenta privada'), value: state.me.privateAccount, onChanged: (_) => state.togglePrivate()),
-        SwitchListTile(title: Text('Ocultar recuento de Me gusta'), value: state.hideLikes, onChanged: (_) => state.toggleHideLikes()),
-        SwitchListTile(title: Text('Notificaciones'), value: state.notificationsOn, onChanged: (_) => state.toggleNotificationsPref()),
-        SwitchListTile(title: Text('Tema oscuro'), value: state.darkMode, onChanged: (_) => state.toggleDarkMode()),
+        SwitchListTile(secondary: Icon(Icons.lock_outline, color: SpaceColors.text), title: Text('Cuenta privada', style: TextStyle(color: SpaceColors.text)), value: state.me.privateAccount, onChanged: (_) => state.togglePrivate()),
+        SwitchListTile(secondary: Icon(Icons.favorite_border, color: SpaceColors.text), title: Text('Ocultar recuento de Me gusta', style: TextStyle(color: SpaceColors.text)), value: state.hideLikes, onChanged: (_) => state.toggleHideLikes()),
+        Padding(padding: const EdgeInsets.fromLTRB(16, 16, 16, 6), child: Text('Tu app', style: TextStyle(color: SpaceColors.textMuted, fontSize: 13, fontWeight: FontWeight.w600))),
+        SwitchListTile(secondary: Icon(Icons.notifications_none, color: SpaceColors.text), title: Text('Notificaciones', style: TextStyle(color: SpaceColors.text)), value: state.notificationsOn, onChanged: (_) => state.toggleNotificationsPref()),
+        SwitchListTile(secondary: Icon(Icons.dark_mode_outlined, color: SpaceColors.text), title: Text('Tema oscuro', style: TextStyle(color: SpaceColors.text)), subtitle: Text('Claro u oscuro en toda la app', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)), value: state.darkMode, onChanged: (_) => state.toggleDarkMode()),
+        const Divider(height: 24),
         ListTile(
-          title: Text('Cerrar sesión', style: TextStyle(color: Colors.red)),
+          title: Text('Cerrar sesión', style: TextStyle(color: Color(0xFFED4956), fontWeight: FontWeight.w600)),
           onTap: () {
             Navigator.pop(context);
             state.logout();
