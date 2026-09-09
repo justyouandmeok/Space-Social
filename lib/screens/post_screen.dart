@@ -23,6 +23,7 @@ class _PostScreenState extends State<PostScreen> {
   final loc = TextEditingController();
   bool grokBusy = false;
   List<AssetEntity> assets = [];
+  String? selectedAssetId;
 
   @override
   void initState() {
@@ -50,13 +51,13 @@ class _PostScreenState extends State<PostScreen> {
   Future<void> _camera() async {
     final x = await ImagePicker().pickImage(source: ImageSource.camera, imageQuality: 92);
     if (x == null) return;
-    setState(() { file = File(x.path); video = false; });
+    setState(() { file = File(x.path); video = false; selectedAssetId = null; });
   }
 
   Future<void> _use(AssetEntity a) async {
     final f = await a.file;
     if (f == null) return;
-    setState(() { file = f; video = a.type == AssetType.video; });
+    setState(() { file = f; video = a.type == AssetType.video; selectedAssetId = a.id; });
   }
 
 
@@ -100,11 +101,14 @@ class _PostScreenState extends State<PostScreen> {
       backgroundColor: Colors.black,
       body: SafeArea(
         child: Column(children: [
-          Row(children: [
-            IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close, color: Colors.white)),
-            Expanded(child: Text(titles[mode], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16))),
-            TextButton(onPressed: file == null ? null : _share, child: const Text('Compartir', style: TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w700))),
-          ]),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Row(children: [
+              IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close, color: Colors.white, size: 28)),
+              Expanded(child: Text(titles[mode], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18))),
+              TextButton(onPressed: file == null ? null : _share, child: const Text('Siguiente', style: TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w700, fontSize: 16))),
+            ]),
+          ),
           if (file != null)
             Expanded(
               flex: 3,
@@ -138,31 +142,35 @@ class _PostScreenState extends State<PostScreen> {
                 ),
               ]),
             ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
+            child: Row(children: [
+              const Text('Recientes', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+              const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 20),
+              const Spacer(),
+              IconButton(onPressed: _camera, icon: const Icon(Icons.photo_camera_outlined, color: Colors.white)),
+            ]),
+          ),
           Expanded(
             flex: 2,
             child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, mainAxisSpacing: 1.2, crossAxisSpacing: 1.2),
-              itemCount: assets.length + 1,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, mainAxisSpacing: 1.2, crossAxisSpacing: 1.2),
+              itemCount: assets.length,
               itemBuilder: (_, i) {
-                if (i == 0) {
-                  return GestureDetector(
-                    onTap: _camera,
-                    child: const ColoredBox(
-                      color: Color(0xFF1A1A1A),
-                      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                        Icon(Icons.photo_camera_outlined, color: Colors.white),
-                        SizedBox(height: 6),
-                        Text('Cámara', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                      ]),
-                    ),
-                  );
-                }
-                final a = assets[i - 1];
+                final a = assets[i];
                 return FutureBuilder(
-                  future: a.thumbnailDataWithSize(const ThumbnailSize(300, 300)),
+                  future: a.thumbnailDataWithSize(const ThumbnailSize(240, 240)),
                   builder: (_, snap) {
                     if (snap.data == null) return const ColoredBox(color: Color(0xFF1A1A1A));
-                    return GestureDetector(onTap: () => _use(a), child: Image.memory(snap.data!, fit: BoxFit.cover));
+                    return GestureDetector(
+                      onTap: () => _use(a),
+                      child: Stack(fit: StackFit.expand, children: [
+                        Image.memory(snap.data!, fit: BoxFit.cover),
+                        if (selectedAssetId == a.id) Container(color: Colors.white24),
+                        if (a.type == AssetType.video)
+                          const Positioned(top: 4, right: 4, child: Icon(Icons.play_circle_fill, color: Colors.white, size: 16)),
+                      ]),
+                    );
                   },
                 );
               },
