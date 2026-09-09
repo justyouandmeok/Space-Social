@@ -3,6 +3,7 @@ import '../models.dart';
 import '../state.dart';
 import '../theme.dart';
 import 'network_photo.dart';
+import '../screens/story_viewer_screen.dart';
 
 class StoryRow extends StatelessWidget {
   const StoryRow({super.key, required this.state, required this.onOpenProfile, required this.onAddStory});
@@ -36,9 +37,8 @@ class StoryRow extends StatelessWidget {
                 return;
               }
               if (has) {
-                final stories = state.storiesOf(u.id);
                 Navigator.of(context).push(MaterialPageRoute(
-                  builder: (_) => _StoryViewer(username: u.username, avatar: u.avatarPath, image: stories.first.imagePath),
+                  builder: (_) => StoryViewerScreen(state: state, userId: u.id),
                 ));
               } else {
                 onOpenProfile(u.id);
