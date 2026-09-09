@@ -66,7 +66,7 @@ class _SearchScreenState extends State<SearchScreen> {
       posts = posts.where((p) => k.any((w) => p.caption.toLowerCase().contains(w))).toList();
     }
     final people = q.isEmpty
-        ? const []
+        ? widget.state.users.where((u) => u.id != widget.state.me.id).take(8).toList()
         : widget.state.users.where((u) => u.username.contains(q) || u.name.toLowerCase().contains(q)).toList();
 
     return Scaffold(

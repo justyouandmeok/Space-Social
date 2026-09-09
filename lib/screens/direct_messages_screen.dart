@@ -123,7 +123,7 @@ class DirectMessagesScreen extends StatelessWidget {
                         last?.text ?? 'Enviar mensaje',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: unread > 0 ? Colors.white : Colors.white54, fontWeight: unread > 0 ? FontWeight.bold : FontWeight.normal),
+                        style: TextStyle(color: unread > 0 ? SpaceColors.text : SpaceColors.textMuted, fontWeight: unread > 0 ? FontWeight.bold : FontWeight.normal),
                       ),
                       trailing: Column(
                         mainAxisAlignment: MainAxisAlignment.center,

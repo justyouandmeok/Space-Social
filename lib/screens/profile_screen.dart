@@ -148,8 +148,8 @@ class ProfileScreen extends StatelessWidget {
                           child: ElevatedButton(
                             onPressed: () => state.toggleFollow(user.id),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: state.isFollowing(user.id) ? Colors.grey[900] : LumaColors.blue,
-                              foregroundColor: Colors.white,
+                              backgroundColor: state.isFollowing(user.id) ? SpaceColors.surface : LumaColors.blue,
+                              foregroundColor: state.isFollowing(user.id) ? SpaceColors.text : Colors.white,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                             ),
                             child: Text(state.isFollowing(user.id) ? 'Siguiendo' : state.isPendingFollow(user.id) ? 'Solicitado' : 'Seguir'),
@@ -162,8 +162,8 @@ class ProfileScreen extends StatelessWidget {
                               builder: (_) => ChatConversationScreen(state: state, user: user),
                             )),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.grey[900],
-                              foregroundColor: Colors.white,
+                              backgroundColor: SpaceColors.surface,
+                              foregroundColor: SpaceColors.text,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                             ),
                             child: const Text('Mensaje'),
@@ -252,8 +252,8 @@ class ProfileScreen extends StatelessWidget {
     return ElevatedButton(
       onPressed: onTap,
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.grey[900],
-        foregroundColor: Colors.white,
+        backgroundColor: SpaceColors.surface,
+        foregroundColor: SpaceColors.text,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
       child: Text(label),
