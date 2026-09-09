@@ -187,7 +187,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   children: [
                     MediaView(p.imagePath, video: p.isVideo),
                     if (p.isReel)
-                      const Positioned(
+                      Positioned(
                         top: 6,
                         right: 6,
                         child: Icon(Icons.movie_outlined, color: SpaceColors.text, size: 18),

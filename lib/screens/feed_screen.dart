@@ -81,7 +81,7 @@ class FeedScreen extends StatelessWidget {
             ),
             SliverToBoxAdapter(child: Divider(color: SpaceColors.hairline, height: 1)),
             if (items.isEmpty)
-              const SliverToBoxAdapter(
+              SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.all(40),
                   child: Text(
