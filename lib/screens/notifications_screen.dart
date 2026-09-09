@@ -34,7 +34,7 @@ class NotificationsScreen extends StatelessWidget {
       backgroundColor: SpaceColors.bg,
       appBar: AppBar(
         backgroundColor: SpaceColors.bg,
-        title: Text('Notificaciones', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold)),
+        title: Text('Actividad', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold)),
       ),
       body: items.isEmpty
           ? Center(child: Text('Todavía no hay actividad', style: TextStyle(color: SpaceColors.textMuted)))

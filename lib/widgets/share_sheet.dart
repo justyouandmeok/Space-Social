@@ -15,9 +15,10 @@ class ShareSheet {
         child: SizedBox(
           height: 420,
           child: Column(children: [
+            Container(margin: const EdgeInsets.only(top: 8), width: 36, height: 4, decoration: BoxDecoration(color: SpaceColors.hairline, borderRadius: BorderRadius.circular(2))),
             Padding(
               padding: EdgeInsets.all(12),
-              child: Text('Enviar', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
+              child: Text('Enviar a', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
             ),
             ListTile(
               leading: Icon(Icons.copy, color: SpaceColors.textMuted),
