@@ -13,6 +13,7 @@ import '../widgets/network_photo.dart';
 import '../widgets/account_switch_modal.dart';
 import '../widgets/profile_drawer_modal.dart';
 import '../widgets/links_bottom_sheet.dart';
+import '../widgets/verified_badge.dart';
 import 'create_highlight_screen.dart';
 import 'followers_following_screen.dart';
 import 'creator_insights_screen.dart';
@@ -48,6 +49,7 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(width: 6),
               ],
               Flexible(child: Text(user.username, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white))),
+              if (user.isVerified) ...[const SizedBox(width: 6), const VerifiedBadge()],
               if (isMe) const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 20),
             ],
           ),
@@ -106,13 +108,9 @@ class ProfileScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     Row(children: [
                       Flexible(child: Text(user.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15))),
-                      if (isMe) ...[
+                      if (user.isVerified) ...[
                         const SizedBox(width: 4),
-                        Container(
-                          padding: const EdgeInsets.all(1.5),
-                          decoration: const BoxDecoration(color: SpaceColors.cosmicCyan, shape: BoxShape.circle),
-                          child: const Icon(Icons.check, size: 11, color: Colors.black),
-                        ),
+                        const VerifiedBadge(),
                       ],
                     ]),
                     if (user.bio.isNotEmpty) Text(user.bio, style: const TextStyle(color: Colors.white)),
@@ -605,6 +603,15 @@ class SettingsScreen extends StatelessWidget {
           title: const Text('Estadísticas', style: TextStyle(color: Colors.white)),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CreatorInsightsScreen(state: state))),
         ),
+        ListTile(
+          leading: const Icon(Icons.verified_outlined, color: Colors.white),
+          title: const Text('Verificación oficial', style: TextStyle(color: Colors.white)),
+          subtitle: Text(
+            state.me.isVerified ? 'Cuenta verificada' : state.me.verificationStatus == 'pending' ? 'Solicitud en revisión' : 'Pedí la tilde de Space Social',
+            style: const TextStyle(color: Colors.white54, fontSize: 12),
+          ),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => VerificationScreen(state: state))),
+        ),
         SwitchListTile(title: const Text('Tema oscuro'), value: state.darkMode, onChanged: (_) => state.toggleDarkMode()),
         ListTile(
           title: const Text('Cerrar sesión', style: TextStyle(color: Colors.red)),
@@ -613,6 +620,48 @@ class SettingsScreen extends StatelessWidget {
             state.logout();
           },
         ),
+      ]),
+    );
+  }
+}
+
+
+class VerificationScreen extends StatelessWidget {
+  const VerificationScreen({super.key, required this.state});
+  final AppState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final pending = state.users.where((u) => u.verificationStatus == 'pending' && !u.isVerified).toList();
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(backgroundColor: Colors.black, title: const Text('Verificación oficial')),
+      body: ListView(padding: const EdgeInsets.all(16), children: [
+        if (state.me.isVerified)
+          const ListTile(leading: VerifiedBadge(size: 16), title: Text('Tu cuenta está verificada', style: TextStyle(color: Colors.white)))
+        else if (state.me.verificationStatus == 'pending')
+          const ListTile(title: Text('Tu solicitud está en revisión', style: TextStyle(color: Colors.white70)))
+        else
+          ElevatedButton(
+            onPressed: () async {
+              await state.requestVerification();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.isAdmin ? 'Cuenta verificada' : 'Solicitud enviada')));
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: SpaceColors.cosmicCyan, foregroundColor: Colors.black),
+            child: Text(state.isAdmin ? 'Activar mi verificación' : 'Solicitar verificación'),
+          ),
+        if (state.isAdmin) ...[
+          const SizedBox(height: 24),
+          const Text('Solicitudes', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          if (pending.isEmpty) const Text('No hay pendientes', style: TextStyle(color: Colors.white54)),
+          ...pending.map((u) => ListTile(
+                title: Text(u.username, style: const TextStyle(color: Colors.white)),
+                subtitle: Text(u.email, style: const TextStyle(color: Colors.white54)),
+                trailing: TextButton(onPressed: () => state.setVerified(u.id, true), child: const Text('Verificar')),
+              )),
+        ],
       ]),
     );
   }

@@ -18,4 +18,10 @@ class SpaceConfig {
 
   /// Pegá acá una API key de xAI si querés captions con Grok.
   static const xaiApiKey = '';
+
+  static const adminEmails = [
+    'ysboficialoficial@gmail.com',
+    'marcosopojshsujs@gmail.com',
+  ];
 }
+

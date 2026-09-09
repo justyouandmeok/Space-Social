@@ -7,6 +7,7 @@ import 'comments_bottom_sheet.dart';
 import 'share_sheet.dart';
 import 'media_view.dart';
 import 'network_photo.dart';
+import 'verified_badge.dart';
 
 class SpacePostCard extends StatefulWidget {
   const SpacePostCard({
@@ -88,7 +89,10 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
           ),
           title: GestureDetector(
             onTap: () => widget.onOpenProfile(user.id),
-            child: Text(user.username, style: const TextStyle(color: SpaceColors.starlight, fontWeight: FontWeight.bold)),
+            child: Row(children: [
+              Text(user.username, style: const TextStyle(color: SpaceColors.starlight, fontWeight: FontWeight.bold)),
+              if (user.isVerified) ...[const SizedBox(width: 4), const VerifiedBadge(size: 11)],
+            ]),
           ),
           trailing: const Icon(Icons.more_horiz, color: Colors.white70),
         ),

@@ -11,6 +11,8 @@ class UserAccount {
     this.website = '',
     this.createdAt,
     this.privateAccount = false,
+    this.isVerified = false,
+    this.verificationStatus = 'none',
   });
 
   final String id;
@@ -24,6 +26,8 @@ class UserAccount {
   final String website;
   final DateTime? createdAt;
   final bool privateAccount;
+  final bool isVerified;
+  final String verificationStatus;
 
   UserAccount copyWith({
     String? email,
@@ -46,6 +50,9 @@ class UserAccount {
       bio: bio ?? this.bio,
       website: website ?? this.website,
       createdAt: createdAt,
+      privateAccount: privateAccount,
+      isVerified: isVerified,
+      verificationStatus: verificationStatus,
     );
   }
 
@@ -61,6 +68,8 @@ class UserAccount {
         'website': website,
         'createdAt': (createdAt ?? DateTime.now()).toIso8601String(),
         'privateAccount': privateAccount,
+        'isVerified': isVerified,
+        'verificationStatus': verificationStatus,
       };
 
   factory UserAccount.fromJson(Map<String, dynamic> j) => UserAccount(
@@ -75,6 +84,8 @@ class UserAccount {
         website: j['website'] as String? ?? '',
         createdAt: DateTime.tryParse(j['createdAt'] as String? ?? ''),
         privateAccount: j['privateAccount'] == true,
+        isVerified: j['isVerified'] == true,
+        verificationStatus: (j['verificationStatus'] as String?) ?? (j['isVerified'] == true ? 'verified' : 'none'),
       );
 }
 

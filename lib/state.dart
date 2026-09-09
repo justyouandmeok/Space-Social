@@ -69,6 +69,7 @@ class AppState extends ChangeNotifier {
   Set<String> archived = {};
 
   bool get isLoggedIn => currentUserId != null;
+  bool get isAdmin => isLoggedIn && SpaceConfig.adminEmails.map((e) => e.toLowerCase()).contains(me.email.toLowerCase());
 
   UserAccount get me {
     final found = tryUser(currentUserId ?? '');
@@ -1105,6 +1106,53 @@ class AppState extends ChangeNotifier {
       'closeFriends': closeFriends.toList(),
       'archived': archived.toList(),
     }, SetOptions(merge: true));
+    notifyListeners();
+  }
+
+
+  Future<void> requestVerification() async {
+    if (!isLoggedIn) return;
+    if (isAdmin) {
+      await setVerified(me.id, true);
+      return;
+    }
+    await _db.collection('users').doc(me.id).set({
+      'verificationStatus': 'pending',
+      'verificationRequestedAt': DateTime.now().toIso8601String(),
+    }, SetOptions(merge: true));
+    users = [
+      for (final u in users)
+        if (u.id == me.id)
+          UserAccount(
+            id: u.id, email: u.email, username: u.username, name: u.name,
+            passwordHash: u.passwordHash, salt: u.salt, avatarPath: u.avatarPath,
+            bio: u.bio, website: u.website, createdAt: u.createdAt,
+            privateAccount: u.privateAccount, isVerified: u.isVerified, verificationStatus: 'pending',
+          )
+        else
+          u
+    ];
+    notifyListeners();
+  }
+
+  Future<void> setVerified(String userId, bool value) async {
+    if (!isAdmin) return;
+    await _db.collection('users').doc(userId).set({
+      'isVerified': value,
+      'verificationStatus': value ? 'verified' : 'none',
+    }, SetOptions(merge: true));
+    users = [
+      for (final u in users)
+        if (u.id == userId)
+          UserAccount(
+            id: u.id, email: u.email, username: u.username, name: u.name,
+            passwordHash: u.passwordHash, salt: u.salt, avatarPath: u.avatarPath,
+            bio: u.bio, website: u.website, createdAt: u.createdAt,
+            privateAccount: u.privateAccount, isVerified: value, verificationStatus: value ? 'verified' : 'none',
+          )
+        else
+          u
+    ];
     notifyListeners();
   }
 
