@@ -8,6 +8,7 @@ import '../store.dart';
 import '../theme.dart';
 import '../widgets/media_view.dart';
 import '../widgets/network_photo.dart';
+import 'creator_insights_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key, required this.state, required this.user, this.onOpenCreate});
@@ -291,6 +292,11 @@ class SettingsScreen extends StatelessWidget {
       backgroundColor: Colors.black,
       appBar: AppBar(backgroundColor: Colors.black, title: const Text('Configuración y actividad')),
       body: ListView(children: [
+        ListTile(
+          title: const Text('Estadísticas'),
+          trailing: const Icon(Icons.insights, color: Colors.white70),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CreatorInsightsScreen(state: state))),
+        ),
         SwitchListTile(title: const Text('Tema oscuro'), value: state.darkMode, onChanged: (_) => state.toggleDarkMode()),
         ListTile(
           title: const Text('Cerrar sesión', style: TextStyle(color: Colors.red)),
