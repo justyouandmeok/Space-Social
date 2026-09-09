@@ -3,6 +3,7 @@ import '../models.dart';
 import '../space_theme.dart';
 import '../state.dart';
 import '../store.dart';
+import 'comments_bottom_sheet.dart';
 import 'media_view.dart';
 import 'network_photo.dart';
 
@@ -114,7 +115,10 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
           ),
           IconButton(
             icon: const Icon(Icons.chat_bubble_outline, color: SpaceColors.starlight),
-            onPressed: () => widget.onOpenComments?.call(live),
+            onPressed: () {
+              widget.onOpenComments?.call(live);
+              CommentsBottomSheet.show(context, widget.state, live.id);
+            },
           ),
           IconButton(icon: const Icon(Icons.send_outlined, color: SpaceColors.starlight), onPressed: () {}),
           const Spacer(),
@@ -144,7 +148,10 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
               if (live.comments.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
-                  child: Text('Ver los ${live.comments.length} comentarios', style: const TextStyle(color: Colors.white54, fontSize: 13)),
+                  child: GestureDetector(
+                    onTap: () => CommentsBottomSheet.show(context, widget.state, live.id),
+                    child: Text('Ver los ${live.comments.length} comentarios', style: const TextStyle(color: Colors.white54, fontSize: 13)),
+                  ),
                 ),
               const SizedBox(height: 12),
             ],
