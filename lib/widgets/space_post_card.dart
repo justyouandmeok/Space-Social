@@ -115,10 +115,7 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
           ),
           IconButton(
             icon: const Icon(Icons.chat_bubble_outline, color: SpaceColors.starlight),
-            onPressed: () {
-              widget.onOpenComments?.call(live);
-              CommentsBottomSheet.show(context, widget.state, live.id);
-            },
+            onPressed: () => CommentsBottomSheet.show(context, widget.state, live.id),
           ),
           IconButton(icon: const Icon(Icons.send_outlined, color: SpaceColors.starlight), onPressed: () {}),
           const Spacer(),
