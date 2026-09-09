@@ -9,6 +9,7 @@ import '../theme.dart';
 import '../widgets/media_view.dart';
 import '../widgets/network_photo.dart';
 import '../widgets/account_switch_modal.dart';
+import '../widgets/profile_drawer_modal.dart';
 import 'creator_insights_screen.dart';
 import 'post_detail_feed_screen.dart';
 import 'saved_collections_screen.dart';
@@ -47,7 +48,7 @@ class ProfileScreen extends StatelessWidget {
           if (isMe)
             IconButton(
               icon: const Icon(Icons.menu, color: Colors.white),
-              onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => SettingsScreen(state: state, onOpenProfile: onOpenProfile))),
+              onPressed: () => ProfileDrawerModal.show(context, state, onOpenProfile: onOpenProfile),
             ),
         ],
       ),
