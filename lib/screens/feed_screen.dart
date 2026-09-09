@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models.dart';
 import '../state.dart';
+import '../widgets/comments_bottom_sheet.dart';
 import '../widgets/space_post_card.dart';
 import '../widgets/story_bubble.dart';
 import 'post_screen.dart';
@@ -67,6 +68,7 @@ class FeedScreen extends StatelessWidget {
                     post: items[index],
                     state: state,
                     onOpenProfile: onOpenProfile,
+                    onOpenComments: (p) => CommentsBottomSheet.show(context, state, p.id),
                   ),
                   childCount: items.length,
                 ),

@@ -5,6 +5,7 @@ import '../store.dart';
 import '../theme.dart';
 import '../widgets/media_view.dart';
 import '../widgets/network_photo.dart';
+import '../widgets/comments_bottom_sheet.dart';
 import 'post_screen.dart';
 
 class ReelsScreen extends StatelessWidget {
@@ -82,7 +83,7 @@ class ReelsScreen extends StatelessWidget {
                     color: liked ? LumaColors.like : Colors.white,
                     onTap: () => state.toggleLike(post.id),
                   ),
-                  _action(Icons.chat_bubble_outline, compact(post.comments.length), onTap: () {}),
+                  _action(Icons.chat_bubble_outline, compact(post.comments.length), onTap: () => CommentsBottomSheet.show(context, state, post.id)),
                   _action(Icons.send_outlined, '', onTap: () {}),
                   _action(Icons.more_vert, '', onTap: () {}),
                   const SizedBox(height: 12),
