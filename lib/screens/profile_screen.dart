@@ -6,6 +6,7 @@ import '../models.dart';
 import '../state.dart';
 import '../store.dart';
 import '../theme.dart';
+import '../space_theme.dart';
 import '../widgets/media_view.dart';
 import '../widgets/network_photo.dart';
 import '../widgets/account_switch_modal.dart';
@@ -255,52 +256,117 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  late final name = TextEditingController(text: widget.state.me.name);
-  late final user = TextEditingController(text: widget.state.me.username);
-  late final bio = TextEditingController(text: widget.state.me.bio);
+  late final _nameController = TextEditingController(text: widget.state.me.name);
+  late final _usernameController = TextEditingController(text: widget.state.me.username);
+  late final _bioController = TextEditingController(text: widget.state.me.bio);
+  late final _linksController = TextEditingController(text: widget.state.me.website);
   File? avatar;
   bool busy = false;
 
   @override
   void dispose() {
-    name.dispose();
-    user.dispose();
-    bio.dispose();
+    _nameController.dispose();
+    _usernameController.dispose();
+    _bioController.dispose();
+    _linksController.dispose();
     super.dispose();
   }
 
+  Future<void> _pick() async {
+    final x = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 90);
+    if (x != null) setState(() => avatar = File(x.path));
+  }
+
   Future<void> _save() async {
+    if (busy) return;
     setState(() => busy = true);
-    await widget.state.updateProfile(name: name.text, username: user.text, bio: bio.text, avatar: avatar);
-    if (mounted) Navigator.pop(context);
+    final ok = await widget.state.updateProfile(
+      name: _nameController.text,
+      username: _usernameController.text,
+      bio: _bioController.text,
+      website: _linksController.text,
+      avatar: avatar,
+    );
+    if (!mounted) return;
+    if (ok) {
+      Navigator.pop(context);
+    } else {
+      setState(() => busy = false);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se pudo guardar. Probá otro usuario.')));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: SpaceColors.deepSpace,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text('Editar perfil'),
-        actions: [TextButton(onPressed: busy ? null : _save, child: const Text('Listo', style: TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w700)))],
+        backgroundColor: SpaceColors.deepSpace,
+        leading: IconButton(icon: const Icon(Icons.close, color: Colors.white), onPressed: () => Navigator.pop(context)),
+        title: const Text('Editar perfil', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        actions: [
+          IconButton(
+            icon: busy
+                ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: SpaceColors.cosmicCyan))
+                : const Icon(Icons.check, color: SpaceColors.cosmicCyan, size: 28),
+            onPressed: busy ? null : _save,
+          ),
+        ],
       ),
-      body: ListView(padding: const EdgeInsets.all(16), children: [
-        Center(
-          child: GestureDetector(
-            onTap: () async {
-              final x = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 90);
-              if (x != null) setState(() => avatar = File(x.path));
-            },
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(children: [
+          Center(
             child: Column(children: [
-              avatar != null ? ClipOval(child: Image.file(avatar!, width: 88, height: 88, fit: BoxFit.cover)) : Avatar(widget.state.me.avatarPath, size: 88),
-              const SizedBox(height: 8),
-              const Text('Editar foto o avatar', style: TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w700)),
+              GestureDetector(
+                onTap: _pick,
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(colors: [SpaceColors.cosmicCyan, SpaceColors.nebulaPurple]),
+                  ),
+                  child: avatar != null
+                      ? ClipOval(child: Image.file(avatar!, width: 88, height: 88, fit: BoxFit.cover))
+                      : Avatar(widget.state.me.avatarPath, size: 88),
+                ),
+              ),
+              TextButton(
+                onPressed: _pick,
+                child: const Text('Editar foto o avatar', style: TextStyle(color: SpaceColors.cosmicCyan, fontWeight: FontWeight.bold, fontSize: 14)),
+              ),
             ]),
           ),
+          _field('Nombre', _nameController),
+          _field('Nombre de usuario', _usernameController),
+          _field('Presentación / Bio', _bioController, maxLines: 3),
+          _field('Enlaces', _linksController, prefixIcon: Icons.link),
+          const SizedBox(height: 24),
+          const Divider(color: Colors.white12),
+          const ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text('Los cambios se ven en toda la plataforma al guardar', style: TextStyle(color: SpaceColors.cosmicCyan, fontSize: 14)),
+          ),
+        ]),
+      ),
+    );
+  }
+
+  Widget _field(String label, TextEditingController controller, {int maxLines = 1, IconData? prefixIcon}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(label, style: const TextStyle(color: Colors.white54, fontSize: 12)),
+        TextField(
+          controller: controller,
+          maxLines: maxLines,
+          style: const TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: Colors.white38, size: 20) : null,
+            enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
+            focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: SpaceColors.cosmicCyan)),
+          ),
         ),
-        TextField(controller: name, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(labelText: 'Nombre', labelStyle: TextStyle(color: Colors.white70))),
-        TextField(controller: user, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(labelText: 'Usuario', labelStyle: TextStyle(color: Colors.white70))),
-        TextField(controller: bio, maxLines: 3, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(labelText: 'Presentación', labelStyle: TextStyle(color: Colors.white70))),
       ]),
     );
   }
