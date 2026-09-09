@@ -145,6 +145,24 @@ class ProfileScreen extends StatelessWidget {
                           ),
                         ),
                       ]),
+                    if (isMe) ...[
+                      const SizedBox(height: 12),
+                      GestureDetector(
+                        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CreatorInsightsScreen(state: state))),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(color: SpaceColors.darkMatter, borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.white12)),
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            const Text('Panel para profesionales', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${state.postsOf(user.id).length} publicaciones · ${state.followersOf(user.id).length} seguidores',
+                              style: const TextStyle(color: Colors.white54, fontSize: 12),
+                            ),
+                          ]),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     SizedBox(
                       height: 92,
