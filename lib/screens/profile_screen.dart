@@ -412,6 +412,40 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => false;
 }
 
+
+class _SavedHighlights extends StatelessWidget {
+  const _SavedHighlights();
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<String>>(
+      future: SharedPreferences.getInstance().then((p) => p.getStringList('ss_highlights') ?? []),
+      builder: (context, snap) {
+        final rows = snap.data ?? [];
+        return Row(children: [
+          for (final raw in rows)
+            Padding(
+              padding: const EdgeInsets.only(right: 14),
+              child: Column(children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white38)),
+                  child: const Icon(Icons.star_border, color: Colors.white70),
+                ),
+                const SizedBox(height: 4),
+                SizedBox(
+                  width: 64,
+                  child: Text(raw.split('|').first, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 11)),
+                ),
+              ]),
+            ),
+        ]);
+      },
+    );
+  }
+}
+
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key, required this.state});
   final AppState state;
