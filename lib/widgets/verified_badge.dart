@@ -11,7 +11,7 @@ class VerifiedBadge extends StatelessWidget {
       width: size + 4,
       height: size + 4,
       alignment: Alignment.center,
-      decoration: const BoxDecoration(color: SpaceColors.cosmicCyan, shape: BoxShape.circle),
+      decoration: BoxDecoration(color: SpaceColors.cosmicCyan, shape: BoxShape.circle),
       child: Icon(Icons.check, size: size, color: Colors.black),
     );
   }

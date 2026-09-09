@@ -164,7 +164,7 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
             onTap: () => widget.onOpenProfile(user.id),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
-                Text(user.username, style: const TextStyle(color: SpaceColors.starlight, fontWeight: FontWeight.bold)),
+                Text(user.username, style: TextStyle(color: SpaceColors.starlight, fontWeight: FontWeight.bold)),
                 if (user.isVerified) ...[const SizedBox(width: 4), const VerifiedBadge(size: 11)],
               ]),
               if (live.location.isNotEmpty)
@@ -176,7 +176,7 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
             if (user.id != widget.state.me.id && !widget.state.isFollowing(user.id))
               TextButton(
                 onPressed: () => widget.state.toggleFollow(user.id),
-                child: Text(widget.state.isPendingFollow(user.id) ? 'Solicitado' : 'Seguir', style: const TextStyle(color: SpaceColors.cosmicCyan, fontWeight: FontWeight.bold)),
+                child: Text(widget.state.isPendingFollow(user.id) ? 'Solicitado' : 'Seguir', style: TextStyle(color: SpaceColors.cosmicCyan, fontWeight: FontWeight.bold)),
               ),
             IconButton(
               icon: Icon(Icons.more_horiz, color: SpaceColors.textMuted),
@@ -196,7 +196,7 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
               if (_showHeartAnimation)
                 ScaleTransition(
                   scale: _heartScale,
-                  child: const Icon(Icons.favorite, size: 110, color: SpaceColors.cosmicCyan),
+                  child: Icon(Icons.favorite, size: 110, color: SpaceColors.cosmicCyan),
                 ),
             ],
           ),
@@ -251,7 +251,7 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
                       : live.likes.isEmpty
                           ? 'Sé el primero en dar Me gusta'
                           : '${compact(live.likes.length)} me gusta',
-                  style: const TextStyle(color: SpaceColors.starlight, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: SpaceColors.starlight, fontWeight: FontWeight.bold),
                 ),
               ),
               if (live.caption.isNotEmpty) ...[

@@ -4,6 +4,7 @@ import '../state.dart';
 import '../theme.dart';
 import 'network_photo.dart';
 import '../screens/story_viewer_screen.dart';
+import '../space_theme.dart';
 
 class StoryRow extends StatelessWidget {
   const StoryRow({super.key, required this.state, required this.onOpenProfile, required this.onAddStory});

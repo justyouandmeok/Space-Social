@@ -42,7 +42,7 @@ class _SpaceSocialAppState extends State<SpaceSocialApp> {
       home: !state.ready
           ? Scaffold(
               backgroundColor: SpaceColors.bg,
-              body: const Center(child: CircularProgressIndicator(color: SpaceColors.cosmicCyan)),
+              body: Center(child: CircularProgressIndicator(color: SpaceColors.cosmicCyan)),
             )
           : MainScreen(state: state),
     );

@@ -119,13 +119,13 @@ class ProfileScreen extends StatelessWidget {
                       GestureDetector(
                         onTap: () => LinksBottomSheet.show(context, user),
                         child: Row(children: [
-                          const Icon(Icons.link, color: SpaceColors.cosmicCyan, size: 16),
+                          Icon(Icons.link, color: SpaceColors.cosmicCyan, size: 16),
                           const SizedBox(width: 4),
                           Flexible(
                             child: Text(
                               user.website.replaceFirst(RegExp(r'^https?://'), ''),
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(color: SpaceColors.cosmicCyan, fontWeight: FontWeight.w600, fontSize: 13),
+                              style: TextStyle(color: SpaceColors.cosmicCyan, fontWeight: FontWeight.w600, fontSize: 13),
                             ),
                           ),
                         ]),
@@ -541,8 +541,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         actions: [
           IconButton(
             icon: busy
-                ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: SpaceColors.cosmicCyan))
-                : const Icon(Icons.check, color: SpaceColors.cosmicCyan, size: 28),
+                ? SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: SpaceColors.cosmicCyan))
+                : Icon(Icons.check, color: SpaceColors.cosmicCyan, size: 28),
             onPressed: busy ? null : _save,
           ),
         ],
@@ -567,7 +567,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               TextButton(
                 onPressed: _pick,
-                child: const Text('Editar foto o avatar', style: TextStyle(color: SpaceColors.cosmicCyan, fontWeight: FontWeight.bold, fontSize: 14)),
+                child: Text('Editar foto o avatar', style: TextStyle(color: SpaceColors.cosmicCyan, fontWeight: FontWeight.bold, fontSize: 14)),
               ),
             ]),
           ),
@@ -598,7 +598,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           decoration: InputDecoration(
             prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: SpaceColors.textMuted, size: 20) : null,
             enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: SpaceColors.hairline)),
-            focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: SpaceColors.cosmicCyan)),
+            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: SpaceColors.cosmicCyan)),
           ),
         ),
       ]),

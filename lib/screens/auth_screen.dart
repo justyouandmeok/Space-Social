@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../state.dart';
 import '../theme.dart';
+import '../space_theme.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key, required this.state});

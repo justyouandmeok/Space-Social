@@ -134,7 +134,7 @@ class DirectMessagesScreen extends StatelessWidget {
                             const SizedBox(height: 4),
                             Container(
                               padding: const EdgeInsets.all(5),
-                              decoration: const BoxDecoration(color: SpaceColors.cosmicCyan, shape: BoxShape.circle),
+                              decoration: BoxDecoration(color: SpaceColors.cosmicCyan, shape: BoxShape.circle),
                               child: Text('$unread', style: const TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.bold)),
                             ),
                           ],
@@ -260,8 +260,8 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
             ),
             IconButton(
               icon: _sending
-                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: SpaceColors.cosmicCyan))
-                  : const Icon(Icons.send, color: SpaceColors.cosmicCyan),
+                  ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: SpaceColors.cosmicCyan))
+                  : Icon(Icons.send, color: SpaceColors.cosmicCyan),
               onPressed: _sending ? null : _sendMessage,
             ),
           ]),

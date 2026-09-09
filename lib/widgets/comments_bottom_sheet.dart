@@ -162,8 +162,8 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                   ),
                   IconButton(
                     icon: _sending
-                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: SpaceColors.cosmicCyan))
-                        : const Icon(Icons.send, color: SpaceColors.cosmicCyan),
+                        ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: SpaceColors.cosmicCyan))
+                        : Icon(Icons.send, color: SpaceColors.cosmicCyan),
                     onPressed: _sending ? null : _addComment,
                   ),
                 ]),

@@ -72,7 +72,7 @@ class CreatorInsightsScreen extends StatelessWidget {
                           left: 8,
                           bottom: 8,
                           child: Row(children: [
-                            const Icon(Icons.favorite, color: SpaceColors.cosmicCyan, size: 14),
+                            Icon(Icons.favorite, color: SpaceColors.cosmicCyan, size: 14),
                             const SizedBox(width: 4),
                             Text('${p.likes.length}', style: TextStyle(color: SpaceColors.text, fontSize: 12, fontWeight: FontWeight.bold)),
                           ]),

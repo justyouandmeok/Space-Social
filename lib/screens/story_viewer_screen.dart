@@ -151,7 +151,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
                                     ? 1.0
                                     : 0.0,
                             backgroundColor: Colors.white24,
-                            valueColor: const AlwaysStoppedAnimation<Color>(SpaceColors.cosmicCyan),
+                            valueColor: AlwaysStoppedAnimation<Color>(SpaceColors.cosmicCyan),
                             minHeight: 2.5,
                           ),
                         ),

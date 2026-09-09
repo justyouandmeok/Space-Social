@@ -35,7 +35,7 @@ class AccountSwitchModal extends StatelessWidget {
               leading: Avatar(me.avatarPath, size: 44),
               title: Text(me.username, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold)),
               subtitle: Text(me.name, style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
-              trailing: const Icon(Icons.check_circle, color: SpaceColors.cosmicCyan),
+              trailing: Icon(Icons.check_circle, color: SpaceColors.cosmicCyan),
               onTap: () => Navigator.pop(context),
             ),
             Divider(color: SpaceColors.hairline),

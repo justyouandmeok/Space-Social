@@ -83,7 +83,7 @@ class _CreateHighlightScreenState extends State<CreateHighlightScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Text('Editar portada', style: TextStyle(color: SpaceColors.cosmicCyan, fontSize: 13, fontWeight: FontWeight.w600)),
+                Text('Editar portada', style: TextStyle(color: SpaceColors.cosmicCyan, fontSize: 13, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 24),
                 TextField(
                   controller: _titleController,

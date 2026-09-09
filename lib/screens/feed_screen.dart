@@ -7,6 +7,7 @@ import '../widgets/story_bubble.dart';
 import 'direct_messages_screen.dart';
 import 'notifications_screen.dart';
 import 'post_screen.dart';
+import '../space_theme.dart';
 
 class FeedScreen extends StatelessWidget {
   const FeedScreen({super.key, required this.state, required this.onOpenCreate, required this.onOpenProfile});

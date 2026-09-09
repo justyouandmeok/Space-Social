@@ -8,6 +8,7 @@ import 'search_screen.dart';
 import 'post_screen.dart';
 import 'reels_screen.dart';
 import 'profile_screen.dart';
+import '../space_theme.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key, required this.state});
