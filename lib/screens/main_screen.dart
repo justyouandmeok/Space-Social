@@ -1,32 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../state.dart';
-import '../theme.dart';
-import '../widgets/ig_icons.dart';
 import '../widgets/network_photo.dart';
+import 'auth_screen.dart';
 import 'feed_screen.dart';
 import 'search_screen.dart';
 import 'post_screen.dart';
 import 'reels_screen.dart';
 import 'profile_screen.dart';
-import 'auth_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key, required this.state});
   final AppState state;
+
   @override
   State<MainScreen> createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int tab = 0;
+  int _currentIndex = 0;
   DateTime? _lastBack;
 
   AppState get state => widget.state;
 
+  void _onTap(int index) {
+    if (index == 2) {
+      _openCreate(0);
+      return;
+    }
+    setState(() => _currentIndex = index);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!state.isLoggedIn) return AuthScreen(state: state);
+
+    final pages = [
+      FeedScreen(state: state, onOpenCreate: _openCreate, onOpenProfile: _openProfile),
+      SearchScreen(state: state, onOpenProfile: _openProfile),
+      const SizedBox.shrink(),
+      ReelsScreen(state: state, playing: _currentIndex == 3, onOpenProfile: _openProfile),
+      ProfileScreen(state: state, user: state.me, onOpenCreate: () => _openCreate(0)),
+    ];
 
     return PopScope(
       canPop: false,
@@ -34,6 +49,10 @@ class _MainScreenState extends State<MainScreen> {
         if (did) return;
         if (Navigator.of(context).canPop()) {
           Navigator.of(context).pop();
+          return;
+        }
+        if (_currentIndex != 0) {
+          setState(() => _currentIndex = 0);
           return;
         }
         final now = DateTime.now();
@@ -46,70 +65,35 @@ class _MainScreenState extends State<MainScreen> {
       },
       child: Scaffold(
         body: IndexedStack(
-          index: tab,
-          children: [
-            FeedScreen(state: state, onOpenCreate: _openCreate, onOpenProfile: _openProfile),
-            ReelsScreen(state: state, playing: tab == 1, onOpenProfile: _openProfile),
-            SearchScreen(state: state, onOpenProfile: _openProfile),
-            ProfileScreen(state: state, user: state.me, onOpenCreate: () => _openCreate(0)),
+          index: _currentIndex,
+          children: pages,
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _currentIndex == 2 ? 0 : _currentIndex,
+          onTap: _onTap,
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Colors.black,
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.white60,
+          showSelectedLabels: false,
+          showUnselectedLabels: false,
+          items: [
+            const BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Feed'),
+            const BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Buscar'),
+            const BottomNavigationBarItem(icon: Icon(Icons.add_box_outlined), label: 'Crear'),
+            const BottomNavigationBarItem(icon: Icon(Icons.movie_outlined), label: 'Reels'),
+            BottomNavigationBarItem(
+              icon: Container(
+                padding: const EdgeInsets.all(1.5),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: _currentIndex == 4 ? Colors.white : Colors.transparent, width: 1.5),
+                ),
+                child: Avatar(state.me.avatarPath, size: 24),
+              ),
+              label: 'Perfil',
+            ),
           ],
-        ),
-        bottomNavigationBar: Container(
-          decoration: const BoxDecoration(
-            color: Colors.black,
-            border: Border(top: BorderSide(color: Color(0x55FFFFFF), width: 0.4)),
-          ),
-          child: SafeArea(
-            child: SizedBox(
-              height: 49,
-              child: Row(children: [
-                _nav(0, HomeOutlinePainter(Colors.white, filled: tab == 0)),
-                _nav(1, ReelsPainter(Colors.white, filled: tab == 1)),
-                _create(),
-                _nav(2, SearchOutlinePainter(Colors.white, bold: tab == 2)),
-                _profile(),
-              ]),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _nav(int i, CustomPainter painter) {
-    return Expanded(
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () => setState(() => tab = i),
-        child: Center(child: CustomPaint(size: const Size.square(27), painter: painter)),
-      ),
-    );
-  }
-
-  Widget _create() {
-    return Expanded(
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () => _openCreate(0),
-        child: Center(child: CustomPaint(size: const Size.square(27), painter: AddBoxPainter(Colors.white))),
-      ),
-    );
-  }
-
-  Widget _profile() {
-    return Expanded(
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () => setState(() => tab = 3),
-        child: Center(
-          child: Container(
-            padding: const EdgeInsets.all(1.5),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: tab == 3 ? Colors.white : Colors.transparent, width: 1.6),
-            ),
-            child: Avatar(state.me.avatarPath, size: 24),
-          ),
         ),
       ),
     );
@@ -125,7 +109,7 @@ class _MainScreenState extends State<MainScreen> {
     final u = state.tryUser(userId);
     if (u == null) return;
     if (u.id == state.me.id) {
-      setState(() => tab = 3);
+      setState(() => _currentIndex = 4);
       return;
     }
     Navigator.of(context).push(MaterialPageRoute(
