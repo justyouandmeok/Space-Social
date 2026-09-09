@@ -78,7 +78,21 @@ class _MainScreenState extends State<MainScreen> {
           items: [
             const BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Inicio'),
             const BottomNavigationBarItem(icon: Icon(Icons.movie_outlined), label: 'Reels'),
-            const BottomNavigationBarItem(icon: Icon(Icons.send_outlined), label: 'Mensajes'),
+            BottomNavigationBarItem(
+              icon: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  const Icon(Icons.send_outlined),
+                  if (state.messages.any((m) => m.toId == state.me.id && !m.read))
+                    Positioned(
+                      right: -2,
+                      top: -2,
+                      child: Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFFFF3040), shape: BoxShape.circle)),
+                    ),
+                ],
+              ),
+              label: 'Mensajes',
+            ),
             const BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Buscar'),
             BottomNavigationBarItem(
               icon: Container(

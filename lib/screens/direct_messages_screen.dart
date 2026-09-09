@@ -57,7 +57,7 @@ class DirectMessagesScreen extends StatelessWidget {
       ),
       body: Column(children: [
         SizedBox(
-          height: 100,
+          height: 118,
           child: notes.isEmpty
               ? Center(child: Text('Todavía no hay gente para escribirle', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)))
               : ListView.builder(
@@ -66,39 +66,66 @@ class DirectMessagesScreen extends StatelessWidget {
                   itemCount: notes.length,
                   itemBuilder: (context, index) {
                     final u = notes[index];
+                    final note = noteOf(u.id);
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: GestureDetector(
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ChatConversationScreen(state: state, user: u))),
-                        child: Column(children: [
-                          GestureDetector(
-                            onLongPress: u.id == me ? () async {
-                              final c = TextEditingController();
-                              final ok = await showDialog<bool>(context: context, builder: (ctx) => AlertDialog(
-                                backgroundColor: SpaceColors.surface,
-                                title: Text('Nota', style: TextStyle(color: SpaceColors.text)),
-                                content: TextField(controller: c, maxLength: 60, style: TextStyle(color: SpaceColors.text), decoration: InputDecoration(hintText: '¿Qué estás pensando?', hintStyle: TextStyle(color: SpaceColors.textMuted))),
-                                actions: [
-                                  TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
-                                  TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Compartir')),
-                                ],
-                              ));
-                              if (ok == true) await state.publishNote(c.text);
-                            } : null,
-                            child: Avatar(u.avatarPath, size: 56),
-                          ),
-                          const SizedBox(height: 4),
-                          SizedBox(
-                            width: 64,
-                            child: Text(
-                              noteOf(u.id).isNotEmpty ? noteOf(u.id) : (u.id == me ? 'Tu nota' : u.username),
-                              maxLines: 2,
+                        onLongPress: u.id == me
+                            ? () async {
+                                final c = TextEditingController(text: note);
+                                final ok = await showDialog<bool>(
+                                  context: context,
+                                  builder: (ctx) => AlertDialog(
+                                    backgroundColor: SpaceColors.surface,
+                                    title: Text('Nota', style: TextStyle(color: SpaceColors.text)),
+                                    content: TextField(controller: c, maxLength: 60, style: TextStyle(color: SpaceColors.text), decoration: InputDecoration(hintText: '¿Qué estás pensando?', hintStyle: TextStyle(color: SpaceColors.textMuted))),
+                                    actions: [
+                                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+                                      TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Compartir')),
+                                    ],
+                                  ),
+                                );
+                                if (ok == true) await state.publishNote(c.text);
+                              }
+                            : null,
+                        child: SizedBox(
+                          width: 72,
+                          child: Column(children: [
+                            Stack(
+                              clipBehavior: Clip.none,
+                              alignment: Alignment.topCenter,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 22),
+                                  child: Avatar(u.avatarPath, size: 56),
+                                ),
+                                if (note.isNotEmpty)
+                                  Positioned(
+                                    top: 0,
+                                    child: Container(
+                                      constraints: const BoxConstraints(maxWidth: 70),
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: SpaceColors.surface,
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: SpaceColors.hairline),
+                                      ),
+                                      child: Text(note, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: SpaceColors.text, fontSize: 10)),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              u.id == me ? 'Tu nota' : u.username,
+                              maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               textAlign: TextAlign.center,
                               style: TextStyle(color: SpaceColors.textMuted, fontSize: 10),
                             ),
-                          ),
-                        ]),
+                          ]),
+                        ),
                       ),
                     );
                   },

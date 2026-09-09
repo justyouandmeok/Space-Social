@@ -38,6 +38,7 @@ class FeedScreen extends StatelessWidget {
               backgroundColor: SpaceColors.surface,
               builder: (ctx) => SafeArea(
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  Container(margin: const EdgeInsets.only(top: 8, bottom: 4), width: 36, height: 4, decoration: BoxDecoration(color: SpaceColors.hairline, borderRadius: BorderRadius.circular(2))),
                   ListTile(
                     title: Text('Para ti', style: TextStyle(color: SpaceColors.text, fontWeight: state.feedMode == 0 ? FontWeight.bold : FontWeight.normal)),
                     trailing: state.feedMode == 0 ? Icon(Icons.check, color: SpaceColors.text) : null,
