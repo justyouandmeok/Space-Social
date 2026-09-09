@@ -8,6 +8,7 @@ import 'search_screen.dart';
 import 'post_screen.dart';
 import 'reels_screen.dart';
 import 'profile_screen.dart';
+import 'direct_messages_screen.dart';
 import '../space_theme.dart';
 
 class MainScreen extends StatefulWidget {
@@ -25,10 +26,6 @@ class _MainScreenState extends State<MainScreen> {
   AppState get state => widget.state;
 
   void _onTap(int index) {
-    if (index == 2) {
-      _openCreate(0);
-      return;
-    }
     setState(() => _currentIndex = index);
   }
 
@@ -38,9 +35,9 @@ class _MainScreenState extends State<MainScreen> {
 
     final pages = [
       FeedScreen(state: state, onOpenCreate: _openCreate, onOpenProfile: _openProfile),
+      ReelsScreen(state: state, playing: _currentIndex == 1, onOpenProfile: _openProfile),
+      DirectMessagesScreen(state: state, onOpenProfile: _openProfile),
       SearchScreen(state: state, onOpenProfile: _openProfile),
-      const SizedBox.shrink(),
-      ReelsScreen(state: state, playing: _currentIndex == 3, onOpenProfile: _openProfile),
       ProfileScreen(state: state, user: state.me, onOpenCreate: () => _openCreate(0), onOpenProfile: _openProfile),
     ];
 
@@ -70,7 +67,7 @@ class _MainScreenState extends State<MainScreen> {
           children: pages,
         ),
         bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _currentIndex == 2 ? 0 : _currentIndex,
+          currentIndex: _currentIndex,
           onTap: _onTap,
           type: BottomNavigationBarType.fixed,
           backgroundColor: SpaceColors.nav,
@@ -79,10 +76,10 @@ class _MainScreenState extends State<MainScreen> {
           showSelectedLabels: false,
           showUnselectedLabels: false,
           items: [
-            const BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Feed'),
-            const BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Buscar'),
-            const BottomNavigationBarItem(icon: Icon(Icons.add_box_outlined), label: 'Crear'),
+            const BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Inicio'),
             const BottomNavigationBarItem(icon: Icon(Icons.movie_outlined), label: 'Reels'),
+            const BottomNavigationBarItem(icon: Icon(Icons.send_outlined), label: 'Mensajes'),
+            const BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Buscar'),
             BottomNavigationBarItem(
               icon: Container(
                 padding: const EdgeInsets.all(1.5),

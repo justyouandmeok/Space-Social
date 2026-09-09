@@ -4,7 +4,6 @@ import '../state.dart';
 import '../widgets/comments_bottom_sheet.dart';
 import '../widgets/space_post_card.dart';
 import '../widgets/story_bubble.dart';
-import 'direct_messages_screen.dart';
 import 'notifications_screen.dart';
 import 'post_screen.dart';
 import '../space_theme.dart';
@@ -28,16 +27,44 @@ class FeedScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: SpaceColors.bg,
         elevation: 0,
-        title: Text(
-          'Space Social',
-          style: TextStyle(fontFamily: 'GrandHotel', fontSize: 32, color: SpaceColors.text),
+        leading: IconButton(
+          icon: Icon(Icons.add_box_outlined, color: SpaceColors.text, size: 28),
+          onPressed: () => onOpenCreate(0),
+        ),
+        title: GestureDetector(
+          onTap: () {
+            showModalBottomSheet(
+              context: context,
+              backgroundColor: SpaceColors.surface,
+              builder: (ctx) => SafeArea(
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  ListTile(
+                    title: Text('Para ti', style: TextStyle(color: SpaceColors.text, fontWeight: state.feedMode == 0 ? FontWeight.bold : FontWeight.normal)),
+                    trailing: state.feedMode == 0 ? Icon(Icons.check, color: SpaceColors.text) : null,
+                    onTap: () { state.setFeedMode(0); Navigator.pop(ctx); },
+                  ),
+                  ListTile(
+                    title: Text('Siguiendo', style: TextStyle(color: SpaceColors.text, fontWeight: state.feedMode == 1 ? FontWeight.bold : FontWeight.normal)),
+                    trailing: state.feedMode == 1 ? Icon(Icons.check, color: SpaceColors.text) : null,
+                    onTap: () { state.setFeedMode(1); Navigator.pop(ctx); },
+                  ),
+                  ListTile(
+                    title: Text('Favoritos', style: TextStyle(color: SpaceColors.text, fontWeight: state.feedMode == 2 ? FontWeight.bold : FontWeight.normal)),
+                    trailing: state.feedMode == 2 ? Icon(Icons.check, color: SpaceColors.text) : null,
+                    onTap: () { state.setFeedMode(2); Navigator.pop(ctx); },
+                  ),
+                ]),
+              ),
+            );
+          },
+          child: Row(children: [
+            Text('Space Social', style: TextStyle(fontFamily: 'GrandHotel', fontSize: 30, color: SpaceColors.text)),
+            Icon(Icons.keyboard_arrow_down, color: SpaceColors.text),
+          ]),
         ),
         actions: [
           IconButton(icon: Icon(Icons.favorite_border, color: SpaceColors.text), onPressed: () {
             Navigator.of(context).push(MaterialPageRoute(builder: (_) => NotificationsScreen(state: state, onOpenProfile: onOpenProfile)));
-          }),
-          IconButton(icon: Icon(Icons.send_outlined, color: SpaceColors.text), onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (_) => DirectMessagesScreen(state: state, onOpenProfile: onOpenProfile)));
           }),
         ],
       ),
@@ -56,31 +83,7 @@ class FeedScreen extends StatelessWidget {
                 )),
               ),
             ),
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 40,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  children: [
-                    for (final e in [(0, 'Para ti'), (1, 'Siguiendo'), (2, 'Favoritos')])
-                      Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: ChoiceChip(
-                          label: Text(e.$2, style: const TextStyle(fontSize: 12)),
-                          selected: state.feedMode == e.$1,
-                          onSelected: (_) => state.setFeedMode(e.$1),
-                          selectedColor: SpaceColors.surface,
-                          labelStyle: TextStyle(color: SpaceColors.text),
-                          backgroundColor: SpaceColors.surface,
-                          side: BorderSide(color: SpaceColors.hairline),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-            SliverToBoxAdapter(child: Divider(color: SpaceColors.hairline, height: 1)),
+            SliverToBoxAdapter(child: Divider(color: SpaceColors.hairline, height: 0.5)),
             if (items.isEmpty)
               SliverToBoxAdapter(
                 child: Padding(
