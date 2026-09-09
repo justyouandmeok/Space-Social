@@ -157,7 +157,7 @@ class ProfileScreen extends StatelessWidget {
             children: [
               _grid(posts),
               _grid(reels),
-              const Center(child: Text('Todavía no hay fotos en las que te etiquetaron', style: TextStyle(color: Colors.white54))),
+              _taggedGrid(),
             ],
           ),
         ),
@@ -219,6 +219,34 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+
+  Widget _taggedGrid() {
+    final tag = '@${user.username}'.toLowerCase();
+    final items = state.posts.where((p) => p.caption.toLowerCase().contains(tag) && p.userId != user.id).toList();
+    if (items.isEmpty) {
+      return const Center(child: Text('Todavía no hay fotos en las que te etiquetaron', style: TextStyle(color: Colors.white54)));
+    }
+    return GridView.builder(
+      padding: EdgeInsets.zero,
+      itemCount: items.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 1.5, mainAxisSpacing: 1.5, childAspectRatio: 3 / 4),
+      itemBuilder: (context, index) {
+        final p = items[index];
+        return Stack(fit: StackFit.expand, children: [
+          MediaView(p.imagePath, video: p.isVideo),
+          Positioned(
+            bottom: 6,
+            left: 6,
+            child: Container(
+              padding: const EdgeInsets.all(3),
+              decoration: const BoxDecoration(color: Color(0x99000000), shape: BoxShape.circle),
+              child: const Icon(Icons.person_pin_outlined, color: Colors.white, size: 14),
+            ),
+          ),
+        ]);
+      },
+    );
+  }
   Widget _grid(List<Post> items) {
     if (items.isEmpty) {
       return const Center(child: Text('Nada por acá todavía', style: TextStyle(color: Colors.white54)));
