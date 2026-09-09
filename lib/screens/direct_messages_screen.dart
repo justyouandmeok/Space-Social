@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models.dart';
 import '../space_theme.dart';
 import '../state.dart';
@@ -13,7 +14,7 @@ class DirectMessagesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final me = state.me.id;
-    final others = state.users.where((u) => u.id != me).toList();
+    final others = state.users.where((u) => u.id != me && state.threadWith(u.id).isNotEmpty).toList();
     others.sort((a, b) {
       final la = state.threadWith(a.id);
       final lb = state.threadWith(b.id);
@@ -21,7 +22,7 @@ class DirectMessagesScreen extends StatelessWidget {
       final tb = lb.isEmpty ? DateTime(2000) : lb.last.createdAt;
       return tb.compareTo(ta);
     });
-    final notes = others.take(12).toList();
+    final notes = state.users.where((u) => u.id != me).take(12).toList();
 
     return Scaffold(
       backgroundColor: SpaceColors.deepSpace,
@@ -29,7 +30,22 @@ class DirectMessagesScreen extends StatelessWidget {
         backgroundColor: SpaceColors.deepSpace,
         title: Text(state.me.username, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         actions: [
-          IconButton(icon: const Icon(Icons.edit_square, color: SpaceColors.cosmicCyan), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.edit_square, color: SpaceColors.cosmicCyan), onPressed: () {
+            final people = state.users.where((u) => u.id != me).toList();
+            showModalBottomSheet(context: context, backgroundColor: SpaceColors.darkMatter, builder: (ctx) => SafeArea(child: ListView(
+              children: [
+                const ListTile(title: Text('Nuevo mensaje', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                ...people.map((u) => ListTile(
+                  leading: Avatar(u.avatarPath, size: 40),
+                  title: Text(u.username, style: const TextStyle(color: Colors.white)),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => ChatConversationScreen(state: state, user: u)));
+                  },
+                )),
+              ],
+            )));
+          }),
         ],
       ),
       body: Column(children: [
@@ -175,7 +191,12 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           color: SpaceColors.darkMatter,
           child: Row(children: [
-            IconButton(icon: const Icon(Icons.image_outlined, color: Colors.white70), onPressed: () {}),
+            IconButton(icon: const Icon(Icons.image_outlined, color: Colors.white70), onPressed: () async {
+              final x = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
+              if (x == null) return;
+              await widget.state.sendMessage(widget.user.id, '📷 ${x.name}');
+              if (mounted) setState(() {});
+            }),
             Expanded(
               child: TextField(
                 controller: _msgController,

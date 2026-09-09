@@ -35,7 +35,9 @@ class _SpaceSocialAppState extends State<SpaceSocialApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Space Social',
-      theme: spaceSocialTheme,
+      theme: spaceSocialThemeLight,
+      darkTheme: spaceSocialTheme,
+      themeMode: state.darkMode ? ThemeMode.dark : ThemeMode.light,
       home: !state.ready
           ? const Scaffold(
               backgroundColor: SpaceColors.voidBlack,

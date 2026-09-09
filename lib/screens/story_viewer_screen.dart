@@ -25,6 +25,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
   double _percent = 0.0;
   Timer? _timer;
   bool _isPaused = false;
+  bool _liked = false;
   final _reply = TextEditingController();
 
   List<Story> get stories => widget.state.storiesOf(widget.userId);
@@ -187,7 +188,15 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    IconButton(icon: const Icon(Icons.favorite_border, color: Colors.white), onPressed: () {}),
+                    IconButton(
+                      icon: Icon(_liked ? Icons.favorite : Icons.favorite_border, color: _liked ? Colors.redAccent : Colors.white),
+                      onPressed: () async {
+                        setState(() => _liked = !_liked);
+                        if (_liked) {
+                          await widget.state.sendMessage(widget.userId, '❤️ le gustó tu historia');
+                        }
+                      },
+                    ),
                     IconButton(
                       icon: const Icon(Icons.send_outlined, color: Colors.white),
                       onPressed: () async {

@@ -110,7 +110,15 @@ class _SavedCollectionsScreenState extends State<SavedCollectionsScreen> {
         itemBuilder: (context, index) {
           final (title, count, path) = folders[index];
           return GestureDetector(
-            onTap: index == 0 ? _openSaved : () {},
+            onTap: () {
+              if (index == 0) {
+                _openSaved();
+              } else {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => PostDetailFeedScreen(state: widget.state, posts: saved, initialIndex: 0, onOpenProfile: widget.onOpenProfile),
+                ));
+              }
+            },
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Expanded(
                 child: ClipRRect(

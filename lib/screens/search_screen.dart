@@ -28,13 +28,24 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     final q = _searchController.text.trim().toLowerCase();
-    widget.state.setQuery(q);
     var posts = widget.state.explorePosts;
     if (q.isNotEmpty) {
       posts = posts.where((p) {
         final u = widget.state.tryUser(p.userId);
         return p.caption.toLowerCase().contains(q) || (u?.username.contains(q) ?? false);
       }).toList();
+    }
+    const keys = {
+      1: ['ia', 'ai', 'grok', 'inteligencia'],
+      2: ['espacio', 'space', 'cosmos', 'nasa'],
+      3: ['tech', 'flutter', 'code', 'dev'],
+      4: ['arte', 'art', 'dibujo'],
+      5: ['game', 'gaming', 'juego'],
+      6: ['musica', 'música', 'audio', 'sound'],
+    };
+    if (_selectedCategory != 0) {
+      final k = keys[_selectedCategory] ?? [];
+      posts = posts.where((p) => k.any((w) => p.caption.toLowerCase().contains(w))).toList();
     }
     final people = q.isEmpty
         ? const []

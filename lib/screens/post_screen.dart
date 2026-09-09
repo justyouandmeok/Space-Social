@@ -60,15 +60,14 @@ class _PostScreenState extends State<PostScreen> {
 
   Future<void> _grokCaption() async {
     final topic = cap.text.trim().isEmpty ? 'una foto en Space Social' : cap.text.trim();
-    if (SpaceConfig.xaiApiKey.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Falta la API key de xAI en config.dart')));
-      }
-      return;
-    }
     setState(() => grokBusy = true);
     try {
-      final text = await GrokService(apiKey: SpaceConfig.xaiApiKey).generateCaption(topic);
+      String text;
+      if (SpaceConfig.xaiApiKey.isEmpty) {
+        text = '$topic ✨ #spacesocial';
+      } else {
+        text = await GrokService(apiKey: SpaceConfig.xaiApiKey).generateCaption(topic);
+      }
       if (mounted) cap.text = text;
     } catch (e) {
       if (mounted) {

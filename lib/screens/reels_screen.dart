@@ -6,6 +6,7 @@ import '../theme.dart';
 import '../widgets/media_view.dart';
 import '../widgets/network_photo.dart';
 import '../widgets/comments_bottom_sheet.dart';
+import '../widgets/share_sheet.dart';
 import 'post_screen.dart';
 
 class ReelsScreen extends StatelessWidget {
@@ -84,8 +85,14 @@ class ReelsScreen extends StatelessWidget {
                     onTap: () => state.toggleLike(post.id),
                   ),
                   _action(Icons.chat_bubble_outline, compact(post.comments.length), onTap: () => CommentsBottomSheet.show(context, state, post.id)),
-                  _action(Icons.send_outlined, '', onTap: () {}),
-                  _action(Icons.more_vert, '', onTap: () {}),
+                  _action(Icons.send_outlined, '', onTap: () => ShareSheet.show(context, state, post: post)),
+                  _action(Icons.more_vert, '', onTap: () {
+                    showModalBottomSheet(context: context, backgroundColor: const Color(0xFF121212), builder: (ctx) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      ListTile(title: const Text('Compartir', style: TextStyle(color: Colors.white)), onTap: () { Navigator.pop(ctx); ShareSheet.show(context, state, post: post); }),
+                      if (mine) ListTile(title: const Text('Archivar', style: TextStyle(color: Colors.white)), onTap: () { Navigator.pop(ctx); state.toggleArchive(post.id); }),
+                      ListTile(title: const Text('Cerrar', style: TextStyle(color: Colors.white54)), onTap: () => Navigator.pop(ctx)),
+                    ])));
+                  }),
                   const SizedBox(height: 12),
                   GestureDetector(
                     onTap: () { if (user != null) onOpenProfile(user.id); },

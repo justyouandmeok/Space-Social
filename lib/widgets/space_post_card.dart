@@ -4,6 +4,7 @@ import '../space_theme.dart';
 import '../state.dart';
 import '../store.dart';
 import 'comments_bottom_sheet.dart';
+import 'share_sheet.dart';
 import 'media_view.dart';
 import 'network_photo.dart';
 
@@ -117,7 +118,7 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
             icon: const Icon(Icons.chat_bubble_outline, color: SpaceColors.starlight),
             onPressed: () => CommentsBottomSheet.show(context, widget.state, live.id),
           ),
-          IconButton(icon: const Icon(Icons.send_outlined, color: SpaceColors.starlight), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.send_outlined, color: SpaceColors.starlight), onPressed: () => ShareSheet.show(context, widget.state, post: live)),
           const Spacer(),
           IconButton(
             icon: Icon(saved ? Icons.bookmark : Icons.bookmark_border, color: SpaceColors.starlight),

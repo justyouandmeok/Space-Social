@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../screens/creator_insights_screen.dart';
 import '../screens/notifications_screen.dart';
+import '../screens/archive_screen.dart';
 import '../screens/saved_collections_screen.dart';
 import '../space_theme.dart';
 import '../state.dart';
@@ -46,15 +47,24 @@ class ProfileDrawerModal extends StatelessWidget {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (_) => NotificationsScreen(state: state, onOpenProfile: onOpenProfile)));
             }),
-            _tile(Icons.archive_outlined, 'Archivo', () => Navigator.pop(context)),
-            _tile(Icons.qr_code_scanner, 'Código QR', () => Navigator.pop(context)),
+            _tile(Icons.archive_outlined, 'Archivo', () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => ArchiveScreen(state: state)));
+            }),
+            _tile(Icons.qr_code_scanner, 'Código QR', () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => QrProfileScreen(username: state.me.username)));
+            }),
             _tile(Icons.bookmark_border, 'Guardado', () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(
                 builder: (_) => SavedCollectionsScreen(state: state, onOpenProfile: onOpenProfile ?? (_) {}),
               ));
             }),
-            _tile(Icons.credit_card_outlined, 'Órdenes y pagos', () => Navigator.pop(context)),
+            _tile(Icons.credit_card_outlined, 'Órdenes y pagos', () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const OrdersScreen()));
+            }),
             const Divider(color: Colors.white12),
             _tile(Icons.logout, 'Cerrar sesión', () {
               Navigator.pop(context);

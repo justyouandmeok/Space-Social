@@ -109,7 +109,15 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                                     const SizedBox(height: 3),
                                     Text(c.text, style: const TextStyle(color: Colors.white, fontSize: 14)),
                                     const SizedBox(height: 6),
-                                    const Text('Responder', style: TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.w600)),
+                                    GestureDetector(
+                                      onTap: () {
+                                        final name = u?.username ?? '';
+                                        if (name.isEmpty) return;
+                                        _commentController.text = '@$name ';
+                                        _commentController.selection = TextSelection.fromPosition(TextPosition(offset: _commentController.text.length));
+                                      },
+                                      child: const Text('Responder', style: TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.w600)),
+                                    ),
                                   ]),
                                 ),
                                 Column(children: [
