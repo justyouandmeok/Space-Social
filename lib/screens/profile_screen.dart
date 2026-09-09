@@ -12,6 +12,7 @@ import '../widgets/network_photo.dart';
 import '../widgets/account_switch_modal.dart';
 import '../widgets/profile_drawer_modal.dart';
 import '../widgets/links_bottom_sheet.dart';
+import 'create_highlight_screen.dart';
 import 'creator_insights_screen.dart';
 import 'post_detail_feed_screen.dart';
 import 'saved_collections_screen.dart';
@@ -129,7 +130,7 @@ class ProfileScreen extends StatelessWidget {
                       child: ListView(
                         scrollDirection: Axis.horizontal,
                         children: [
-                          if (isMe) _highlightAdd(),
+                          if (isMe) _highlightAdd(context),
                           ...highlights.take(8).map((s) => _highlight(s, user.username)),
                         ],
                       ),
@@ -184,14 +185,22 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  static Widget _highlightAdd() {
-    return const Padding(
-      padding: EdgeInsets.only(right: 14),
-      child: Column(children: [
-        CircleAvatar(radius: 28, backgroundColor: Color(0xFF1A1A1A), child: Icon(Icons.add, color: Colors.white)),
-        SizedBox(height: 4),
-        Text('Nueva', style: TextStyle(color: Colors.white, fontSize: 11)),
-      ]),
+  Widget _highlightAdd(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 14),
+      child: GestureDetector(
+        onTap: () async {
+          final name = await Navigator.of(context).push(MaterialPageRoute(builder: (_) => CreateHighlightScreen(state: state)));
+          if (name != null && context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Destacada “$name” creada')));
+          }
+        },
+        child: const Column(children: [
+          CircleAvatar(radius: 28, backgroundColor: Color(0xFF1A1A1A), child: Icon(Icons.add, color: Colors.white)),
+          SizedBox(height: 4),
+          Text('Nueva', style: TextStyle(color: Colors.white, fontSize: 11)),
+        ]),
+      ),
     );
   }
 
