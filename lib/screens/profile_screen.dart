@@ -281,17 +281,43 @@ class ProfileScreen extends StatelessWidget {
         mainAxisSpacing: 1.5,
         childAspectRatio: 3 / 4,
       ),
-      itemBuilder: (context, index) => GestureDetector(
-        onTap: () => Navigator.of(context).push(MaterialPageRoute(
-          builder: (_) => PostDetailFeedScreen(
-            state: state,
-            posts: items,
-            initialIndex: index,
-            onOpenProfile: onOpenProfile ?? (_) {},
-          ),
-        )),
-        child: MediaView(items[index].imagePath, video: items[index].isVideo),
-      ),
+      itemBuilder: (context, index) {
+        final p = items[index];
+        final pinned = index < 3;
+        return GestureDetector(
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(
+            builder: (_) => PostDetailFeedScreen(
+              state: state,
+              posts: items,
+              initialIndex: index,
+              onOpenProfile: onOpenProfile ?? (_) {},
+            ),
+          )),
+          child: Stack(fit: StackFit.expand, children: [
+            MediaView(p.imagePath, video: p.isVideo),
+            if (pinned)
+              Positioned(
+                top: 6,
+                right: 6,
+                child: Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: const BoxDecoration(color: Color(0x99000000), shape: BoxShape.circle),
+                  child: const Icon(Icons.push_pin, color: Colors.white, size: 14),
+                ),
+              )
+            else if (p.isVideo || p.isReel)
+              Positioned(
+                top: 6,
+                right: 6,
+                child: Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: const BoxDecoration(color: Color(0x99000000), shape: BoxShape.circle),
+                  child: Icon(p.isReel ? Icons.collections : Icons.play_arrow, color: Colors.white, size: 14),
+                ),
+              ),
+          ]),
+        );
+      }
     );
   }
 }
