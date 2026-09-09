@@ -93,7 +93,11 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                         itemBuilder: (context, index) {
                           final c = comments[index];
                           final u = widget.state.tryUser(c.userId);
-                                                return Padding(
+                                                return GestureDetector(
+                            onLongPress: c.userId == widget.state.me.id
+                                ? () => widget.state.deleteComment(widget.postId, index)
+                                : null,
+                            child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,6 +133,7 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                                 ]),
                               ],
                             ),
+                          ),
                           );
                         },
                       ),

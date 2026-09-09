@@ -998,6 +998,24 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> deleteComment(String postId, int index) async {
+    if (!isLoggedIn) return;
+    final ref = _db.collection('posts').doc(postId);
+    await _db.runTransaction((tx) async {
+      final snap = await tx.get(ref);
+      if (!snap.exists) return;
+      final comments = List<Map<String, dynamic>>.from(
+        ((snap.data()?['comments'] as List?) ?? const []).map((e) => Map<String, dynamic>.from(e as Map)),
+      );
+      if (index < 0 || index >= comments.length) return;
+      if (comments[index]['userId'] != me.id) return;
+      comments.removeAt(index);
+      tx.update(ref, {'comments': comments});
+    });
+    await _refresh();
+    notifyListeners();
+  }
+
   Future<void> toggleCommentLike(String postId, int index) async {
     if (!isLoggedIn) return;
     final ref = _db.collection('posts').doc(postId);

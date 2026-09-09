@@ -629,6 +629,12 @@ class SettingsScreen extends StatelessWidget {
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CreatorInsightsScreen(state: state))),
         ),
         ListTile(
+          leading: const Icon(Icons.person_add_alt, color: Colors.white),
+          title: const Text('Solicitudes de seguimiento', style: TextStyle(color: Colors.white)),
+          subtitle: Text('${state.incomingFollows.length} pendientes', style: const TextStyle(color: Colors.white54, fontSize: 12)),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => FollowRequestsScreen(state: state))),
+        ),
+        ListTile(
           leading: const Icon(Icons.verified_outlined, color: Colors.white),
           title: const Text('Verificación oficial', style: TextStyle(color: Colors.white)),
           subtitle: Text(
@@ -691,6 +697,32 @@ class VerificationScreen extends StatelessWidget {
               )),
         ],
       ]),
+    );
+  }
+}
+
+
+class FollowRequestsScreen extends StatelessWidget {
+  const FollowRequestsScreen({super.key, required this.state});
+  final AppState state;
+  @override
+  Widget build(BuildContext context) {
+    final ids = state.incomingFollows.toList();
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(backgroundColor: Colors.black, title: const Text('Solicitudes')),
+      body: ids.isEmpty
+          ? const Center(child: Text('No hay solicitudes', style: TextStyle(color: Colors.white54)))
+          : ListView(children: [
+              for (final id in ids)
+                ListTile(
+                  title: Text(state.tryUser(id)?.username ?? id, style: const TextStyle(color: Colors.white)),
+                  trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                    TextButton(onPressed: () => state.acceptFollow(id), child: const Text('Confirmar')),
+                    TextButton(onPressed: () => state.rejectFollow(id), child: const Text('Eliminar')),
+                  ]),
+                ),
+            ]),
     );
   }
 }

@@ -169,12 +169,20 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
               ]),
               if (live.location.isNotEmpty)
                 Text(live.location, style: const TextStyle(color: Colors.white54, fontSize: 11)),
+              Text(timeAgo(live.createdAt), style: const TextStyle(color: Colors.white38, fontSize: 11)),
             ]),
           ),
-          trailing: IconButton(
-            icon: const Icon(Icons.more_horiz, color: Colors.white70),
-            onPressed: () => _options(context, live, user),
-          ),
+          trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+            if (user.id != widget.state.me.id && !widget.state.isFollowing(user.id))
+              TextButton(
+                onPressed: () => widget.state.toggleFollow(user.id),
+                child: Text(widget.state.isPendingFollow(user.id) ? 'Solicitado' : 'Seguir', style: const TextStyle(color: SpaceColors.cosmicCyan, fontWeight: FontWeight.bold)),
+              ),
+            IconButton(
+              icon: const Icon(Icons.more_horiz, color: Colors.white70),
+              onPressed: () => _options(context, live, user),
+            ),
+          ]),
         ),
         GestureDetector(
           onDoubleTap: _handleDoubleTap,
