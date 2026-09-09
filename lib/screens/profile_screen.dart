@@ -11,6 +11,7 @@ import '../widgets/media_view.dart';
 import '../widgets/network_photo.dart';
 import '../widgets/account_switch_modal.dart';
 import '../widgets/profile_drawer_modal.dart';
+import '../widgets/links_bottom_sheet.dart';
 import 'creator_insights_screen.dart';
 import 'post_detail_feed_screen.dart';
 import 'saved_collections_screen.dart';
@@ -92,7 +93,10 @@ class ProfileScreen extends StatelessWidget {
                     Text(user.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                     if (user.bio.isNotEmpty) Text(user.bio, style: const TextStyle(color: Colors.white)),
                     if (user.website.isNotEmpty)
-                      Text(user.website, style: const TextStyle(color: LumaColors.blue, fontSize: 13)),
+                      GestureDetector(
+                        onTap: () => LinksBottomSheet.show(context, user),
+                        child: Text(user.website, style: const TextStyle(color: LumaColors.blue, fontSize: 13)),
+                      ),
                     const SizedBox(height: 12),
                     if (isMe)
                       Row(children: [
