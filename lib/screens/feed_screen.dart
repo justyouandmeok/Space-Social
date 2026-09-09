@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models.dart';
 import '../state.dart';
-import '../widgets/ig_icons.dart';
 import '../widgets/post_card.dart';
 import '../widgets/story_bubble.dart';
 import 'post_screen.dart';
@@ -19,39 +18,61 @@ class FeedScreen extends StatelessWidget {
     for (final p in [...state.posts.where((p) => p.userId == state.me.id), ...state.feed]) {
       if (seen.add(p.id)) items.add(p);
     }
+
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text('Space Social', style: TextStyle(fontFamily: 'GrandHotel', fontSize: 32)),
-        leading: IconButton(
-          onPressed: () => onOpenCreate(0),
-          icon: CustomPaint(size: const Size.square(26), painter: AddBoxPainter(Colors.white)),
+        backgroundColor: Colors.black,
+        elevation: 0,
+        title: const Text(
+          'Space Social',
+          style: TextStyle(fontFamily: 'GrandHotel', fontSize: 32, color: Colors.white),
         ),
         actions: [
-          IconButton(onPressed: () {}, icon: CustomPaint(size: const Size.square(26), painter: HeartPainter(Colors.white))),
+          IconButton(icon: const Icon(Icons.favorite_border, color: Colors.white), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.send_outlined, color: Colors.white), onPressed: () {}),
         ],
       ),
       body: RefreshIndicator(
         color: Colors.white,
+        backgroundColor: Colors.black,
         onRefresh: () => state.load(),
-        child: ListView(
-          children: [
-            StoryRow(
-              state: state,
-              onOpenProfile: onOpenProfile,
-              onAddStory: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => PostScreen(state: state, initialMode: 1))),
-            ),
-            if (items.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(40),
-                child: Text('Todavía no hay publicaciones.\nTocá + para crear la primera.', textAlign: TextAlign.center, style: TextStyle(color: Colors.white70)),
-              ),
-            ...items.map((p) => PostCard(
-                  post: p,
-                  state: state,
-                  onOpenProfile: onOpenProfile,
-                  onOpenComments: (_) {},
-                  onOpenPost: (_) {},
+        child: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: StoryRow(
+                state: state,
+                onOpenProfile: onOpenProfile,
+                onAddStory: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => PostScreen(state: state, initialMode: 1),
                 )),
+              ),
+            ),
+            const SliverToBoxAdapter(child: Divider(color: Colors.white12, height: 1)),
+            if (items.isEmpty)
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.all(40),
+                  child: Text(
+                    'Todavía no hay publicaciones.\nTocá + para crear la primera.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                ),
+              )
+            else
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => PostCard(
+                    post: items[index],
+                    state: state,
+                    onOpenProfile: onOpenProfile,
+                    onOpenComments: (_) {},
+                    onOpenPost: (_) {},
+                  ),
+                  childCount: items.length,
+                ),
+              ),
           ],
         ),
       ),
