@@ -100,8 +100,8 @@ class NotificationsScreen extends StatelessWidget {
           ElevatedButton(
             onPressed: () => state.toggleFollow(user.id),
             style: ElevatedButton.styleFrom(
-              backgroundColor: state.isFollowing(user.id) ? SpaceColors.darkMatter : SpaceColors.cosmicCyan,
-              foregroundColor: state.isFollowing(user.id) ? Colors.white : Colors.black,
+              backgroundColor: state.isFollowing(user.id) ? SpaceColors.surface : const Color(0xFF0095F6),
+              foregroundColor: state.isFollowing(user.id) ? SpaceColors.text : Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               padding: const EdgeInsets.symmetric(horizontal: 14),
               minimumSize: const Size(80, 32),

@@ -219,7 +219,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                         margin: const EdgeInsets.symmetric(vertical: 4),
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                         decoration: BoxDecoration(
-                          color: isMe ? SpaceColors.nebulaPurple : SpaceColors.darkMatter,
+                          color: isMe ? const Color(0xFF3797F0) : SpaceColors.surface,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: msg.text.startsWith('IMG::')
@@ -235,7 +235,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
         ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          color: SpaceColors.darkMatter,
+          color: SpaceColors.surface,
           child: Row(children: [
             IconButton(icon: Icon(Icons.image_outlined, color: SpaceColors.textMuted), onPressed: () async {
               final x = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
