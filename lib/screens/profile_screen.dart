@@ -8,6 +8,7 @@ import '../store.dart';
 import '../theme.dart';
 import '../widgets/media_view.dart';
 import '../widgets/network_photo.dart';
+import '../widgets/account_switch_modal.dart';
 import 'creator_insights_screen.dart';
 import 'post_detail_feed_screen.dart';
 import 'saved_collections_screen.dart';
@@ -31,11 +32,14 @@ class ProfileScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.black,
         elevation: 0,
-        title: Row(
-          children: [
-            Flexible(child: Text(user.username, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white))),
-            const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 20),
-          ],
+        title: GestureDetector(
+          onTap: isMe ? () => AccountSwitchModal.show(context, state) : null,
+          child: Row(
+            children: [
+              Flexible(child: Text(user.username, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white))),
+              if (isMe) const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 20),
+            ],
+          ),
         ),
         actions: [
           if (isMe)
