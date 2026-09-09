@@ -21,10 +21,36 @@ class SpaceColors {
   static Color get icon => dark ? Colors.white : const Color(0xFF262626);
 }
 
+const spacePageTransitions = PageTransitionsTheme(
+  builders: {
+    TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+    TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+  },
+);
+
+Route<T> fadeRoute<T>(Widget page) {
+  return PageRouteBuilder<T>(
+    pageBuilder: (_, __, ___) => page,
+    transitionDuration: const Duration(milliseconds: 280),
+    reverseTransitionDuration: const Duration(milliseconds: 220),
+    transitionsBuilder: (_, anim, __, child) {
+      final fade = CurvedAnimation(parent: anim, curve: Curves.easeOutCubic);
+      return FadeTransition(
+        opacity: fade,
+        child: SlideTransition(
+          position: Tween<Offset>(begin: const Offset(0, 0.04), end: Offset.zero).animate(fade),
+          child: child,
+        ),
+      );
+    },
+  );
+}
+
 ThemeData buildSpaceTheme({required bool dark}) {
   if (!dark) {
     return ThemeData(
       useMaterial3: false,
+      pageTransitionsTheme: spacePageTransitions,
       brightness: Brightness.light,
       scaffoldBackgroundColor: Colors.white,
       canvasColor: Colors.white,
@@ -65,6 +91,7 @@ ThemeData buildSpaceTheme({required bool dark}) {
   }
   return ThemeData(
     useMaterial3: false,
+    pageTransitionsTheme: spacePageTransitions,
     brightness: Brightness.dark,
     scaffoldBackgroundColor: Colors.black,
     canvasColor: Colors.black,

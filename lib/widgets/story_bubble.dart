@@ -39,9 +39,7 @@ class StoryRow extends StatelessWidget {
                 return;
               }
               if (has) {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (_) => StoryViewerScreen(state: state, userId: u.id),
-                ));
+                Navigator.of(context).push(fadeRoute(StoryViewerScreen(state: state, userId: u.id)));
               } else {
                 onOpenProfile(u.id);
               }

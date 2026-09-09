@@ -39,6 +39,8 @@ class _SpaceSocialAppState extends State<SpaceSocialApp> {
       theme: buildSpaceTheme(dark: false),
       darkTheme: buildSpaceTheme(dark: true),
       themeMode: state.darkMode ? ThemeMode.dark : ThemeMode.light,
+      themeAnimationDuration: const Duration(milliseconds: 280),
+      themeAnimationCurve: Curves.easeOutCubic,
       home: !state.ready
           ? Scaffold(
               backgroundColor: SpaceColors.bg,
