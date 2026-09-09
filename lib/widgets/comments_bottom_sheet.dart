@@ -91,8 +91,7 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                         itemBuilder: (context, index) {
                           final c = comments[index];
                           final u = widget.state.tryUser(c.userId);
-                          final liked = _liked.contains(index);
-                          return Padding(
+                                                return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,14 +121,8 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                                 ),
                                 Column(children: [
                                   GestureDetector(
-                                    onTap: () => setState(() {
-                                      if (liked) {
-                                        _liked.remove(index);
-                                      } else {
-                                        _liked.add(index);
-                                      }
-                                    }),
-                                    child: Icon(liked ? Icons.favorite : Icons.favorite_border, size: 16, color: liked ? Colors.redAccent : Colors.white38),
+                                    onTap: () => widget.state.toggleCommentLike(widget.postId, index),
+                                    child: Icon(c.likes.contains(widget.state.me.id) ? Icons.favorite : Icons.favorite_border, size: 16, color: c.likes.contains(widget.state.me.id) ? Colors.redAccent : Colors.white38),
                                   ),
                                 ]),
                               ],

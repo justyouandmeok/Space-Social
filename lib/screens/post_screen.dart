@@ -87,7 +87,7 @@ class _PostScreenState extends State<PostScreen> {
     final v = video;
     Navigator.of(context).pop();
     if (m == 1) {
-      await widget.state.publishStory(f);
+      await widget.state.publishStory(f, overlayText: c);
     } else {
       await widget.state.publishPost(image: f, caption: c, location: loc.text, isReel: m == 2, isVideo: v);
     }
@@ -112,7 +112,7 @@ class _PostScreenState extends State<PostScreen> {
                   ? const Center(child: Icon(Icons.play_circle, color: Colors.white, size: 72))
                   : Image.file(file!, fit: BoxFit.contain),
             ),
-          if (mode == 0 && file != null)
+          if ((mode == 0 || mode == 2) && file != null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Column(children: [

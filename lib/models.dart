@@ -94,22 +94,26 @@ class Comment {
     required this.userId,
     required this.text,
     required this.createdAt,
+    this.likes = const [],
   });
 
   final String userId;
   final String text;
   final DateTime createdAt;
+  final List<String> likes;
 
   Map<String, dynamic> toJson() => {
         'userId': userId,
         'text': text,
         'createdAt': createdAt.toIso8601String(),
+        'likes': likes,
       };
 
   factory Comment.fromJson(Map<String, dynamic> j) => Comment(
         userId: j['userId'] as String,
         text: j['text'] as String,
         createdAt: DateTime.tryParse(j['createdAt'] as String? ?? '') ?? DateTime.now(),
+        likes: ((j['likes'] as List?) ?? const []).cast<String>(),
       );
 }
 

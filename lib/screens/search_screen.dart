@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../space_theme.dart';
 import '../state.dart';
 import '../widgets/media_view.dart';
@@ -18,6 +19,23 @@ class _SearchScreenState extends State<SearchScreen> {
   final _searchController = TextEditingController();
   final _categories = ['Para ti', 'IA', 'Espacio', 'Tech', 'Arte', 'Gaming', 'Música'];
   int _selectedCategory = 0;
+  List<String> _recent = [];
+
+  @override
+  void initState() {
+    super.initState();
+    SharedPreferences.getInstance().then((p) {
+      if (mounted) setState(() => _recent = p.getStringList('ss_search') ?? []);
+    });
+  }
+
+  Future<void> _remember(String q) async {
+    if (q.isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    final next = [q, ..._recent.where((e) => e != q)].take(8).toList();
+    await prefs.setStringList('ss_search', next);
+    if (mounted) setState(() => _recent = next);
+  }
 
   @override
   void dispose() {
@@ -66,6 +84,7 @@ class _SearchScreenState extends State<SearchScreen> {
           child: TextField(
             controller: _searchController,
             onChanged: (_) => setState(() {}),
+            onSubmitted: (v) => _remember(v.trim()),
             style: const TextStyle(color: Colors.white),
             decoration: const InputDecoration(
               prefixIcon: Icon(Icons.search, color: SpaceColors.cosmicCyan, size: 20),
@@ -108,6 +127,21 @@ class _SearchScreenState extends State<SearchScreen> {
             },
           ),
         ),
+        if (q.isEmpty && _recent.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+            child: Wrap(spacing: 8, children: [
+              const Padding(padding: EdgeInsets.only(top: 8), child: Text('Recientes', style: TextStyle(color: Colors.white54, fontSize: 12))),
+              ..._recent.map((s) => ActionChip(
+                    label: Text(s, style: const TextStyle(color: Colors.white)),
+                    backgroundColor: SpaceColors.darkMatter,
+                    onPressed: () {
+                      _searchController.text = s;
+                      setState(() {});
+                    },
+                  )),
+            ]),
+          ),
         if (people.isNotEmpty)
           SizedBox(
             height: 88,

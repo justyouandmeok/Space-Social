@@ -16,6 +16,7 @@ class MediaView extends StatefulWidget {
 class _MediaViewState extends State<MediaView> {
   VideoPlayerController? _c;
   bool _ready = false;
+  bool _muted = false;
 
   bool get _isVideo {
     if (widget.video) return true;
@@ -94,6 +95,18 @@ class _MediaViewState extends State<MediaView> {
         ),
         if (!_c!.value.isPlaying)
           const Center(child: Icon(Icons.play_circle_outline, color: Colors.white, size: 64)),
+        Positioned(
+          right: 8,
+          bottom: 8,
+          child: GestureDetector(
+            onTap: () {
+              _muted = !_muted;
+              _c!.setVolume(_muted ? 0 : 1);
+              setState(() {});
+            },
+            child: Icon(_muted ? Icons.volume_off : Icons.volume_up, color: Colors.white, size: 20),
+          ),
+        ),
       ]),
     );
   }
