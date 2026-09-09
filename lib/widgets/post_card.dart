@@ -223,7 +223,7 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
     final people = widget.state.users.where((u) => u.id != widget.state.me.id).toList();
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF1C1C1C),
+      backgroundColor: SpaceColors.surface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (_) => SafeArea(
         child: ListView(
@@ -251,7 +251,7 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
   void _share(BuildContext context, Post post) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF1C1C1C),
+      backgroundColor: SpaceColors.surface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (_) => Padding(
         padding: const EdgeInsets.fromLTRB(16, 10, 16, 28),
@@ -297,7 +297,7 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
     final mine = user.id == widget.state.me.id;
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF1C1C1C),
+      backgroundColor: SpaceColors.surface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (_) => Padding(
         padding: const EdgeInsets.fromLTRB(8, 10, 8, 24),

@@ -130,8 +130,8 @@ class _FollowersFollowingScreenState extends State<FollowersFollowingScreen> {
                   setState(() {});
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: following ? SpaceColors.darkMatter : SpaceColors.cosmicCyan,
-                  foregroundColor: following ? Colors.white : Colors.black,
+                  backgroundColor: following ? SpaceColors.surface : SpaceColors.cosmicCyan,
+                  foregroundColor: following ? SpaceColors.text : Colors.black,
                   minimumSize: const Size(90, 32),
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

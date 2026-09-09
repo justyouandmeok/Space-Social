@@ -187,7 +187,7 @@ class ProfileScreen extends StatelessWidget {
                         onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CreatorInsightsScreen(state: state))),
                         child: Container(
                           padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(color: SpaceColors.darkMatter, borderRadius: BorderRadius.circular(10), border: Border.all(color: SpaceColors.hairline)),
+                          decoration: BoxDecoration(color: SpaceColors.surface, borderRadius: BorderRadius.circular(10), border: Border.all(color: SpaceColors.hairline)),
                           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                             Text('Panel para profesionales', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
                             const SizedBox(height: 4),

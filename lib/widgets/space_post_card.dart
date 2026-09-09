@@ -57,7 +57,7 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
     final mine = user.id == widget.state.me.id;
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF1C1C1C),
+      backgroundColor: SpaceColors.surface,
       builder: (ctx) => SafeArea(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           if (mine) ...[
@@ -93,7 +93,7 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
               final prefs = await SharedPreferences.getInstance();
               final extra = prefs.getStringList('ss_collections') ?? [];
               if (!context.mounted) return;
-              showModalBottomSheet(context: context, backgroundColor: const Color(0xFF1C1C1C), builder: (c2) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
+              showModalBottomSheet(context: context, backgroundColor: SpaceColors.surface, builder: (c2) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
                 ListTile(title: Text('Elegí colección', style: TextStyle(color: SpaceColors.text))),
                 ...extra.map((raw) {
                   final name = raw.split('|').first;

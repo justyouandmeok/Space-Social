@@ -39,7 +39,7 @@ class LinksBottomSheet extends StatelessWidget {
     final links = _links;
     return Container(
       decoration: BoxDecoration(
-        color: SpaceColors.darkMatter,
+        color: SpaceColors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
@@ -63,7 +63,7 @@ class LinksBottomSheet extends StatelessWidget {
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: SpaceColors.deepSpace,
+                        color: SpaceColors.bg,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: SpaceColors.hairline),
                       ),

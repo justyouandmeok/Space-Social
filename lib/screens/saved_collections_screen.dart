@@ -133,7 +133,7 @@ class _SavedCollectionsScreenState extends State<SavedCollectionsScreen> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: DecoratedBox(
-                    decoration: BoxDecoration(color: SpaceColors.darkMatter, border: Border.all(color: SpaceColors.hairline)),
+                    decoration: BoxDecoration(color: SpaceColors.surface, border: Border.all(color: SpaceColors.hairline)),
                     child: path.isEmpty
                         ? Center(child: Icon(Icons.bookmark_border, color: SpaceColors.textMuted, size: 36))
                         : MediaView(path),

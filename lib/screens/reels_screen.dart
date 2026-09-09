@@ -96,7 +96,7 @@ class ReelsScreen extends StatelessWidget {
                   _action(Icons.send_outlined, '', onTap: () => ShareSheet.show(context, state, post: post)),
                   _action(post.savedFor(state.me.id) ? Icons.bookmark : Icons.bookmark_border, '', onTap: () => state.toggleSave(post.id)),
                   _action(Icons.more_vert, '', onTap: () {
-                    showModalBottomSheet(context: context, backgroundColor: const Color(0xFF121212), builder: (ctx) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    showModalBottomSheet(context: context, backgroundColor: SpaceColors.surface, builder: (ctx) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
                       ListTile(title: const Text('Compartir', style: TextStyle(color: Colors.white)), onTap: () { Navigator.pop(ctx); ShareSheet.show(context, state, post: post); }),
                       if (mine) ListTile(title: const Text('Archivar', style: TextStyle(color: Colors.white)), onTap: () { Navigator.pop(ctx); state.toggleArchive(post.id); }),
                       ListTile(title: const Text('Cerrar', style: TextStyle(color: Colors.white54)), onTap: () => Navigator.pop(ctx)),

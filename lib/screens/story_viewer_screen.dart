@@ -170,7 +170,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
                         final ids = story.viewedBy;
                         showModalBottomSheet(
                           context: context,
-                          backgroundColor: const Color(0xFF1C1C1C),
+                          backgroundColor: SpaceColors.surface,
                           builder: (_) => SafeArea(
                             child: ListView(
                               shrinkWrap: true,

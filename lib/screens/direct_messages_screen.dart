@@ -251,7 +251,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                   hintText: 'Escribe un mensaje...',
                   hintStyle: TextStyle(color: SpaceColors.textMuted),
                   filled: true,
-                  fillColor: SpaceColors.deepSpace,
+                  fillColor: SpaceColors.bg,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: BorderSide.none),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                 ),

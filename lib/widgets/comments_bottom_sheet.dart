@@ -141,7 +141,7 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
               Container(
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
                 decoration: BoxDecoration(
-                  color: SpaceColors.deepSpace,
+                  color: SpaceColors.bg,
                   border: Border(top: BorderSide(color: SpaceColors.hairline)),
                 ),
                 child: Row(children: [
