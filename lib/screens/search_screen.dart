@@ -77,7 +77,7 @@ class _SearchScreenState extends State<SearchScreen> {
         title: Container(
           height: 40,
           decoration: BoxDecoration(
-            color: SpaceColors.darkMatter,
+            color: SpaceColors.surface,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: SpaceColors.hairline),
           ),
@@ -112,14 +112,14 @@ class _SearchScreenState extends State<SearchScreen> {
                   label: Text(
                     _categories[index],
                     style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.white70,
+                      color: SpaceColors.text,
                       fontSize: 12,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
                   backgroundColor: SpaceColors.surface,
                   selectedColor: SpaceColors.nebulaPurple,
-                  side: BorderSide(color: isSelected ? SpaceColors.cosmicCyan : Colors.white12),
+                  side: BorderSide(color: isSelected ? SpaceColors.text : SpaceColors.hairline),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   onSelected: (_) => setState(() => _selectedCategory = index),
                 ),
@@ -169,7 +169,7 @@ class _SearchScreenState extends State<SearchScreen> {
               crossAxisCount: 3,
               crossAxisSpacing: 2,
               mainAxisSpacing: 2,
-              childAspectRatio: 3 / 4,
+              childAspectRatio: 1,
             ),
             itemBuilder: (context, index) {
               final p = posts[index];

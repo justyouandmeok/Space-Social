@@ -164,7 +164,7 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
             onTap: () => widget.onOpenProfile(user.id),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
-                Text(user.username, style: TextStyle(color: SpaceColors.starlight, fontWeight: FontWeight.bold)),
+                Text(user.username, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold)),
                 if (user.isVerified) ...[const SizedBox(width: 4), const VerifiedBadge(size: 11)],
               ]),
               if (live.location.isNotEmpty)
@@ -196,24 +196,24 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
               if (_showHeartAnimation)
                 ScaleTransition(
                   scale: _heartScale,
-                  child: Icon(Icons.favorite, size: 110, color: SpaceColors.cosmicCyan),
+                  child: const Icon(Icons.favorite, size: 110, color: Color(0xFFFF3040)),
                 ),
             ],
           ),
         ),
         Row(children: [
           IconButton(
-            icon: Icon(liked ? Icons.favorite : Icons.favorite_border, color: liked ? Colors.redAccent : SpaceColors.starlight),
+            icon: Icon(liked ? Icons.favorite : Icons.favorite_border, color: liked ? const Color(0xFFFF3040) : SpaceColors.text),
             onPressed: () => widget.state.toggleLike(live.id),
           ),
           IconButton(
-            icon: Icon(Icons.chat_bubble_outline, color: SpaceColors.starlight),
+            icon: Icon(Icons.chat_bubble_outline, color: SpaceColors.text),
             onPressed: () => CommentsBottomSheet.show(context, widget.state, live.id),
           ),
-          IconButton(icon: Icon(Icons.send_outlined, color: SpaceColors.starlight), onPressed: () => ShareSheet.show(context, widget.state, post: live)),
+          IconButton(icon: Icon(Icons.send_outlined, color: SpaceColors.text), onPressed: () => ShareSheet.show(context, widget.state, post: live)),
           const Spacer(),
           IconButton(
-            icon: Icon(saved ? Icons.bookmark : Icons.bookmark_border, color: SpaceColors.starlight),
+            icon: Icon(saved ? Icons.bookmark : Icons.bookmark_border, color: SpaceColors.text),
             onPressed: () => widget.state.toggleSave(live.id),
           ),
         ]),
@@ -226,7 +226,7 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
                 onTap: () {
                   showModalBottomSheet(
                     context: context,
-                    backgroundColor: const Color(0xFF1C1C1C),
+                    backgroundColor: SpaceColors.surface,
                     builder: (_) => SafeArea(
                       child: ListView(
                         shrinkWrap: true,
