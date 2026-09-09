@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models.dart';
 import '../state.dart';
-import '../widgets/post_card.dart';
+import '../widgets/space_post_card.dart';
 import '../widgets/story_bubble.dart';
 import 'post_screen.dart';
 
@@ -63,12 +63,10 @@ class FeedScreen extends StatelessWidget {
             else
               SliverList(
                 delegate: SliverChildBuilderDelegate(
-                  (context, index) => PostCard(
+                  (context, index) => SpacePostCard(
                     post: items[index],
                     state: state,
                     onOpenProfile: onOpenProfile,
-                    onOpenComments: (_) {},
-                    onOpenPost: (_) {},
                   ),
                   childCount: items.length,
                 ),
