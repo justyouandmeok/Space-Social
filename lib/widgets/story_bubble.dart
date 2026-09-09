@@ -107,29 +107,3 @@ class StoryBubble extends StatelessWidget {
   }
 }
 
-class _StoryViewer extends StatelessWidget {
-  const _StoryViewer({required this.username, required this.avatar, required this.image});
-  final String username;
-  final String avatar;
-  final String image;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: GestureDetector(
-        onTap: () => Navigator.pop(context),
-        child: Stack(fit: StackFit.expand, children: [
-          Image.network(image, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const ColoredBox(color: Colors.black)),
-          SafeArea(
-            child: ListTile(
-              leading: Avatar(avatar, size: 32),
-              title: Text(username, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-              trailing: const Icon(Icons.close, color: Colors.white),
-            ),
-          ),
-        ]),
-      ),
-    );
-  }
-}
