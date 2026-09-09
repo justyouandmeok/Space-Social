@@ -84,9 +84,18 @@ class _SavedCollectionsScreenState extends State<SavedCollectionsScreen> {
   @override
   Widget build(BuildContext context) {
     final cover = saved.isEmpty ? '' : saved.first.imagePath;
+    List<Post> postsOf(String raw) {
+      if (!raw.contains('|')) return const [];
+      final ids = raw.split('|')[1].split(',').where((e) => e.isNotEmpty).toSet();
+      return widget.state.posts.where((p) => ids.contains(p.id)).toList();
+    }
     final folders = [
-      ('Todos los guardados', saved.length, cover),
-      ...extra.map((n) => (n, 0, '')),
+      ('Todos los guardados', saved.length, cover, saved),
+      ...extra.map((n) {
+        final items = postsOf(n);
+        final name = n.split('|').first;
+        return (name, items.length, items.isEmpty ? '' : items.first.imagePath, items);
+      }),
     ];
 
     return Scaffold(
@@ -108,16 +117,16 @@ class _SavedCollectionsScreenState extends State<SavedCollectionsScreen> {
         ),
         itemCount: folders.length,
         itemBuilder: (context, index) {
-          final (title, count, path) = folders[index];
+          final (title, count, path, items) = folders[index];
           return GestureDetector(
             onTap: () {
-              if (index == 0) {
-                _openSaved();
-              } else {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (_) => PostDetailFeedScreen(state: widget.state, posts: saved, initialIndex: 0, onOpenProfile: widget.onOpenProfile),
-                ));
+              if (items.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Colección vacía')));
+                return;
               }
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => PostDetailFeedScreen(state: widget.state, posts: items, initialIndex: 0, onOpenProfile: widget.onOpenProfile),
+              ));
             },
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Expanded(

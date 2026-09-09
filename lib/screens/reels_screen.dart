@@ -88,6 +88,7 @@ class ReelsScreen extends StatelessWidget {
                   ),
                   _action(Icons.chat_bubble_outline, compact(post.comments.length), onTap: () => CommentsBottomSheet.show(context, state, post.id)),
                   _action(Icons.send_outlined, '', onTap: () => ShareSheet.show(context, state, post: post)),
+                  _action(post.savedFor(state.me.id) ? Icons.bookmark : Icons.bookmark_border, '', onTap: () => state.toggleSave(post.id)),
                   _action(Icons.more_vert, '', onTap: () {
                     showModalBottomSheet(context: context, backgroundColor: const Color(0xFF121212), builder: (ctx) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
                       ListTile(title: const Text('Compartir', style: TextStyle(color: Colors.white)), onTap: () { Navigator.pop(ctx); ShareSheet.show(context, state, post: post); }),

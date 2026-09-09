@@ -57,9 +57,11 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: widget.state,
+      builder: (context, _) {
     final p = post;
     final comments = p?.comments ?? const <Comment>[];
-
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: DraggableScrollableSheet(
@@ -165,6 +167,8 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
           );
         },
       ),
+    );
+      },
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models.dart';
 import '../space_theme.dart';
 import '../state.dart';
@@ -83,6 +84,32 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
             onTap: () {
               Clipboard.setData(ClipboardData(text: post.caption));
               Navigator.pop(ctx);
+            },
+          ),
+          ListTile(
+            title: const Text('Guardar en colección', style: TextStyle(color: Colors.white)),
+            onTap: () async {
+              Navigator.pop(ctx);
+              final prefs = await SharedPreferences.getInstance();
+              final extra = prefs.getStringList('ss_collections') ?? [];
+              if (!context.mounted) return;
+              showModalBottomSheet(context: context, backgroundColor: const Color(0xFF1C1C1C), builder: (c2) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
+                const ListTile(title: Text('Elegí colección', style: TextStyle(color: Colors.white))),
+                ...extra.map((raw) {
+                  final name = raw.split('|').first;
+                  return ListTile(
+                    title: Text(name, style: const TextStyle(color: Colors.white)),
+                    onTap: () async {
+                      final parts = raw.split('|');
+                      final ids = parts.length > 1 ? parts[1].split(',').where((e) => e.isNotEmpty).toList() : <String>[];
+                      if (!ids.contains(post.id)) ids.add(post.id);
+                      extra[extra.indexOf(raw)] = '${parts[0]}|${ids.join(',')}';
+                      await prefs.setStringList('ss_collections', extra);
+                      if (c2.mounted) Navigator.pop(c2);
+                    },
+                  );
+                }),
+              ])));
             },
           ),
           ListTile(
