@@ -111,15 +111,29 @@ class AppState extends ChangeNotifier {
 
   List<Post> get feed {
     if (!isLoggedIn) return List<Post>.from(posts)..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    final ids = <String>{currentUserId!, ...followingOf(currentUserId!)};
+    final meId = currentUserId!;
+    final followIds = <String>{meId, ...followingOf(meId)};
     final now = DateTime.now();
+    final engaged = <String>{};
+    for (final p in posts) {
+      if (p.likedBy(meId) || p.savedFor(meId) || p.comments.any((c) => c.userId == meId)) {
+        engaged.add(p.userId);
+      }
+    }
     double score(Post p) {
       final hours = now.difference(p.createdAt).inMinutes / 60.0;
-      var s = 40.0 / (1 + hours); // recency
-      if (ids.contains(p.userId)) s += 8;
+      var s = 50.0 / (1 + hours * 0.35);
+      if (p.userId == meId) s += 4;
+      if (followIds.contains(p.userId)) s += 12;
+      if (favorites.contains(p.userId)) s += 10;
+      if (closeFriends.contains(p.userId)) s += 6;
+      if (engaged.contains(p.userId)) s += 7;
       final fol = followersOf(p.userId).length;
-      if (fol < 15) s += 6; // small creators surface
-      s += (p.likes.length * 0.15).clamp(0, 4);
+      if (fol < 20) s += 5;
+      s += (p.likes.length * 0.2).clamp(0, 6);
+      s += (p.comments.length * 0.45).clamp(0, 5);
+      s += (p.views * 0.02).clamp(0, 3);
+      if (p.isVideo) s += 1.5;
       return s;
     }
     var list = List<Post>.from(posts).where((p) {
@@ -129,9 +143,14 @@ class AppState extends ChangeNotifier {
       return canSee(p.userId);
     }).toList();
     if (feedMode == 1 || followingOnly) {
-      list = list.where((p) => ids.contains(p.userId)).toList();
-    } else if (feedMode == 2) {
-      list = list.where((p) => favorites.contains(p.userId) || p.userId == me.id).toList();
+      list = list.where((p) => followIds.contains(p.userId)).toList()
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return list;
+    }
+    if (feedMode == 2) {
+      list = list.where((p) => favorites.contains(p.userId) || p.userId == meId).toList()
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return list;
     }
     list.sort((a, b) => score(b).compareTo(score(a)));
     return list;
