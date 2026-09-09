@@ -56,6 +56,7 @@ class AppState extends ChangeNotifier {
   bool followingOnly = false;
   int feedMode = 0; // 0 para ti, 1 siguiendo, 2 favoritos
   Set<String> pendingFollows = {};
+  Set<String> incomingFollows = {};
   final notes = <Map<String, dynamic>>[];
   String query = '';
   String? lastError;
@@ -373,6 +374,7 @@ class AppState extends ChangeNotifier {
     final followSnap = await _db.collection('follows').get();
     following = {};
     pendingFollows = {};
+    incomingFollows = {};
     for (final d in followSnap.docs) {
       final data = d.data();
       final from = data['from'] as String? ?? '';
@@ -380,6 +382,7 @@ class AppState extends ChangeNotifier {
       if (from.isEmpty || to.isEmpty) continue;
       if (data['status'] == 'PENDING') {
         if (from == currentUserId) pendingFollows.add(to);
+        if (to == currentUserId) incomingFollows.add(from);
         continue;
       }
       following.putIfAbsent(from, () => []);
@@ -1018,6 +1021,21 @@ class AppState extends ChangeNotifier {
         'targetId': userId,
       });
     }
+    await _refresh();
+    notifyListeners();
+  }
+
+  Future<void> acceptFollow(String fromId) async {
+    if (!isLoggedIn) return;
+    final id = '${fromId}_$currentUserId';
+    await _db.collection('follows').doc(id).set({'from': fromId, 'to': me.id, 'status': 'ACCEPTED'}, SetOptions(merge: true));
+    await _refresh();
+    notifyListeners();
+  }
+
+  Future<void> rejectFollow(String fromId) async {
+    if (!isLoggedIn) return;
+    await _db.collection('follows').doc('${fromId}_$currentUserId').delete();
     await _refresh();
     notifyListeners();
   }

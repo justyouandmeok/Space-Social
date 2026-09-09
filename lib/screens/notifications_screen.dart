@@ -91,7 +91,12 @@ class NotificationsScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        if (follow && user != null)
+        if (follow && user != null && state.incomingFollows.contains(user.id))
+          Row(children: [
+            TextButton(onPressed: () => state.acceptFollow(user.id), child: const Text('Confirmar')),
+            TextButton(onPressed: () => state.rejectFollow(user.id), child: const Text('Eliminar', style: TextStyle(color: Colors.white54))),
+          ])
+        else if (follow && user != null)
           ElevatedButton(
             onPressed: () => state.toggleFollow(user.id),
             style: ElevatedButton.styleFrom(

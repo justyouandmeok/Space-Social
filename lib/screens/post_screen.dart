@@ -20,6 +20,7 @@ class _PostScreenState extends State<PostScreen> {
   File? file;
   bool video = false;
   final cap = TextEditingController();
+  final loc = TextEditingController();
   bool grokBusy = false;
   List<AssetEntity> assets = [];
 
@@ -33,6 +34,7 @@ class _PostScreenState extends State<PostScreen> {
   @override
   void dispose() {
     cap.dispose();
+    loc.dispose();
     super.dispose();
   }
 
@@ -87,7 +89,7 @@ class _PostScreenState extends State<PostScreen> {
     if (m == 1) {
       await widget.state.publishStory(f);
     } else {
-      await widget.state.publishPost(image: f, caption: c, isReel: m == 2, isVideo: v);
+      await widget.state.publishPost(image: f, caption: c, location: loc.text, isReel: m == 2, isVideo: v);
     }
   }
 
@@ -118,6 +120,11 @@ class _PostScreenState extends State<PostScreen> {
                   controller: cap,
                   style: const TextStyle(color: Colors.white),
                   decoration: const InputDecoration(hintText: 'Escribí un pie de foto...', hintStyle: TextStyle(color: Colors.white54), border: InputBorder.none),
+                ),
+                TextField(
+                  controller: loc,
+                  style: const TextStyle(color: Colors.white70, fontSize: 13),
+                  decoration: const InputDecoration(hintText: 'Agregar ubicación', hintStyle: TextStyle(color: Colors.white38), prefixIcon: Icon(Icons.place_outlined, color: Colors.white38, size: 18), border: InputBorder.none),
                 ),
                 Align(
                   alignment: Alignment.centerLeft,

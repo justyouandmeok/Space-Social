@@ -135,9 +135,13 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
           ),
           title: GestureDetector(
             onTap: () => widget.onOpenProfile(user.id),
-            child: Row(children: [
-              Text(user.username, style: const TextStyle(color: SpaceColors.starlight, fontWeight: FontWeight.bold)),
-              if (user.isVerified) ...[const SizedBox(width: 4), const VerifiedBadge(size: 11)],
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                Text(user.username, style: const TextStyle(color: SpaceColors.starlight, fontWeight: FontWeight.bold)),
+                if (user.isVerified) ...[const SizedBox(width: 4), const VerifiedBadge(size: 11)],
+              ]),
+              if (live.location.isNotEmpty)
+                Text(live.location, style: const TextStyle(color: Colors.white54, fontSize: 11)),
             ]),
           ),
           trailing: IconButton(

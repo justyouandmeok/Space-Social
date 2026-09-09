@@ -15,6 +15,7 @@ import '../widgets/profile_drawer_modal.dart';
 import '../widgets/links_bottom_sheet.dart';
 import '../widgets/verified_badge.dart';
 import 'create_highlight_screen.dart';
+import 'direct_messages_screen.dart';
 import 'followers_following_screen.dart';
 import 'creator_insights_screen.dart';
 import 'post_detail_feed_screen.dart';
@@ -153,6 +154,30 @@ class ProfileScreen extends StatelessWidget {
                             ),
                             child: Text(state.isFollowing(user.id) ? 'Siguiendo' : state.isPendingFollow(user.id) ? 'Solicitado' : 'Seguir'),
                           ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                              builder: (_) => ChatConversationScreen(state: state, user: user),
+                            )),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey[900],
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                            child: const Text('Mensaje'),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.person_add_alt, color: Colors.white),
+                          onPressed: () {
+                            showModalBottomSheet(context: context, backgroundColor: const Color(0xFF1C1C1C), builder: (ctx) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
+                              ListTile(title: Text(state.favorites.contains(user.id) ? 'Sacar de favoritos' : 'Agregar a favoritos', style: const TextStyle(color: Colors.white)), onTap: () { Navigator.pop(ctx); state.toggleFavorite(user.id); }),
+                              ListTile(title: Text(state.closeFriends.contains(user.id) ? 'Sacar de mejores amigos' : 'Mejores amigos', style: const TextStyle(color: Colors.white)), onTap: () { Navigator.pop(ctx); state.toggleCloseFriend(user.id); }),
+                              ListTile(title: Text(state.blocked.contains(user.id) ? 'Desbloquear' : 'Bloquear', style: const TextStyle(color: Colors.redAccent)), onTap: () { Navigator.pop(ctx); state.toggleBlock(user.id); }),
+                            ])));
+                          },
                         ),
                       ]),
                     if (isMe) ...[

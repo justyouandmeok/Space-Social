@@ -180,7 +180,9 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
                                   final u = widget.state.tryUser(id);
                                   return ListTile(
                                     title: Text(u?.username ?? id, style: const TextStyle(color: Colors.white)),
-                                    onTap: () {},
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                    },
                                   );
                                 }),
                               ],
