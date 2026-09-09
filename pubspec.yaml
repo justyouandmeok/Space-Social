@@ -22,6 +22,7 @@ dependencies:
   cached_network_image: ^3.4.1
   video_player: ^2.9.5
   photo_manager: ^3.6.4
+  http: ^1.2.2
 
 dev_dependencies:
   flutter_test:

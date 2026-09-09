@@ -15,4 +15,7 @@ class SpaceConfig {
   /// OAuth Web client from google-services.json (client_type 3).
   static const googleWebClientId =
       '75598117075-uestulli76edrubopd5an127pjtf74e7.apps.googleusercontent.com';
+
+  /// Pegá acá una API key de xAI si querés captions con Grok.
+  static const xaiApiKey = '';
 }

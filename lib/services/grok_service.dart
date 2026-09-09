@@ -1,22 +1,68 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 
-/// Cliente HTTP para la API de xAI Grok.
-/// No incluye clave. Pasá la API key solo en runtime si la necesitás.
 class GrokService {
-  GrokService({this.apiKey, this.baseUrl = 'https://api.x.ai/v1'});
+  static const String _baseUrl = 'https://api.x.ai/v1/chat/completions';
+  final String apiKey;
 
-  final String? apiKey;
-  final String baseUrl;
+  GrokService({required this.apiKey});
 
-  bool get configured => apiKey != null && apiKey!.isNotEmpty;
+  bool get ready => apiKey.isNotEmpty;
 
-  Future<String> chat(String prompt) async {
-    if (!configured) {
-      debugPrint('GrokService: falta API key');
-      return '';
+  Future<String> generateCaption(String promptTopic) async {
+    final response = await http.post(
+      Uri.parse(_baseUrl),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $apiKey',
+      },
+      body: jsonEncode({
+        'model': 'grok-3',
+        'messages': [
+          {
+            'role': 'system',
+            'content':
+                'Eres un generador de subtítulos creativos para Instagram con hashtags relevantes y tono actual. Respondé solo el caption, en español.',
+          },
+          {
+            'role': 'user',
+            'content': 'Escribe un caption para una foto sobre: $promptTopic',
+          }
+        ],
+        'temperature': 0.7,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(utf8.decode(response.bodyBytes));
+      return (data['choices'][0]['message']['content'] as String).trim();
     }
-    // Placeholder de cliente. No se llama solo.
-    return jsonEncode({'prompt': prompt});
+    throw Exception('Error al conectar con Grok: ${response.statusCode}');
+  }
+
+  Future<bool> isAppropriate(String text) async {
+    if (!ready || text.trim().isEmpty) return true;
+    final response = await http.post(
+      Uri.parse(_baseUrl),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $apiKey',
+      },
+      body: jsonEncode({
+        'model': 'grok-3',
+        'messages': [
+          {
+            'role': 'system',
+            'content': 'Respondé solo SI o NO. SI = contenido apropiado para una red social pública. NO = odio, violencia explícita o abuso.',
+          },
+          {'role': 'user', 'content': text},
+        ],
+        'temperature': 0,
+      }),
+    );
+    if (response.statusCode != 200) return true;
+    final data = jsonDecode(utf8.decode(response.bodyBytes));
+    final out = (data['choices'][0]['message']['content'] as String).toUpperCase();
+    return out.contains('SI') || out.contains('SÍ') || out.contains('YES');
   }
 }

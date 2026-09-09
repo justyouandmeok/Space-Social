@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
 import '../state.dart';
+import '../config.dart';
+import '../services/grok_service.dart';
 import '../theme.dart';
 
 class PostScreen extends StatefulWidget {
@@ -18,6 +20,7 @@ class _PostScreenState extends State<PostScreen> {
   File? file;
   bool video = false;
   final cap = TextEditingController();
+  bool grokBusy = false;
   List<AssetEntity> assets = [];
 
   @override
@@ -54,6 +57,27 @@ class _PostScreenState extends State<PostScreen> {
     setState(() { file = f; video = a.type == AssetType.video; });
   }
 
+
+  Future<void> _grokCaption() async {
+    final topic = cap.text.trim().isEmpty ? 'una foto en Space Social' : cap.text.trim();
+    if (SpaceConfig.xaiApiKey.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Falta la API key de xAI en config.dart')));
+      }
+      return;
+    }
+    setState(() => grokBusy = true);
+    try {
+      final text = await GrokService(apiKey: SpaceConfig.xaiApiKey).generateCaption(topic);
+      if (mounted) cap.text = text;
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Grok: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => grokBusy = false);
+    }
+  }
   Future<void> _share() async {
     if (file == null) return;
     final f = file!;
@@ -90,11 +114,23 @@ class _PostScreenState extends State<PostScreen> {
           if (mode == 0 && file != null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: TextField(
-                controller: cap,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(hintText: 'Escribí un pie de foto...', hintStyle: TextStyle(color: Colors.white54), border: InputBorder.none),
-              ),
+              child: Column(children: [
+                TextField(
+                  controller: cap,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(hintText: 'Escribí un pie de foto...', hintStyle: TextStyle(color: Colors.white54), border: InputBorder.none),
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: grokBusy ? null : _grokCaption,
+                    icon: grokBusy
+                        ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : const Icon(Icons.auto_awesome, color: LumaColors.blue, size: 18),
+                    label: const Text('Generar con Grok', style: TextStyle(color: LumaColors.blue)),
+                  ),
+                ),
+              ]),
             ),
           Expanded(
             flex: 2,
