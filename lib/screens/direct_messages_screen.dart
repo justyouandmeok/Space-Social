@@ -163,6 +163,12 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   bool _sending = false;
 
   @override
+  void initState() {
+    super.initState();
+    widget.state.markThreadRead(widget.user.id);
+  }
+
+  @override
   void dispose() {
     _msgController.dispose();
     super.dispose();
@@ -205,7 +211,11 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                     final isMe = msg.fromId == widget.state.me.id;
                     return Align(
                       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-                      child: Container(
+                      child: GestureDetector(
+                        onLongPress: isMe ? () async {
+                          await widget.state.deleteMessage(msg.id);
+                        } : null,
+                        child: Container(
                         margin: const EdgeInsets.symmetric(vertical: 4),
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                         decoration: BoxDecoration(
@@ -217,6 +227,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                           : msg.text.startsWith('POST::')
                               ? _sharedPost(widget.state, msg.text.substring(6))
                               : Text(msg.text, style: const TextStyle(color: Colors.white, fontSize: 14)),
+                      ),
                       ),
                     );
                   },

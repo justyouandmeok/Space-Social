@@ -1079,6 +1079,34 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> markThreadRead(String otherId) async {
+    if (!isLoggedIn) return;
+    final unread = messages.where((m) => m.fromId == otherId && m.toId == me.id && !m.read).toList();
+    for (final m in unread) {
+      try {
+        await _db.collection('messages').doc(m.id).update({'read': true});
+      } catch (_) {}
+    }
+    if (unread.isNotEmpty) {
+      messages = [
+        for (final m in messages)
+          if (unread.any((u) => u.id == m.id))
+            ChatMessage(id: m.id, fromId: m.fromId, toId: m.toId, text: m.text, createdAt: m.createdAt, read: true)
+          else
+            m
+      ];
+      notifyListeners();
+    }
+  }
+
+  Future<void> deleteMessage(String id) async {
+    try {
+      await _db.collection('messages').doc(id).delete();
+    } catch (_) {}
+    messages = messages.where((m) => m.id != id).toList();
+    notifyListeners();
+  }
+
   Future<void> sendMessage(String toId, String text) async {
     if (!isLoggedIn || text.trim().isEmpty || toId == me.id) return;
     await _db.collection('messages').add({

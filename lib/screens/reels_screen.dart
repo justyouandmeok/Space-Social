@@ -48,7 +48,9 @@ class ReelsScreen extends StatelessWidget {
           final user = state.tryUser(post.userId);
           final mine = user?.id == state.me.id;
           final liked = post.likedBy(state.me.id);
-          return Stack(
+          return GestureDetector(
+            onDoubleTap: () => state.toggleLike(post.id),
+            child: Stack(
             fit: StackFit.expand,
             children: [
               MediaView(post.imagePath, video: post.isVideo, autoplay: playing, active: playing),
@@ -152,6 +154,7 @@ class ReelsScreen extends StatelessWidget {
                 ),
               ),
             ],
+          ),
           );
         },
       ),

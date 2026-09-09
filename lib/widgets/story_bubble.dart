@@ -31,6 +31,7 @@ class StoryRow extends StatelessWidget {
             mine: mine,
             hasStory: has,
             unseen: unseen,
+            closeFriend: state.closeFriends.contains(u.id),
             onTap: () {
               if (mine && !has) {
                 onAddStory();
@@ -59,11 +60,13 @@ class StoryBubble extends StatelessWidget {
     required this.hasStory,
     required this.unseen,
     required this.onTap,
+    this.closeFriend = false,
   });
   final UserAccount user;
   final bool mine;
   final bool hasStory;
   final bool unseen;
+  final bool closeFriend;
   final VoidCallback onTap;
 
   @override
@@ -77,7 +80,11 @@ class StoryBubble extends StatelessWidget {
             padding: const EdgeInsets.all(2.4),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: unseen ? const LinearGradient(colors: [Color(0xFFF58529), Color(0xFFDD2A7B), Color(0xFF8134AF)]) : null,
+              gradient: unseen
+                  ? LinearGradient(colors: closeFriend
+                      ? const [Color(0xFF00C853), Color(0xFF69F0AE)]
+                      : const [Color(0xFFF58529), Color(0xFFDD2A7B), Color(0xFF8134AF)])
+                  : null,
               border: Border.all(color: unseen ? Colors.transparent : const Color(0xFFC7C7C7), width: 1.6),
             ),
             child: Container(

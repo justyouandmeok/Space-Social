@@ -214,13 +214,37 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                (widget.state.hideLikes && live.userId == widget.state.me.id)
-                    ? 'Me gusta'
-                    : live.likes.isEmpty
-                        ? 'Sé el primero en dar Me gusta'
-                        : '${compact(live.likes.length)} me gusta',
-                style: const TextStyle(color: SpaceColors.starlight, fontWeight: FontWeight.bold),
+              GestureDetector(
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    backgroundColor: const Color(0xFF1C1C1C),
+                    builder: (_) => SafeArea(
+                      child: ListView(
+                        shrinkWrap: true,
+                        children: [
+                          const ListTile(title: Text('Me gusta', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                          ...live.likes.map((id) {
+                            final u = widget.state.tryUser(id);
+                            return ListTile(
+                              leading: Avatar(u?.avatarPath ?? '', size: 36),
+                              title: Text(u?.username ?? id, style: const TextStyle(color: Colors.white)),
+                              onTap: () => widget.onOpenProfile(id),
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+                child: Text(
+                  (widget.state.hideLikes && live.userId == widget.state.me.id)
+                      ? 'Me gusta'
+                      : live.likes.isEmpty
+                          ? 'Sé el primero en dar Me gusta'
+                          : '${compact(live.likes.length)} me gusta',
+                  style: const TextStyle(color: SpaceColors.starlight, fontWeight: FontWeight.bold),
+                ),
               ),
               if (live.caption.isNotEmpty) ...[
                 const SizedBox(height: 2),
