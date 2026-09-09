@@ -151,7 +151,7 @@ class ProfileScreen extends StatelessWidget {
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                             ),
-                            child: Text(state.isFollowing(user.id) ? 'Siguiendo' : 'Seguir'),
+                            child: Text(state.isFollowing(user.id) ? 'Siguiendo' : state.isPendingFollow(user.id) ? 'Solicitado' : 'Seguir'),
                           ),
                         ),
                       ]),
@@ -612,6 +612,9 @@ class SettingsScreen extends StatelessWidget {
           ),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => VerificationScreen(state: state))),
         ),
+        SwitchListTile(title: const Text('Cuenta privada'), value: state.me.privateAccount, onChanged: (_) => state.togglePrivate()),
+        SwitchListTile(title: const Text('Ocultar recuento de Me gusta'), value: state.hideLikes, onChanged: (_) => state.toggleHideLikes()),
+        SwitchListTile(title: const Text('Notificaciones'), value: state.notificationsOn, onChanged: (_) => state.toggleNotificationsPref()),
         SwitchListTile(title: const Text('Tema oscuro'), value: state.darkMode, onChanged: (_) => state.toggleDarkMode()),
         ListTile(
           title: const Text('Cerrar sesión', style: TextStyle(color: Colors.red)),

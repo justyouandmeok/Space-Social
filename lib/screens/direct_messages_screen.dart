@@ -24,7 +24,12 @@ class DirectMessagesScreen extends StatelessWidget {
       final tb = lb.isEmpty ? DateTime(2000) : lb.last.createdAt;
       return tb.compareTo(ta);
     });
-    final notes = state.users.where((u) => u.id != me).take(12).toList();
+    String noteOf(String uid) {
+      final mineNotes = state.notes.where((n) => n['userId'] == uid).toList();
+      if (mineNotes.isEmpty) return '';
+      return '${mineNotes.first['content'] ?? ''}';
+    }
+    final notes = [state.me, ...state.users.where((u) => u.id != me)].take(16).toList();
 
     return Scaffold(
       backgroundColor: SpaceColors.deepSpace,
@@ -66,9 +71,33 @@ class DirectMessagesScreen extends StatelessWidget {
                       child: GestureDetector(
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ChatConversationScreen(state: state, user: u))),
                         child: Column(children: [
-                          Avatar(u.avatarPath, size: 56),
+                          GestureDetector(
+                            onLongPress: u.id == me ? () async {
+                              final c = TextEditingController();
+                              final ok = await showDialog<bool>(context: context, builder: (ctx) => AlertDialog(
+                                backgroundColor: SpaceColors.darkMatter,
+                                title: const Text('Nota', style: TextStyle(color: Colors.white)),
+                                content: TextField(controller: c, maxLength: 60, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(hintText: '¿Qué estás pensando?', hintStyle: TextStyle(color: Colors.white38))),
+                                actions: [
+                                  TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+                                  TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Compartir')),
+                                ],
+                              ));
+                              if (ok == true) await state.publishNote(c.text);
+                            } : null,
+                            child: Avatar(u.avatarPath, size: 56),
+                          ),
                           const SizedBox(height: 4),
-                          SizedBox(width: 64, child: Text(u.username, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white70, fontSize: 11))),
+                          SizedBox(
+                            width: 64,
+                            child: Text(
+                              noteOf(u.id).isNotEmpty ? noteOf(u.id) : (u.id == me ? 'Tu nota' : u.username),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(color: Colors.white70, fontSize: 10),
+                            ),
+                          ),
                         ]),
                       ),
                     );

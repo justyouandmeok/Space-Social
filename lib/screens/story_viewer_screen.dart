@@ -157,6 +157,32 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
                   Avatar(user?.avatarPath ?? '', size: 36),
                   const SizedBox(width: 10),
                   Text(user?.username ?? '', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                  if (story.userId == widget.state.me.id)
+                    TextButton(
+                      onPressed: () {
+                        final ids = story.viewedBy;
+                        showModalBottomSheet(
+                          context: context,
+                          backgroundColor: const Color(0xFF1C1C1C),
+                          builder: (_) => SafeArea(
+                            child: ListView(
+                              shrinkWrap: true,
+                              children: [
+                                ListTile(title: Text('${ids.length} vistas', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                                ...ids.map((id) {
+                                  final u = widget.state.tryUser(id);
+                                  return ListTile(
+                                    title: Text(u?.username ?? id, style: const TextStyle(color: Colors.white)),
+                                    onTap: () {},
+                                  );
+                                }),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                      child: Text('${story.viewedBy.length} vistas', style: const TextStyle(color: Colors.white70)),
+                    ),
                   const Spacer(),
                   IconButton(icon: const Icon(Icons.close, color: Colors.white), onPressed: () => Navigator.of(context).pop()),
                 ]),

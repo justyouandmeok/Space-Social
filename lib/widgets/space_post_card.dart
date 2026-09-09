@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../models.dart';
 import '../space_theme.dart';
 import '../state.dart';
@@ -51,6 +52,51 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
     return widget.state.posts.firstWhere((p) => p.id == widget.post.id, orElse: () => widget.post);
   }
 
+  void _options(BuildContext context, Post post, UserAccount user) {
+    final mine = user.id == widget.state.me.id;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1C1C1C),
+      builder: (ctx) => SafeArea(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          if (mine) ...[
+            ListTile(
+              title: Text(widget.state.archived.contains(post.id) ? 'Desarchivar' : 'Archivar', style: const TextStyle(color: Colors.white)),
+              onTap: () { Navigator.pop(ctx); widget.state.toggleArchive(post.id); },
+            ),
+            ListTile(
+              title: const Text('Eliminar', style: TextStyle(color: Colors.redAccent)),
+              onTap: () { Navigator.pop(ctx); widget.state.deletePost(post.id); },
+            ),
+          ] else ...[
+            ListTile(
+              title: Text(widget.state.isFollowing(user.id) ? 'Dejar de seguir' : 'Seguir', style: const TextStyle(color: Colors.white)),
+              onTap: () { Navigator.pop(ctx); widget.state.toggleFollow(user.id); },
+            ),
+            ListTile(
+              title: const Text('Silenciar', style: TextStyle(color: Colors.white)),
+              onTap: () { Navigator.pop(ctx); widget.state.toggleMute(user.id); },
+            ),
+          ],
+          ListTile(
+            title: const Text('Copiar pie', style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Clipboard.setData(ClipboardData(text: post.caption));
+              Navigator.pop(ctx);
+            },
+          ),
+          ListTile(
+            title: const Text('Enviar', style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Navigator.pop(ctx);
+              ShareSheet.show(context, widget.state, post: post);
+            },
+          ),
+        ]),
+      ),
+    );
+  }
+
   Future<void> _handleDoubleTap() async {
     if (!post.likedBy(widget.state.me.id)) {
       await widget.state.toggleLike(post.id);
@@ -94,7 +140,10 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
               if (user.isVerified) ...[const SizedBox(width: 4), const VerifiedBadge(size: 11)],
             ]),
           ),
-          trailing: const Icon(Icons.more_horiz, color: Colors.white70),
+          trailing: IconButton(
+            icon: const Icon(Icons.more_horiz, color: Colors.white70),
+            onPressed: () => _options(context, live, user),
+          ),
         ),
         GestureDetector(
           onDoubleTap: _handleDoubleTap,
@@ -135,7 +184,11 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                live.likes.isEmpty ? 'Sé el primero en dar Me gusta' : '${compact(live.likes.length)} me gusta',
+                (widget.state.hideLikes && live.userId == widget.state.me.id)
+                    ? 'Me gusta'
+                    : live.likes.isEmpty
+                        ? 'Sé el primero en dar Me gusta'
+                        : '${compact(live.likes.length)} me gusta',
                 style: const TextStyle(color: SpaceColors.starlight, fontWeight: FontWeight.bold),
               ),
               if (live.caption.isNotEmpty) ...[
