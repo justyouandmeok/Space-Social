@@ -543,7 +543,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           IconButton(
             icon: busy
                 ? SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: SpaceColors.cosmicCyan))
-                : Icon(Icons.check, color: SpaceColors.cosmicCyan, size: 28),
+                : Icon(Icons.check, color: Color(0xFF0095F6), size: 28),
             onPressed: busy ? null : _save,
           ),
         ],
@@ -568,7 +568,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               TextButton(
                 onPressed: _pick,
-                child: Text('Editar foto o avatar', style: TextStyle(color: SpaceColors.cosmicCyan, fontWeight: FontWeight.bold, fontSize: 14)),
+                child: Text('Editar foto o avatar', style: TextStyle(color: Color(0xFF0095F6), fontWeight: FontWeight.bold, fontSize: 14)),
               ),
             ]),
           ),

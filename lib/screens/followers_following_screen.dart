@@ -54,7 +54,9 @@ class _FollowersFollowingScreenState extends State<FollowersFollowingScreen> {
           backgroundColor: SpaceColors.bg,
           title: Text(widget.user.username, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 18)),
           bottom: TabBar(
-            indicatorColor: Colors.white,
+            indicatorColor: SpaceColors.text,
+            labelColor: SpaceColors.text,
+            unselectedLabelColor: SpaceColors.textMuted,
             indicatorWeight: 1.5,
             tabs: [
               Tab(text: '${followers.length} seguidores'),
@@ -67,7 +69,7 @@ class _FollowersFollowingScreenState extends State<FollowersFollowingScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: Container(
               height: 38,
-              decoration: BoxDecoration(color: SpaceColors.darkMatter, borderRadius: BorderRadius.circular(10), border: Border.all(color: SpaceColors.hairline)),
+              decoration: BoxDecoration(color: SpaceColors.surface, borderRadius: BorderRadius.circular(10), border: Border.all(color: SpaceColors.hairline)),
               child: TextField(
                 controller: _searchController,
                 onChanged: (v) => setState(() => _q = v.toLowerCase()),
