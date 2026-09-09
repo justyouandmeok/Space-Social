@@ -7,6 +7,7 @@ class SpaceColors {
   static const starlight = Color(0xFFF5F5F5);
   static const darkMatter = Color(0xFF121212);
   static const voidBlack = Color(0xFF000000);
+  static const deepSpace = Color(0xFF000000);
   static const like = Color(0xFFFF3040);
 }
 
