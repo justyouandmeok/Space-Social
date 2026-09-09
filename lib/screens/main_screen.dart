@@ -40,7 +40,7 @@ class _MainScreenState extends State<MainScreen> {
       SearchScreen(state: state, onOpenProfile: _openProfile),
       const SizedBox.shrink(),
       ReelsScreen(state: state, playing: _currentIndex == 3, onOpenProfile: _openProfile),
-      ProfileScreen(state: state, user: state.me, onOpenCreate: () => _openCreate(0)),
+      ProfileScreen(state: state, user: state.me, onOpenCreate: () => _openCreate(0), onOpenProfile: _openProfile),
     ];
 
     return PopScope(
@@ -113,7 +113,7 @@ class _MainScreenState extends State<MainScreen> {
       return;
     }
     Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => ProfileScreen(state: state, user: u),
+      builder: (_) => ProfileScreen(state: state, user: u, onOpenProfile: _openProfile),
     ));
   }
 }

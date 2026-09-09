@@ -13,10 +13,11 @@ import 'post_detail_feed_screen.dart';
 import 'saved_collections_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key, required this.state, required this.user, this.onOpenCreate});
+  const ProfileScreen({super.key, required this.state, required this.user, this.onOpenCreate, this.onOpenProfile});
   final AppState state;
   final UserAccount user;
   final VoidCallback? onOpenCreate;
+  final void Function(String userId)? onOpenProfile;
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +43,7 @@ class ProfileScreen extends StatelessWidget {
           if (isMe)
             IconButton(
               icon: const Icon(Icons.menu, color: Colors.white),
-              onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => SettingsScreen(state: state))),
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => SettingsScreen(state: state, onOpenProfile: onOpenProfile))),
             ),
         ],
       ),
@@ -209,7 +210,7 @@ class ProfileScreen extends StatelessWidget {
             state: state,
             posts: items,
             initialIndex: index,
-            onOpenProfile: (_) {},
+            onOpenProfile: onOpenProfile ?? (_) {},
           ),
         )),
         child: MediaView(items[index].imagePath, video: items[index].isVideo),
@@ -296,8 +297,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 }
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key, required this.state});
+  const SettingsScreen({super.key, required this.state, this.onOpenProfile});
   final AppState state;
+  final void Function(String userId)? onOpenProfile;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -305,13 +307,15 @@ class SettingsScreen extends StatelessWidget {
       appBar: AppBar(backgroundColor: Colors.black, title: const Text('Configuración y actividad')),
       body: ListView(children: [
         ListTile(
-          title: const Text('Guardados'),
-          trailing: const Icon(Icons.bookmark_border, color: Colors.white70),
-          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => SavedCollectionsScreen(state: state, onOpenProfile: (_) {}))),
+          leading: const Icon(Icons.bookmark_border, color: Colors.white),
+          title: const Text('Guardado', style: TextStyle(color: Colors.white)),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(
+            builder: (_) => SavedCollectionsScreen(state: state, onOpenProfile: onOpenProfile ?? (_) {}),
+          )),
         ),
         ListTile(
-          title: const Text('Estadísticas'),
-          trailing: const Icon(Icons.insights, color: Colors.white70),
+          leading: const Icon(Icons.insights, color: Colors.white),
+          title: const Text('Estadísticas', style: TextStyle(color: Colors.white)),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CreatorInsightsScreen(state: state))),
         ),
         SwitchListTile(title: const Text('Tema oscuro'), value: state.darkMode, onChanged: (_) => state.toggleDarkMode()),
