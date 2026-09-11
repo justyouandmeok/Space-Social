@@ -54,7 +54,7 @@ class ReelsScreen extends StatelessWidget {
             child: Stack(
             fit: StackFit.expand,
             children: [
-              MediaView(post.imagePath, video: post.isVideo, autoplay: playing, active: playing),
+              MediaView(post.imagePath, video: post.isVideo, autoplay: playing, active: playing, followGlobalMute: true),
               const DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -99,7 +99,10 @@ class ReelsScreen extends StatelessWidget {
                   _action(Icons.more_vert, '', onTap: () {
                     showModalBottomSheet(context: context, backgroundColor: SpaceColors.surface, builder: (ctx) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
                       ListTile(title: const Text('Compartir', style: TextStyle(color: Colors.white)), onTap: () { Navigator.pop(ctx); ShareSheet.show(context, state, post: post); }),
+                      if (mine) ListTile(title: Text('Información · ${post.isVideo ? 'video' : 'foto'}', style: const TextStyle(color: Colors.white)), onTap: () { Navigator.pop(ctx); ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Reel de @${user?.username ?? ''} · ${post.caption}'))); }),
+                      if (mine) ListTile(title: const Text('Eliminar', style: TextStyle(color: Colors.redAccent)), onTap: () { Navigator.pop(ctx); state.deletePost(post.id); }),
                       if (mine) ListTile(title: const Text('Archivar', style: TextStyle(color: Colors.white)), onTap: () { Navigator.pop(ctx); state.toggleArchive(post.id); }),
+                      ListTile(title: const Text('Copiar enlace', style: TextStyle(color: Colors.white)), onTap: () { Navigator.pop(ctx); ShareSheet.show(context, state, post: post); }),
                       ListTile(title: const Text('Cerrar', style: TextStyle(color: Colors.white54)), onTap: () => Navigator.pop(ctx)),
                     ])));
                   }),

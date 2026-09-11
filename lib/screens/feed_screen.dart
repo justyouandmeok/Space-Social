@@ -28,7 +28,7 @@ class FeedScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        centerTitle: false,
+        centerTitle: true,
         titleSpacing: 0,
         leading: IconButton(
           icon: CustomPaint(size: const Size(26, 26), painter: AddBoxPainter(SpaceColors.text)),

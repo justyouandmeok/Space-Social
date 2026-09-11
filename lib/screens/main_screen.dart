@@ -11,6 +11,7 @@ import 'profile_screen.dart';
 import 'direct_messages_screen.dart';
 import '../space_theme.dart';
 import '../widgets/ig_icons.dart';
+import '../widgets/media_view.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key, required this.state});
@@ -28,6 +29,7 @@ class _MainScreenState extends State<MainScreen> {
 
   void _onTap(int index) {
     setState(() => _currentIndex = index);
+    MediaView.navIndex.value = index;
   }
 
   @override
@@ -92,7 +94,7 @@ class _MainScreenState extends State<MainScreen> {
               icon: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  CustomPaint(size: const Size(26, 26), painter: MessengerPainter(const Color(0xFF8E8E8E))),
+                  CustomPaint(size: const Size(26, 26), painter: PlaneRightPainter(const Color(0xFF8E8E8E))),
                   if (state.messages.any((m) => m.toId == state.me.id && !m.read))
                     Positioned(
                       right: -2,
@@ -101,7 +103,7 @@ class _MainScreenState extends State<MainScreen> {
                     ),
                 ],
               ),
-              activeIcon: CustomPaint(size: const Size(26, 26), painter: MessengerPainter(const Color(0xFF262626))),
+              activeIcon: CustomPaint(size: const Size(26, 26), painter: PlaneRightPainter(const Color(0xFF262626))),
               label: 'Mensajes',
             ),
             BottomNavigationBarItem(

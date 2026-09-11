@@ -3,11 +3,14 @@ import 'package:video_player/video_player.dart';
 import 'network_photo.dart';
 
 class MediaView extends StatefulWidget {
-  const MediaView(this.url, {super.key, this.video = false, this.autoplay = false, this.active = true});
+  const MediaView(this.url, {super.key, this.video = false, this.autoplay = false, this.active = true, this.followGlobalMute = false});
   final String url;
   final bool video;
   final bool autoplay;
   final bool active;
+  final bool followGlobalMute;
+  static bool globalMute = false;
+  static final navIndex = ValueNotifier<int>(0);
 
   @override
   State<MediaView> createState() => _MediaViewState();
@@ -28,6 +31,21 @@ class _MediaViewState extends State<MediaView> {
   void initState() {
     super.initState();
     _init();
+    MediaView.navIndex.addListener(_onNav);
+  }
+
+  void _onNav() {
+    if (_c == null) return;
+    final tab = MediaView.navIndex.value;
+    final onReels = widget.followGlobalMute && tab == 1;
+    final onFeed = !widget.followGlobalMute && tab == 0;
+    if (onReels || onFeed) {
+      if (widget.autoplay || widget.followGlobalMute) _c!.play();
+      if (widget.followGlobalMute && MediaView.globalMute) _c!.setVolume(0);
+    } else {
+      _c!.pause();
+      _c!.setVolume(0);
+    }
   }
 
   Future<void> _init() async {
@@ -36,7 +54,9 @@ class _MediaViewState extends State<MediaView> {
       final c = VideoPlayerController.networkUrl(Uri.parse(widget.url.split('?').first));
       await c.initialize();
       c.setLooping(true);
+      if (widget.followGlobalMute && MediaView.globalMute) await c.setVolume(0);
       if (widget.autoplay && widget.active) await c.play();
+      if (!widget.active) await c.pause();
       if (!mounted) {
         await c.dispose();
         return;
@@ -61,6 +81,7 @@ class _MediaViewState extends State<MediaView> {
 
   @override
   void dispose() {
+    MediaView.navIndex.removeListener(_onNav);
     _c?.pause();
     _c?.dispose();
     super.dispose();
@@ -101,10 +122,11 @@ class _MediaViewState extends State<MediaView> {
           child: GestureDetector(
             onTap: () {
               _muted = !_muted;
-              _c!.setVolume(_muted ? 0 : 1);
+              if (widget.followGlobalMute) MediaView.globalMute = _muted;
+              _c!.setVolume(_muted || (widget.followGlobalMute && MediaView.globalMute) ? 0 : 1);
               setState(() {});
             },
-            child: Icon(_muted ? Icons.volume_off : Icons.volume_up, color: Colors.white, size: 20),
+            child: Icon((_muted || (widget.followGlobalMute && MediaView.globalMute)) ? Icons.volume_off : Icons.volume_up, color: Colors.white, size: 20),
           ),
         ),
       ]),

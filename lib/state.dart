@@ -1148,12 +1148,15 @@ class AppState extends ChangeNotifier {
 
   Future<void> sendMessage(String toId, String text) async {
     if (!isLoggedIn || text.trim().isEmpty || toId == me.id) return;
+    final target = tryUser(toId);
+    final pending = target != null && target.privateAccount && !isFollowing(toId);
     await _db.collection('messages').add({
       'fromId': me.id,
       'toId': toId,
-      'text': text.trim(),
+      'text': pending ? 'PEND::${text.trim()}' : text.trim(),
       'createdAt': DateTime.now().toIso8601String(),
       'read': false,
+      'pending': pending,
     });
     await _refresh();
     notifyListeners();

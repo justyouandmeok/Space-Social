@@ -29,6 +29,9 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
   bool _isPaused = false;
   bool _liked = false;
   final _reply = TextEditingController();
+  final _liveComments = <String>[];
+  int _liveIndex = 0;
+  Timer? _commentTimer;
 
   List<Story> get stories {
     if (widget.onlyIds != null) {
@@ -44,6 +47,10 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
     widget.state.markStoriesSeen(widget.userId);
     _markCurrent();
     _startStoryTimer();
+    _commentTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (!mounted || _liveComments.isEmpty) return;
+      setState(() => _liveIndex = (_liveIndex + 1) % _liveComments.length);
+    });
   }
 
   void _markCurrent() {
@@ -92,6 +99,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _commentTimer?.cancel();
     _reply.dispose();
     super.dispose();
   }
@@ -197,6 +205,20 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
                 ]),
               ]),
             ),
+            if (_liveComments.isNotEmpty)
+              Positioned(
+                left: 16,
+                bottom: 96,
+                right: 90,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 400),
+                  child: Text(
+                    _liveComments[_liveIndex % _liveComments.length],
+                    key: ValueKey(_liveIndex),
+                    style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 14, fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ),
             Positioned(
               bottom: 24,
               left: 16,
@@ -247,10 +269,15 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
                         final text = _reply.text.trim();
                         if (text.isEmpty) return;
                         await widget.state.sendMessage(widget.userId, text);
+                        setState(() {
+                          _liveComments.add('${widget.state.me.username}: $text');
+                          _liveIndex = _liveComments.length - 1;
+                          _isPaused = false;
+                        });
                         _reply.clear();
                         if (mounted) {
-                          setState(() => _isPaused = false);
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mensaje enviado')));
+                          final priv = widget.state.tryUser(widget.userId)?.privateAccount == true;
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(priv ? 'Enviado · pendiente' : 'Enviado')));
                         }
                       },
                     ),

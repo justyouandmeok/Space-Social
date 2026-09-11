@@ -374,3 +374,22 @@ Widget igIcon(CustomPainter Function(Color) painter,
     {double size = 24, Color color = Colors.black}) {
   return CustomPaint(size: Size.square(size), painter: painter(color));
 }
+
+class PlaneRightPainter extends CustomPainter {
+  PlaneRightPainter(this.color);
+  final Color color;
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = size.width;
+    final path = Path()
+      ..moveTo(s * 0.10, s * 0.18)
+      ..lineTo(s * 0.92, s * 0.50)
+      ..lineTo(s * 0.10, s * 0.82)
+      ..lineTo(s * 0.28, s * 0.50)
+      ..close();
+    canvas.drawPath(path, _stroke(color, s * 0.07));
+    canvas.drawLine(Offset(s * 0.28, s * 0.50), Offset(s * 0.58, s * 0.50), _stroke(color, s * 0.07));
+  }
+  @override
+  bool shouldRepaint(covariant PlaneRightPainter old) => old.color != color;
+}
