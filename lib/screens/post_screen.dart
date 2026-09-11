@@ -180,7 +180,7 @@ class _PostScreenState extends State<PostScreen> {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
             child: Container(
               padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(color: const Color(0xFF2A2A2A), borderRadius: BorderRadius.circular(24)),
+              decoration: BoxDecoration(color: const Color(0xFF262626), borderRadius: BorderRadius.circular(24)),
               child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
                 _mode('PUBLICACIÓN', 0),
                 _mode('HISTORIA', 1),

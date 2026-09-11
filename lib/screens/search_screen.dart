@@ -78,19 +78,18 @@ class _SearchScreenState extends State<SearchScreen> {
         title: Container(
           height: 40,
           decoration: BoxDecoration(
-            color: SpaceColors.surface,
+            color: const Color(0xFFEFEFEF),
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: SpaceColors.hairline),
           ),
           child: TextField(
             controller: _searchController,
             onChanged: (_) => setState(() {}),
             onSubmitted: (v) => _remember(v.trim()),
-            style: TextStyle(color: SpaceColors.text),
-            decoration: InputDecoration(
-              prefixIcon: Icon(Icons.search, color: SpaceColors.cosmicCyan, size: 20),
-              hintText: 'Buscar cuentas, hashtags o temas...',
-              hintStyle: TextStyle(color: SpaceColors.textMuted, fontSize: 14),
+            style: const TextStyle(color: Color(0xFF262626), fontSize: 16),
+            decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.search, color: Color(0xFF8E8E8E), size: 20),
+              hintText: 'Buscar',
+              hintStyle: TextStyle(color: Color(0xFF8E8E8E), fontSize: 16),
               border: InputBorder.none,
               contentPadding: EdgeInsets.symmetric(vertical: 8),
             ),

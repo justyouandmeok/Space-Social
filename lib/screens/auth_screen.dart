@@ -49,7 +49,7 @@ class _AuthScreenState extends State<AuthScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
           children: [
             const SizedBox(height: 48),
-            Text('Space Social', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'GrandHotel', fontSize: 48, color: SpaceColors.text)),
+            const Text('Space Social', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'GrandHotel', fontSize: 52, color: Color(0xFF262626))),
             const SizedBox(height: 36),
             _field(email, register ? 'Correo' : 'Correo, usuario o teléfono'),
             if (register) _field(user, 'Nombre de usuario'),
@@ -87,8 +87,10 @@ class _AuthScreenState extends State<AuthScreen> {
           hintText: hint,
           hintStyle: TextStyle(color: SpaceColors.textMuted),
           filled: true,
-          fillColor: SpaceColors.surface,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: SpaceColors.hairline)),
+          fillColor: const Color(0xFFFAFAFA),
+          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: const BorderSide(color: Color(0xFFDBDBDB))),
+          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: const BorderSide(color: Color(0xFFA8A8A8))),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: const BorderSide(color: Color(0xFFDBDBDB))),
         ),
       ),
     );
