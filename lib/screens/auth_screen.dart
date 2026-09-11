@@ -60,9 +60,9 @@ class _AuthScreenState extends State<AuthScreen> {
               height: 44,
               child: FilledButton(
                 onPressed: busy ? null : _go,
-                style: FilledButton.styleFrom(backgroundColor: LumaColors.blue, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                style: FilledButton.styleFrom(backgroundColor: LumaColors.blue, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                 child: busy
-                    ? SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: SpaceColors.text))
+                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                     : Text(register ? 'Registrarte' : 'Entrar'),
               ),
             ),

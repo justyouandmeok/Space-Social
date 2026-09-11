@@ -4,6 +4,7 @@ import '../space_theme.dart';
 import '../state.dart';
 import '../widgets/media_view.dart';
 import '../widgets/network_photo.dart';
+import '../widgets/verified_badge.dart';
 import 'post_detail_feed_screen.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -155,7 +156,13 @@ class _SearchScreenState extends State<SearchScreen> {
                       child: Column(children: [
                         Avatar(u.avatarPath, size: 56),
                         const SizedBox(height: 4),
-                        SizedBox(width: 64, child: Text(u.username, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: TextStyle(fontSize: 11, color: SpaceColors.text))),
+                        SizedBox(
+                          width: 72,
+                          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                            Flexible(child: Text(u.username, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: SpaceColors.text))),
+                            if (u.isVerified) const VerifiedBadge(size: 10),
+                          ]),
+                        ),
                       ]),
                     ),
                   )).toList(),

@@ -5,6 +5,7 @@ import '../state.dart';
 import '../store.dart';
 import '../widgets/media_view.dart';
 import '../widgets/network_photo.dart';
+import '../widgets/ig_button.dart';
 
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key, required this.state, this.onOpenProfile});
@@ -97,16 +98,9 @@ class NotificationsScreen extends StatelessWidget {
             TextButton(onPressed: () => state.rejectFollow(user.id), child: Text('Eliminar', style: TextStyle(color: SpaceColors.textMuted))),
           ])
         else if (follow && user != null)
-          ElevatedButton(
-            onPressed: () => state.toggleFollow(user.id),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: state.isFollowing(user.id) ? SpaceColors.surface : const Color(0xFF0095F6),
-              foregroundColor: state.isFollowing(user.id) ? SpaceColors.text : Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              minimumSize: const Size(80, 32),
-            ),
-            child: Text(state.isFollowing(user.id) ? 'Siguiendo' : 'Seguir', style: const TextStyle(fontSize: 12)),
+          IgFollowButton(
+            following: state.isFollowing(user.id),
+            onTap: () => state.toggleFollow(user.id),
           )
         else if (post != null)
           ClipRRect(

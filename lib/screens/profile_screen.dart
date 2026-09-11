@@ -14,6 +14,7 @@ import '../widgets/account_switch_modal.dart';
 import '../widgets/profile_drawer_modal.dart';
 import '../widgets/links_bottom_sheet.dart';
 import '../widgets/verified_badge.dart';
+import '../widgets/ig_button.dart';
 import 'create_highlight_screen.dart';
 import 'direct_messages_screen.dart';
 import 'followers_following_screen.dart';
@@ -128,11 +129,11 @@ class ProfileScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     if (isMe)
                       Row(children: [
-                        Expanded(child: _btn('Editar perfil', () {
+                        Expanded(child: IgButton(label: 'Editar perfil', expanded: true, onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(builder: (_) => EditProfileScreen(state: state)));
                         })),
                         const SizedBox(width: 8),
-                        Expanded(child: _btn('Compartir perfil', () {
+                        Expanded(child: IgButton(label: 'Compartir perfil', expanded: true, onTap: () {
                           Clipboard.setData(ClipboardData(text: '@${user.username}'));
                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Perfil copiado')));
                         })),
@@ -140,28 +141,20 @@ class ProfileScreen extends StatelessWidget {
                     else
                       Row(children: [
                         Expanded(
-                          child: ElevatedButton(
-                            onPressed: () => state.toggleFollow(user.id),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: state.isFollowing(user.id) ? SpaceColors.surface : LumaColors.blue,
-                              foregroundColor: state.isFollowing(user.id) ? SpaceColors.text : Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            ),
-                            child: Text(state.isFollowing(user.id) ? 'Siguiendo' : state.isPendingFollow(user.id) ? 'Solicitado' : 'Seguir'),
+                          child: IgFollowButton(
+                            following: state.isFollowing(user.id),
+                            pending: state.isPendingFollow(user.id),
+                            onTap: () => state.toggleFollow(user.id),
                           ),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: ElevatedButton(
-                            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                          child: IgButton(
+                            label: 'Mensaje',
+                            expanded: true,
+                            onTap: () => Navigator.of(context).push(MaterialPageRoute(
                               builder: (_) => ChatConversationScreen(state: state, user: user),
                             )),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: SpaceColors.surface,
-                              foregroundColor: SpaceColors.text,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            ),
-                            child: const Text('Mensaje'),
                           ),
                         ),
                         IconButton(

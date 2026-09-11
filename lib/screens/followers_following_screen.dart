@@ -3,6 +3,8 @@ import '../models.dart';
 import '../space_theme.dart';
 import '../state.dart';
 import '../widgets/network_photo.dart';
+import '../widgets/verified_badge.dart';
+import '../widgets/ig_button.dart';
 
 class FollowersFollowingScreen extends StatefulWidget {
   const FollowersFollowingScreen({
@@ -118,25 +120,21 @@ class _FollowersFollowingScreenState extends State<FollowersFollowingScreen> {
               child: GestureDetector(
                 onTap: () => widget.onOpenProfile?.call(u.id),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(u.username, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
+                  Row(children: [
+                    Flexible(child: Text(u.username, overflow: TextOverflow.ellipsis, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 14))),
+                    if (u.isVerified) const VerifiedBadge(size: 12),
+                  ]),
                   Text(u.name, style: TextStyle(color: SpaceColors.textMuted, fontSize: 13)),
                 ]),
               ),
             ),
             if (u.id != widget.state.me.id)
-              ElevatedButton(
-                onPressed: () async {
+              IgFollowButton(
+                following: following,
+                onTap: () async {
                   await widget.state.toggleFollow(u.id);
                   setState(() {});
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: following ? SpaceColors.surface : SpaceColors.cosmicCyan,
-                  foregroundColor: following ? SpaceColors.text : Colors.black,
-                  minimumSize: const Size(90, 32),
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                child: Text(following ? 'Siguiendo' : 'Seguir', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
               ),
           ]),
         );
