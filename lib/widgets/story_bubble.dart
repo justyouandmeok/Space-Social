@@ -16,12 +16,12 @@ class StoryRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final people = state.storyAuthors;
     return SizedBox(
-      height: 110,
+      height: 104,
       child: ListView.separated(
-        padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+        padding: const EdgeInsets.fromLTRB(10, 8, 10, 6),
         scrollDirection: Axis.horizontal,
         itemCount: people.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        separatorBuilder: (_, __) => const SizedBox(width: 10),
         itemBuilder: (_, i) {
           final u = people[i];
           final mine = u.id == state.me.id;

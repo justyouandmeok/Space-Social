@@ -164,12 +164,11 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
             onTap: () => widget.onOpenProfile(user.id),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
-                Text(user.username, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold)),
+                Text(user.username, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w600, fontSize: 14)),
                 if (user.isVerified) const VerifiedBadge(size: 13),
               ]),
               if (live.location.isNotEmpty)
-                Text(live.location, style: TextStyle(color: SpaceColors.textMuted, fontSize: 11)),
-              Text(timeAgo(live.createdAt), style: TextStyle(color: SpaceColors.textMuted, fontSize: 11)),
+                Text(live.location, style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
             ]),
           ),
           trailing: Row(mainAxisSize: MainAxisSize.min, children: [

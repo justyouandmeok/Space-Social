@@ -7,6 +7,7 @@ import '../widgets/story_bubble.dart';
 import 'notifications_screen.dart';
 import 'post_screen.dart';
 import '../space_theme.dart';
+import '../widgets/ig_icons.dart';
 
 class FeedScreen extends StatelessWidget {
   const FeedScreen({super.key, required this.state, required this.onOpenCreate, required this.onOpenProfile});
@@ -28,7 +29,7 @@ class FeedScreen extends StatelessWidget {
         backgroundColor: SpaceColors.bg,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.add_box_outlined, color: SpaceColors.text, size: 28),
+          icon: CustomPaint(size: const Size(26, 26), painter: AddBoxPainter(SpaceColors.text)),
           onPressed: () => onOpenCreate(0),
         ),
         title: GestureDetector(
@@ -59,12 +60,14 @@ class FeedScreen extends StatelessWidget {
             );
           },
           child: Row(children: [
-            Text('Space Social', style: TextStyle(fontFamily: 'GrandHotel', fontSize: 30, color: SpaceColors.text)),
-            Icon(Icons.keyboard_arrow_down, color: SpaceColors.text),
+            Text('Space Social', style: TextStyle(fontFamily: 'GrandHotel', fontSize: 28, height: 1, color: SpaceColors.text)),
+            Icon(Icons.keyboard_arrow_down, color: SpaceColors.text, size: 20),
           ]),
         ),
         actions: [
-          IconButton(icon: Icon(Icons.favorite_border, color: SpaceColors.text), onPressed: () {
+          IconButton(
+            icon: CustomPaint(size: const Size(26, 26), painter: HeartPainter(SpaceColors.text)),
+            onPressed: () {
             Navigator.of(context).push(MaterialPageRoute(builder: (_) => NotificationsScreen(state: state, onOpenProfile: onOpenProfile)));
           }),
         ],
