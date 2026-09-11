@@ -13,12 +13,12 @@ class SpaceColors {
   static const like = Color(0xFFFF3040);
 
   static Color get bg => const Color(0xFFFFFFFF);
-  static Color get surface => const Color(0xFFEFEEF1);
-  static Color get text => const Color(0xFF000000);
-  static Color get textMuted => const Color(0xFF737373);
-  static Color get hairline => const Color(0xFFDBDBDB);
+  static Color get surface => const Color(0xFFF5F5F5);
+  static Color get text => const Color(0xFF262626);
+  static Color get textMuted => const Color(0xFF8E8E8E);
+  static Color get hairline => const Color(0xFFEFEFEF);
   static Color get nav => const Color(0xFFFFFFFF);
-  static Color get icon => const Color(0xFF000000);
+  static Color get icon => const Color(0xFF262626);
 }
 
 const spacePageTransitions = PageTransitionsTheme(
@@ -54,7 +54,14 @@ ThemeData buildSpaceTheme({required bool dark}) {
       brightness: Brightness.light,
       scaffoldBackgroundColor: Colors.white,
       canvasColor: Colors.white,
-      cardColor: const Color(0xFFF2F2F2),
+      cardColor: const Color(0xFFF5F5F5),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          shadowColor: Colors.transparent,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      ),
       primaryColor: const Color(0xFF262626),
       colorScheme: const ColorScheme.light(
         primary: Color(0xFF262626),

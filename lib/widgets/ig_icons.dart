@@ -355,7 +355,7 @@ class ReelsPainter extends CustomPainter {
         ..lineTo(s * 0.72, s * 0.50)
         ..lineTo(s * 0.40, s * 0.68)
         ..close();
-      canvas.drawPath(tri, _fill(const Color(0xFF000000)));
+      canvas.drawPath(tri, _fill(const Color(0xFFFFFFFF)));
     } else {
       canvas.drawRRect(r, _stroke(color, s * 0.08));
       final tri = Path()

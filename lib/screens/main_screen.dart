@@ -10,6 +10,7 @@ import 'reels_screen.dart';
 import 'profile_screen.dart';
 import 'direct_messages_screen.dart';
 import '../space_theme.dart';
+import '../widgets/ig_icons.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key, required this.state});
@@ -70,19 +71,28 @@ class _MainScreenState extends State<MainScreen> {
           currentIndex: _currentIndex,
           onTap: _onTap,
           type: BottomNavigationBarType.fixed,
-          backgroundColor: SpaceColors.nav,
-          selectedItemColor: SpaceColors.text,
-          unselectedItemColor: SpaceColors.textMuted,
+          backgroundColor: Colors.white,
+          elevation: 0,
+          selectedItemColor: const Color(0xFF262626),
+          unselectedItemColor: const Color(0xFF8E8E8E),
           showSelectedLabels: false,
           showUnselectedLabels: false,
           items: [
-            const BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Inicio'),
-            const BottomNavigationBarItem(icon: Icon(Icons.movie_outlined), label: 'Reels'),
+            BottomNavigationBarItem(
+              icon: CustomPaint(size: const Size(26, 26), painter: HomeOutlinePainter(const Color(0xFF8E8E8E))),
+              activeIcon: CustomPaint(size: const Size(26, 26), painter: HomeOutlinePainter(const Color(0xFF262626), filled: true)),
+              label: 'Inicio',
+            ),
+            BottomNavigationBarItem(
+              icon: CustomPaint(size: const Size(26, 26), painter: ReelsPainter(const Color(0xFF8E8E8E))),
+              activeIcon: CustomPaint(size: const Size(26, 26), painter: ReelsPainter(const Color(0xFF262626), filled: true)),
+              label: 'Reels',
+            ),
             BottomNavigationBarItem(
               icon: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  const Icon(Icons.send_outlined),
+                  CustomPaint(size: const Size(26, 26), painter: MessengerPainter(const Color(0xFF8E8E8E))),
                   if (state.messages.any((m) => m.toId == state.me.id && !m.read))
                     Positioned(
                       right: -2,
@@ -91,9 +101,14 @@ class _MainScreenState extends State<MainScreen> {
                     ),
                 ],
               ),
+              activeIcon: CustomPaint(size: const Size(26, 26), painter: MessengerPainter(const Color(0xFF262626))),
               label: 'Mensajes',
             ),
-            const BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Buscar'),
+            BottomNavigationBarItem(
+              icon: CustomPaint(size: const Size(26, 26), painter: SearchOutlinePainter(const Color(0xFF8E8E8E))),
+              activeIcon: CustomPaint(size: const Size(26, 26), painter: SearchOutlinePainter(const Color(0xFF262626), bold: true)),
+              label: 'Buscar',
+            ),
             BottomNavigationBarItem(
               icon: Container(
                 padding: const EdgeInsets.all(1.5),

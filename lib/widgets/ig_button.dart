@@ -27,7 +27,7 @@ class IgButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           elevation: 0,
           shadowColor: Colors.transparent,
-          backgroundColor: primary ? const Color(0xFF0095F6) : const Color(0xFFEFEEF1),
+          backgroundColor: primary ? const Color(0xFF0095F6) : const Color(0xFFF5F5F5),
           foregroundColor: primary ? Colors.white : Colors.black,
           disabledBackgroundColor: const Color(0xFFB2DFFC),
           disabledForegroundColor: Colors.white,
