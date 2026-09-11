@@ -165,7 +165,7 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
                 Text(user.username, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold)),
-                if (user.isVerified) ...[const SizedBox(width: 4), const VerifiedBadge(size: 11)],
+                if (user.isVerified) const VerifiedBadge(size: 13),
               ]),
               if (live.location.isNotEmpty)
                 Text(live.location, style: TextStyle(color: SpaceColors.textMuted, fontSize: 11)),

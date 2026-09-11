@@ -51,7 +51,7 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(width: 6),
               ],
               Flexible(child: Text(user.username, overflow: TextOverflow.ellipsis, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: SpaceColors.text))),
-              if (user.isVerified) ...[const SizedBox(width: 6), const VerifiedBadge()],
+              if (user.isVerified) const VerifiedBadge(size: 16),
               if (isMe) Icon(Icons.keyboard_arrow_down, color: SpaceColors.text, size: 20),
             ],
           ),
@@ -108,13 +108,7 @@ class ProfileScreen extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Row(children: [
-                      Flexible(child: Text(user.name, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 15))),
-                      if (user.isVerified) ...[
-                        const SizedBox(width: 4),
-                        const VerifiedBadge(),
-                      ],
-                    ]),
+                    Text(user.name, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w600, fontSize: 14)),
                     if (user.bio.isNotEmpty) Text(user.bio, style: TextStyle(color: SpaceColors.text)),
                     if (user.website.isNotEmpty)
                       GestureDetector(
