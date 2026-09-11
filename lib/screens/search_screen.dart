@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../space_theme.dart';
 import '../state.dart';
+import '../store.dart';
 import '../widgets/media_view.dart';
 import '../widgets/network_photo.dart';
 import '../widgets/verified_badge.dart';
@@ -192,12 +193,21 @@ class _SearchScreenState extends State<SearchScreen> {
                   fit: StackFit.expand,
                   children: [
                     MediaView(p.imagePath, video: p.isVideo),
-                    if (p.isReel)
-                      Positioned(
+                    if (p.isReel || p.isVideo)
+                      const Positioned(
                         top: 6,
                         right: 6,
-                        child: Icon(Icons.movie_outlined, color: SpaceColors.text, size: 18),
+                        child: Icon(Icons.play_arrow, color: Colors.white, size: 18),
                       ),
+                    Positioned(
+                      left: 6,
+                      bottom: 6,
+                      child: Row(children: [
+                        const Icon(Icons.visibility, color: Colors.white, size: 12),
+                        const SizedBox(width: 3),
+                        Text(compact(p.views < 1 ? 1 : p.views), style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
+                      ]),
+                    ),
                   ],
                 ),
               );

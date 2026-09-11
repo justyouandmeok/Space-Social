@@ -64,13 +64,20 @@ class ReelsScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const Positioned(
-                top: 48,
-                left: 16,
+              Positioned(
+                top: 44,
+                left: 8,
+                right: 56,
                 child: Row(children: [
-                  Text('Reels', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                  SizedBox(width: 16),
-                  Text('Para ti', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => PostScreen(state: state, initialMode: 2),
+                    )),
+                    icon: const Icon(Icons.add, color: Colors.white, size: 28),
+                  ),
+                  const Text('Reels', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700)),
+                  const SizedBox(width: 16),
+                  const Text('Amigos', style: TextStyle(color: Colors.white70, fontSize: 18, fontWeight: FontWeight.w600)),
                 ]),
               ),
               Positioned(

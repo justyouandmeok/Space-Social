@@ -73,7 +73,7 @@ class ProfileScreen extends StatelessWidget {
         ],
       ),
       body: DefaultTabController(
-        length: 3,
+        length: 4,
         child: NestedScrollView(
           headerSliverBuilder: (context, _) => [
             SliverToBoxAdapter(
@@ -101,7 +101,7 @@ class ProfileScreen extends StatelessWidget {
                                 onTap: () => Navigator.of(context).push(MaterialPageRoute(
                                   builder: (_) => FollowersFollowingScreen(state: state, user: user, initialTabIndex: 1, onOpenProfile: onOpenProfile),
                                 )),
-                                child: _stat(compact(state.followingOf(user.id).length), 'Siguiendo'),
+                                child: _stat(compact(state.followingOf(user.id).length), 'Seguidos'),
                               ),
                             ],
                           ),
@@ -176,10 +176,10 @@ class ProfileScreen extends StatelessWidget {
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(color: SpaceColors.surface, borderRadius: BorderRadius.circular(10), border: Border.all(color: SpaceColors.hairline)),
                           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Text('Panel para profesionales', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
+                            Text('Tu panel', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 14)),
                             const SizedBox(height: 4),
                             Text(
-                              '${state.postsOf(user.id).length} publicaciones · ${state.followersOf(user.id).length} seguidores',
+                              '${compact(state.postsOf(user.id).fold<int>(0, (n, p) => n + p.views))} visualizaciones en los últimos 30 días',
                               style: TextStyle(color: SpaceColors.textMuted, fontSize: 12),
                             ),
                           ]),
@@ -211,6 +211,7 @@ class ProfileScreen extends StatelessWidget {
                   tabs: [
                     Tab(icon: Icon(Icons.grid_on, color: SpaceColors.text)),
                     Tab(icon: Icon(Icons.movie_outlined, color: SpaceColors.text)),
+                    Tab(icon: Icon(Icons.replay, color: SpaceColors.text)),
                     Tab(icon: Icon(Icons.assignment_ind_outlined, color: SpaceColors.text)),
                   ],
                 ),
@@ -220,6 +221,7 @@ class ProfileScreen extends StatelessWidget {
           body: TabBarView(
             children: [
               _grid(posts),
+              _reelsGrid(reels),
               _reelsGrid(reels),
               _taggedGrid(),
             ],

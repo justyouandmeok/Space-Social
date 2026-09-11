@@ -56,6 +56,19 @@ class DirectMessagesScreen extends StatelessWidget {
         ],
       ),
       body: Column(children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(children: [
+              _chip('Principal', true),
+              const SizedBox(width: 8),
+              _chip('Solicitudes', false),
+              const SizedBox(width: 8),
+              _chip('General', false),
+            ]),
+          ),
+        ),
         SizedBox(
           height: 118,
           child: notes.isEmpty
@@ -172,6 +185,17 @@ class DirectMessagesScreen extends StatelessWidget {
                 ),
         ),
       ]),
+    );
+  }
+
+  Widget _chip(String label, bool on) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: on ? const Color(0xFF262626) : const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(label, style: TextStyle(color: on ? Colors.white : const Color(0xFF262626), fontSize: 13, fontWeight: FontWeight.w600)),
     );
   }
 }
