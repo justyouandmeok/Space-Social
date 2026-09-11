@@ -17,6 +17,9 @@ class NotificationsScreen extends StatelessWidget {
     final now = DateTime.now();
     final items = state.activity.where((a) {
       if (a.actorId == state.me.id) return false;
+      final t = a.text.toLowerCase();
+      if (t.contains('usuario') && (t.contains('cambió') || t.contains('cambio'))) return false;
+      if (t.contains('nombre de usuario')) return false;
       return true;
     }).toList()
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -35,7 +38,7 @@ class NotificationsScreen extends StatelessWidget {
       backgroundColor: SpaceColors.bg,
       appBar: AppBar(
         backgroundColor: SpaceColors.bg,
-        title: Text('Actividad', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold)),
+        title: const Text('Notificaciones', style: TextStyle(color: Color(0xFF262626), fontWeight: FontWeight.bold, fontSize: 22)),
       ),
       body: items.isEmpty
           ? Center(child: Text('Todavía no hay actividad', style: TextStyle(color: SpaceColors.textMuted)))

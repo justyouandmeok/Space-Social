@@ -35,9 +35,9 @@ class DirectMessagesScreen extends StatelessWidget {
       backgroundColor: SpaceColors.bg,
       appBar: AppBar(
         backgroundColor: SpaceColors.bg,
-        title: Text(state.me.username, style: TextStyle(fontWeight: FontWeight.bold, color: SpaceColors.text)),
+        title: Text(state.me.username, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 22, color: Color(0xFF262626))),
         actions: [
-          IconButton(icon: Icon(Icons.edit_square, color: SpaceColors.cosmicCyan), onPressed: () {
+          IconButton(icon: const Icon(Icons.edit_outlined, color: Color(0xFF262626)), onPressed: () {
             final people = state.users.where((u) => u.id != me).toList();
             showModalBottomSheet(context: context, backgroundColor: SpaceColors.surface, builder: (ctx) => SafeArea(child: ListView(
               children: [
