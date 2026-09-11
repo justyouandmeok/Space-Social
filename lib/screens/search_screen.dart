@@ -176,7 +176,7 @@ class _SearchScreenState extends State<SearchScreen> {
               crossAxisCount: 3,
               crossAxisSpacing: 2,
               mainAxisSpacing: 2,
-              childAspectRatio: 1,
+              childAspectRatio: 0.72,
             ),
             itemBuilder: (context, index) {
               final p = posts[index];

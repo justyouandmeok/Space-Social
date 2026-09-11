@@ -57,6 +57,19 @@ class DirectMessagesScreen extends StatelessWidget {
       ),
       body: Column(children: [
         Padding(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
+          child: Container(
+            height: 40,
+            decoration: BoxDecoration(color: const Color(0xFFEFEFEF), borderRadius: BorderRadius.circular(10)),
+            child: const Row(children: [
+              SizedBox(width: 10),
+              Icon(Icons.search, color: Color(0xFF8E8E8E), size: 20),
+              SizedBox(width: 8),
+              Text('Buscar', style: TextStyle(color: Color(0xFF8E8E8E), fontSize: 16)),
+            ]),
+          ),
+        ),
+        Padding(
           padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,

@@ -12,15 +12,28 @@ import 'post_screen.dart';
 
 final _countedViews = <String>{};
 
-class ReelsScreen extends StatelessWidget {
+class ReelsScreen extends StatefulWidget {
   const ReelsScreen({super.key, required this.state, required this.playing, required this.onOpenProfile});
   final AppState state;
   final bool playing;
   final void Function(String userId) onOpenProfile;
 
   @override
+  State<ReelsScreen> createState() => _ReelsScreenState();
+}
+
+class _ReelsScreenState extends State<ReelsScreen> {
+  bool friends = false;
+  AppState get state => widget.state;
+  bool get playing => widget.playing;
+  void Function(String userId) get onOpenProfile => widget.onOpenProfile;
+
+  @override
   Widget build(BuildContext context) {
-    final items = state.reels;
+    var items = state.reels;
+    if (friends) {
+      items = items.where((p) => p.userId == state.me.id || state.isFollowing(p.userId)).toList();
+    }
     if (items.isEmpty) {
       return Scaffold(
         backgroundColor: Colors.black,
@@ -75,9 +88,15 @@ class ReelsScreen extends StatelessWidget {
                     )),
                     icon: const Icon(Icons.add, color: Colors.white, size: 28),
                   ),
-                  const Text('Reels', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700)),
+                  GestureDetector(
+                    onTap: () => setState(() => friends = false),
+                    child: Text('Reels', style: TextStyle(color: friends ? Colors.white54 : Colors.white, fontSize: 22, fontWeight: FontWeight.w700)),
+                  ),
                   const SizedBox(width: 16),
-                  const Text('Amigos', style: TextStyle(color: Colors.white70, fontSize: 18, fontWeight: FontWeight.w600)),
+                  GestureDetector(
+                    onTap: () => setState(() => friends = true),
+                    child: Text('Amigos', style: TextStyle(color: friends ? Colors.white : Colors.white54, fontSize: 18, fontWeight: FontWeight.w600)),
+                  ),
                 ]),
               ),
               Positioned(
