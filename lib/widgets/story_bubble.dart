@@ -16,7 +16,7 @@ class StoryRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final people = state.storyAuthors;
     return SizedBox(
-      height: 104,
+      height: 110,
       child: ListView.separated(
         padding: const EdgeInsets.fromLTRB(10, 8, 10, 6),
         scrollDirection: Axis.horizontal,
@@ -106,7 +106,7 @@ class StoryBubble extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          Text(mine ? 'Tu historia' : user.username, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: SpaceColors.text)),
+          Text(mine ? 'Tu historia' : user.username, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, height: 1.1, color: Color(0xFF262626))),
         ]),
       ),
     );

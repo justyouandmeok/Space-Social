@@ -10,6 +10,7 @@ import 'share_sheet.dart';
 import 'media_view.dart';
 import 'network_photo.dart';
 import 'verified_badge.dart';
+import 'ig_icons.dart';
 
 class SpacePostCard extends StatefulWidget {
   const SpacePostCard({
@@ -202,17 +203,20 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
         ),
         Row(children: [
           IconButton(
-            icon: Icon(liked ? Icons.favorite : Icons.favorite_border, color: liked ? const Color(0xFFFF3040) : SpaceColors.text),
+            icon: CustomPaint(size: const Size(24, 24), painter: HeartPainter(liked ? const Color(0xFFFF3040) : const Color(0xFF262626), filled: liked)),
             onPressed: () => widget.state.toggleLike(live.id),
           ),
           IconButton(
-            icon: Icon(Icons.chat_bubble_outline, color: SpaceColors.text),
+            icon: CustomPaint(size: const Size(24, 24), painter: CommentPainter(const Color(0xFF262626))),
             onPressed: () => CommentsBottomSheet.show(context, widget.state, live.id),
           ),
-          IconButton(icon: Icon(Icons.send_outlined, color: SpaceColors.text), onPressed: () => ShareSheet.show(context, widget.state, post: live)),
+          IconButton(
+            icon: CustomPaint(size: const Size(24, 24), painter: SharePainter(const Color(0xFF262626))),
+            onPressed: () => ShareSheet.show(context, widget.state, post: live),
+          ),
           const Spacer(),
           IconButton(
-            icon: Icon(saved ? Icons.bookmark : Icons.bookmark_border, color: SpaceColors.text),
+            icon: CustomPaint(size: const Size(24, 24), painter: BookmarkPainter(const Color(0xFF262626), filled: saved)),
             onPressed: () => widget.state.toggleSave(live.id),
           ),
         ]),
@@ -250,7 +254,7 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
                       : live.likes.isEmpty
                           ? 'Sé el primero en dar Me gusta'
                           : '${compact(live.likes.length)} me gusta',
-                  style: TextStyle(color: SpaceColors.starlight, fontWeight: FontWeight.bold),
+                  style: const TextStyle(color: Color(0xFF262626), fontWeight: FontWeight.w600, fontSize: 14),
                 ),
               ),
               if (live.caption.isNotEmpty) ...[
@@ -258,7 +262,7 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
                 RichText(
                   text: TextSpan(children: [
                     TextSpan(text: '${user.username} ', style: TextStyle(fontWeight: FontWeight.bold, color: SpaceColors.text)),
-                    TextSpan(text: live.caption, style: TextStyle(color: SpaceColors.textMuted)),
+                    TextSpan(text: live.caption, style: const TextStyle(color: Color(0xFF262626), fontSize: 14, height: 1.3)),
                   ]),
                 ),
               ],

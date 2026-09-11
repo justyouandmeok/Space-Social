@@ -26,8 +26,10 @@ class FeedScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: SpaceColors.bg,
       appBar: AppBar(
-        backgroundColor: SpaceColors.bg,
+        backgroundColor: Colors.white,
         elevation: 0,
+        centerTitle: false,
+        titleSpacing: 0,
         leading: IconButton(
           icon: CustomPaint(size: const Size(26, 26), painter: AddBoxPainter(SpaceColors.text)),
           onPressed: () => onOpenCreate(0),
@@ -60,7 +62,7 @@ class FeedScreen extends StatelessWidget {
             );
           },
           child: Row(children: [
-            Text('Space Social', style: TextStyle(fontFamily: 'GrandHotel', fontSize: 28, height: 1, color: SpaceColors.text)),
+            Text('Space Social', style: TextStyle(fontFamily: 'GrandHotel', fontSize: 30, height: 1, color: Color(0xFF262626), letterSpacing: 0.2)),
             Icon(Icons.keyboard_arrow_down, color: SpaceColors.text, size: 20),
           ]),
         ),
