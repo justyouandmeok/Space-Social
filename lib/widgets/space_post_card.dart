@@ -274,6 +274,10 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
                     child: Text('Ver los ${live.comments.length} comentarios', style: TextStyle(color: SpaceColors.textMuted, fontSize: 13)),
                   ),
                 ),
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(timeAgo(live.createdAt).toUpperCase(), style: const TextStyle(color: Color(0xFF8E8E8E), fontSize: 10, letterSpacing: 0.2)),
+              ),
               const SizedBox(height: 12),
             ],
           ),

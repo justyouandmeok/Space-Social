@@ -106,7 +106,7 @@ class _PostScreenState extends State<PostScreen> {
             child: Row(children: [
               IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close, color: Colors.white, size: 28)),
               Expanded(child: Text(titles[mode], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18))),
-              TextButton(onPressed: file == null ? null : _share, child: const Text('Siguiente', style: TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w700, fontSize: 16))),
+              TextButton(onPressed: file == null ? null : _share, child: const Text('Compartir', style: TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w700, fontSize: 16))),
             ]),
           ),
           if (file != null)
