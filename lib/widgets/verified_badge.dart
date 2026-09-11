@@ -24,7 +24,7 @@ class _IgVerifiedPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final s = size.shortestSide;
     final c = Offset(s / 2, s / 2);
-    const points = 12;
+    const points = 8;
     final outer = s / 2;
     final inner = s / 2 * 0.78;
     final path = Path();
