@@ -677,6 +677,18 @@ class SettingsScreen extends StatelessWidget {
           trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => EditProfileScreen(state: state))),
         ),
+        ListTile(
+          leading: Icon(Icons.lock_outline, color: SpaceColors.text),
+          title: Text('Cambiar contraseña', style: TextStyle(color: SpaceColors.text)),
+          trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ChangePasswordScreen(state: state))),
+        ),
+        ListTile(
+          leading: Icon(Icons.drafts_outlined, color: SpaceColors.text),
+          title: Text('Borradores', style: TextStyle(color: SpaceColors.text)),
+          trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => DraftsScreen(state: state))),
+        ),
         Padding(padding: const EdgeInsets.fromLTRB(16, 16, 16, 6), child: Text('Cómo usás Space Social', style: TextStyle(color: SpaceColors.textMuted, fontSize: 13, fontWeight: FontWeight.w600))),
         ListTile(
           leading: Icon(Icons.bookmark_border, color: SpaceColors.text),
@@ -975,6 +987,102 @@ class ActivityScreen extends StatelessWidget {
           subtitle: Text(p.caption.isEmpty ? 'Publicación' : p.caption, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: SpaceColors.textMuted)),
         );
       },
+    );
+  }
+}
+
+class ChangePasswordScreen extends StatefulWidget {
+  const ChangePasswordScreen({super.key, required this.state});
+  final AppState state;
+  @override
+  State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
+}
+
+class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
+  final current = TextEditingController();
+  final next = TextEditingController();
+  bool busy = false;
+
+  @override
+  void dispose() {
+    current.dispose();
+    next.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: SpaceColors.bg,
+      appBar: AppBar(backgroundColor: SpaceColors.bg, title: Text('Cambiar contraseña', style: TextStyle(color: SpaceColors.text))),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(children: [
+          TextField(controller: current, obscureText: true, style: TextStyle(color: SpaceColors.text), decoration: InputDecoration(labelText: 'Contraseña actual', labelStyle: TextStyle(color: SpaceColors.textMuted))),
+          TextField(controller: next, obscureText: true, style: TextStyle(color: SpaceColors.text), decoration: InputDecoration(labelText: 'Nueva contraseña', labelStyle: TextStyle(color: SpaceColors.textMuted))),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: busy
+                ? null
+                : () async {
+                    setState(() => busy = true);
+                    final ok = await widget.state.changePassword(current.text, next.text);
+                    if (!mounted) return;
+                    setState(() => busy = false);
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(ok ? 'Contraseña actualizada' : (widget.state.lastError ?? 'Error'))));
+                    if (ok) Navigator.pop(context);
+                  },
+            child: Text(busy ? 'Guardando...' : 'Guardar'),
+          ),
+        ]),
+      ),
+    );
+  }
+}
+
+class DraftsScreen extends StatefulWidget {
+  const DraftsScreen({super.key, required this.state});
+  final AppState state;
+  @override
+  State<DraftsScreen> createState() => _DraftsScreenState();
+}
+
+class _DraftsScreenState extends State<DraftsScreen> {
+  String caption = '';
+  String loc = '';
+
+  @override
+  void initState() {
+    super.initState();
+    SharedPreferences.getInstance().then((p) {
+      if (!mounted) return;
+      setState(() {
+        caption = p.getString('ss_draft_caption') ?? '';
+        loc = p.getString('ss_draft_loc') ?? '';
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: SpaceColors.bg,
+      appBar: AppBar(backgroundColor: SpaceColors.bg, title: Text('Borradores', style: TextStyle(color: SpaceColors.text))),
+      body: caption.isEmpty && loc.isEmpty
+          ? Center(child: Text('No hay borradores', style: TextStyle(color: SpaceColors.textMuted)))
+          : ListTile(
+              title: Text(caption.isEmpty ? '(sin pie)' : caption, style: TextStyle(color: SpaceColors.text)),
+              subtitle: Text(loc.isEmpty ? 'Borrador de publicación' : loc, style: TextStyle(color: SpaceColors.textMuted)),
+              trailing: TextButton(
+                onPressed: () async {
+                  final p = await SharedPreferences.getInstance();
+                  await p.remove('ss_draft_caption');
+                  await p.remove('ss_draft_loc');
+                  if (mounted) setState(() { caption = ''; loc = ''; });
+                },
+                child: const Text('Borrar'),
+              ),
+            ),
     );
   }
 }

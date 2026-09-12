@@ -162,6 +162,29 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
               ShareSheet.show(context, widget.state, post: post);
             },
           ),
+          ListTile(
+            title: const Text('Reportar', style: TextStyle(color: Colors.redAccent)),
+            onTap: () {
+              Navigator.pop(ctx);
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: SpaceColors.surface,
+                builder: (r) => SafeArea(
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    ListTile(title: Text('Reportar publicación', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold))),
+                    for (final reason in const ['Spam', 'Odio o acoso', 'Desnudos o contenido sexual', 'Estafa o fraude', 'Propiedad intelectual'])
+                      ListTile(
+                        title: Text(reason, style: TextStyle(color: SpaceColors.text)),
+                        onTap: () {
+                          Navigator.pop(r);
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Reporte enviado: $reason')));
+                        },
+                      ),
+                  ]),
+                ),
+              );
+            },
+          ),
         ]),
       ),
     );

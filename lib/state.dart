@@ -187,7 +187,15 @@ class AppState extends ChangeNotifier {
   }
 
   List<Story> get liveStories =>
-      stories.where((s) => s.isLive && !archived.contains(s.id)).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      stories.where((s) {
+        if (!s.isLive || archived.contains(s.id)) return false;
+        if (!s.closeFriendsOnly) return true;
+        if (!isLoggedIn) return false;
+        if (s.userId == me.id) return true;
+        if (s.allowedUserIds.isNotEmpty) return s.allowedUserIds.contains(me.id);
+        return false;
+      }).toList()
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
   List<Story> storiesOf(String userId) =>
       liveStories.where((s) => s.userId == userId).toList();
@@ -946,7 +954,7 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  Future<bool> publishStory(File image, {String overlayText = ''}) async {
+  Future<bool> publishStory(File image, {String overlayText = '', bool closeFriendsOnly = false}) async {
     if (!isLoggedIn) return false;
     lastError = null;
     try {
@@ -959,8 +967,10 @@ class AppState extends ChangeNotifier {
         'imagePath': url,
         'createdAt': created.toIso8601String(),
         'overlayText': overlayText,
+        'closeFriendsOnly': closeFriendsOnly,
+        'allowedUserIds': closeFriendsOnly ? [me.id, ...closeFriends] : <String>[],
       });
-      stories = [Story(id: id, userId: me.id, imagePath: url, createdAt: created, overlayText: overlayText), ...stories];
+      stories = [Story(id: id, userId: me.id, imagePath: url, createdAt: created, overlayText: overlayText, closeFriendsOnly: closeFriendsOnly, allowedUserIds: closeFriendsOnly ? [me.id, ...closeFriends] : const []), ...stories];
       notifyListeners();
       return true;
     } catch (e) {
@@ -1194,6 +1204,28 @@ class AppState extends ChangeNotifier {
     } catch (_) {}
     messages = messages.where((m) => m.id != id).toList();
     notifyListeners();
+  }
+
+  Future<bool> changePassword(String currentPassword, String nextPassword) async {
+    final user = _auth.currentUser;
+    final email = user?.email ?? me.email;
+    if (user == null || email.isEmpty || nextPassword.length < 6) {
+      lastError = 'La contraseña nueva tiene que tener 6 caracteres o más.';
+      notifyListeners();
+      return false;
+    }
+    try {
+      final cred = EmailAuthProvider.credential(email: email, password: currentPassword);
+      await user.reauthenticateWithCredential(cred);
+      await user.updatePassword(nextPassword);
+      lastError = null;
+      notifyListeners();
+      return true;
+    } catch (_) {
+      lastError = 'No se pudo cambiar la contraseña. Revisá la actual.';
+      notifyListeners();
+      return false;
+    }
   }
 
   Future<void> sendMessage(String toId, String text) async {

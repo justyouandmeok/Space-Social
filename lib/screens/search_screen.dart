@@ -132,7 +132,17 @@ class _SearchScreenState extends State<SearchScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
             child: Wrap(spacing: 8, children: [
-              Padding(padding: EdgeInsets.only(top: 8), child: Text('Recientes', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12))),
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: GestureDetector(
+                  onTap: () async {
+                    final p = await SharedPreferences.getInstance();
+                    await p.remove('ss_search');
+                    setState(() => _recent = []);
+                  },
+                  child: Text('Recientes · borrar', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+                ),
+              ),
               ..._recent.map((s) => ActionChip(
                     label: Text(s, style: TextStyle(color: SpaceColors.text)),
                     backgroundColor: SpaceColors.surface,

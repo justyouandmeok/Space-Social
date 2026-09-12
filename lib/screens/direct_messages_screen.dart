@@ -316,9 +316,43 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                     return Align(
                       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
                       child: GestureDetector(
-                        onLongPress: isMe ? () async {
-                          await widget.state.deleteMessage(msg.id);
-                        } : null,
+                        onLongPress: () {
+                          showModalBottomSheet(
+                            context: context,
+                            backgroundColor: SpaceColors.surface,
+                            builder: (ctx) => SafeArea(
+                              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                                if (!isMe)
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                                    child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+                                      for (final e in const ['❤️', '😂', '🔥', '👏', '😮'])
+                                        GestureDetector(
+                                          onTap: () {
+                                            Navigator.pop(ctx);
+                                            widget.state.sendMessage(widget.user.id, e);
+                                          },
+                                          child: Text(e, style: const TextStyle(fontSize: 26)),
+                                        ),
+                                    ]),
+                                  ),
+                                if (isMe)
+                                  ListTile(
+                                    leading: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                                    title: const Text('Cancelar envío', style: TextStyle(color: Colors.redAccent)),
+                                    onTap: () {
+                                      Navigator.pop(ctx);
+                                      widget.state.deleteMessage(msg.id);
+                                    },
+                                  ),
+                                ListTile(
+                                  title: Text('Cerrar', style: TextStyle(color: SpaceColors.textMuted)),
+                                  onTap: () => Navigator.pop(ctx),
+                                ),
+                              ]),
+                            ),
+                          );
+                        },
                         child: Container(
                         margin: const EdgeInsets.symmetric(vertical: 4),
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),

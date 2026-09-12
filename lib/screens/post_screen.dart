@@ -113,10 +113,10 @@ class _PostScreenState extends State<PostScreen> {
     final place = loc.text;
     Navigator.of(context).pop();
     if (m == 1) {
-      await widget.state.publishStory(f, overlayText: c);
+      await widget.state.publishStory(f, overlayText: c, closeFriendsOnly: audience == 'Mejores amigos');
     } else {
       await widget.state.publishPost(image: f, caption: c, location: place, isReel: m == 2, isVideo: v);
-      if (alsoStory) await widget.state.publishStory(f, overlayText: c);
+      if (alsoStory) await widget.state.publishStory(f, overlayText: c, closeFriendsOnly: audience == 'Mejores amigos');
     }
   }
 

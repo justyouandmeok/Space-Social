@@ -266,6 +266,8 @@ class Story {
     required this.createdAt,
     this.overlayText = '',
     this.viewedBy = const [],
+    this.closeFriendsOnly = false,
+    this.allowedUserIds = const [],
   });
   final String id;
   final String userId;
@@ -273,6 +275,8 @@ class Story {
   final DateTime createdAt;
   final String overlayText;
   final List<String> viewedBy;
+  final bool closeFriendsOnly;
+  final List<String> allowedUserIds;
   bool get isLive => DateTime.now().difference(createdAt) < const Duration(hours: 24);
 
   Map<String, dynamic> toJson() => {
@@ -282,6 +286,8 @@ class Story {
         'createdAt': createdAt.toIso8601String(),
         'overlayText': overlayText,
         'viewedBy': viewedBy,
+        'closeFriendsOnly': closeFriendsOnly,
+        'allowedUserIds': allowedUserIds,
       };
 
   factory Story.fromJson(Map<String, dynamic> j) => Story(
@@ -291,5 +297,7 @@ class Story {
         createdAt: DateTime.tryParse(j['createdAt'] as String? ?? '') ?? DateTime.now(),
         overlayText: j['overlayText'] as String? ?? '',
         viewedBy: ((j['viewedBy'] as List?) ?? const []).cast<String>(),
+        closeFriendsOnly: j['closeFriendsOnly'] == true,
+        allowedUserIds: ((j['allowedUserIds'] as List?) ?? const []).cast<String>(),
       );
 }
