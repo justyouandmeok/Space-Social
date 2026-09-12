@@ -167,8 +167,8 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
                                     ? 1.0
                                     : 0.0,
                             backgroundColor: Colors.white24,
-                            valueColor: AlwaysStoppedAnimation<Color>(SpaceColors.cosmicCyan),
-                            minHeight: 2.5,
+                            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                            minHeight: 2,
                           ),
                         ),
                       ),
@@ -177,9 +177,9 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
                 ),
                 const SizedBox(height: 12),
                 Row(children: [
-                  Avatar(user?.avatarPath ?? '', size: 36),
-                  const SizedBox(width: 10),
-                  Text(user?.username ?? '', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                  Avatar(user?.avatarPath ?? '', size: 32),
+                  const SizedBox(width: 8),
+                  Text(user?.username ?? '', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14)),
                   if (story.closeFriendsOnly) ...[
                     const SizedBox(width: 6),
                     Container(
@@ -352,11 +352,11 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
                     Expanded(
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
-                        height: 46,
+                        height: 44,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(25),
-                          border: Border.all(color: Colors.white30),
-                          color: Colors.black.withValues(alpha: 0.4),
+                          borderRadius: BorderRadius.circular(22),
+                          border: Border.all(color: Colors.white54),
+                          color: Colors.black.withValues(alpha: 0.25),
                         ),
                         child: TextField(
                           controller: _reply,

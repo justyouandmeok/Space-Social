@@ -108,19 +108,20 @@ class _SearchScreenState extends State<SearchScreen> {
               final isSelected = _selectedCategory == index;
               return Padding(
                 padding: const EdgeInsets.only(right: 8),
-                child: FilterChip(
+                child: ChoiceChip(
                   selected: isSelected,
+                  showCheckmark: false,
                   label: Text(
                     _categories[index],
                     style: TextStyle(
-                      color: SpaceColors.text,
-                      fontSize: 12,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: const Color(0xFF262626),
+                      fontSize: 13,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                     ),
                   ),
-                  backgroundColor: SpaceColors.surface,
-                  selectedColor: SpaceColors.nebulaPurple,
-                  side: BorderSide(color: isSelected ? SpaceColors.text : SpaceColors.hairline),
+                  backgroundColor: Colors.white,
+                  selectedColor: const Color(0xFFEFEFEF),
+                  side: BorderSide(color: isSelected ? const Color(0xFF262626) : const Color(0xFFDBDBDB)),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   onSelected: (_) => setState(() => _selectedCategory = index),
                 ),
@@ -224,9 +225,9 @@ class _SearchScreenState extends State<SearchScreen> {
             itemCount: posts.length,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
-              crossAxisSpacing: 2,
-              mainAxisSpacing: 2,
-              childAspectRatio: 0.72,
+              crossAxisSpacing: 1,
+              mainAxisSpacing: 1,
+              childAspectRatio: 1,
             ),
             itemBuilder: (context, index) {
               final p = posts[index];
