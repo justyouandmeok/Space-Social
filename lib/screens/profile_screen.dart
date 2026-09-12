@@ -97,19 +97,30 @@ class ProfileScreen extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(2.5),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: state.storiesOf(user.id).isNotEmpty
-                                ? const LinearGradient(colors: [Color(0xFFF58529), Color(0xFFDD2A7B), Color(0xFF8134AF)])
-                                : null,
-                            border: state.storiesOf(user.id).isEmpty ? Border.all(color: const Color(0xFFDBDBDB), width: 1) : null,
-                          ),
+                        GestureDetector(
+                          onTap: () {
+                            if (state.storiesOf(user.id).isNotEmpty) {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (_) => StoryViewerScreen(state: state, userId: user.id),
+                              ));
+                            } else if (isMe) {
+                              Navigator.of(context).push(MaterialPageRoute(builder: (_) => EditProfileScreen(state: state)));
+                            }
+                          },
                           child: Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                            child: Avatar(user.avatarPath, size: 84),
+                            padding: const EdgeInsets.all(2.5),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: state.storiesOf(user.id).isNotEmpty
+                                  ? const LinearGradient(colors: [Color(0xFFF58529), Color(0xFFDD2A7B), Color(0xFF8134AF)])
+                                  : null,
+                              border: state.storiesOf(user.id).isEmpty ? Border.all(color: const Color(0xFFDBDBDB), width: 1) : null,
+                            ),
+                            child: Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                              child: Avatar(user.avatarPath, size: 86),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 18),
@@ -179,6 +190,22 @@ class ProfileScreen extends StatelessWidget {
                           Clipboard.setData(ClipboardData(text: 'https://spacesocial.app/${user.username}'));
                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enlace del perfil copiado')));
                         })),
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          height: 32,
+                          width: 36,
+                          child: ElevatedButton(
+                            onPressed: onOpenCreate,
+                            style: ElevatedButton.styleFrom(
+                              elevation: 0,
+                              backgroundColor: const Color(0xFFEFEFEF),
+                              foregroundColor: Colors.black,
+                              padding: EdgeInsets.zero,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                            child: const Icon(Icons.person_add_outlined, size: 18),
+                          ),
+                        ),
                       ])
                     else
                       Row(children: [
@@ -317,7 +344,7 @@ class ProfileScreen extends StatelessWidget {
                         scrollDirection: Axis.horizontal,
                         children: [
                           if (isMe) _highlightAdd(context),
-                          ...highlights.take(8).map((s) => _highlight(s, user.username)),
+                          ...highlights.take(8).map((s) => _highlight(context, s, user)),
                           if (isMe) _SavedHighlights(state: state),
                         ],
                       ),
@@ -396,18 +423,32 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  static Widget _highlight(Story s, String name) {
+  Widget _highlight(BuildContext context, Story s, UserAccount owner) {
     return Padding(
       padding: const EdgeInsets.only(right: 14),
-      child: Column(children: [
-        Container(
-          padding: const EdgeInsets.all(2),
-          decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: SpaceColors.textMuted, width: 1.5)),
-          child: Avatar(s.imagePath, size: 56),
-        ),
-        const SizedBox(height: 4),
-        SizedBox(width: 64, child: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: TextStyle(color: SpaceColors.text, fontSize: 11))),
-      ]),
+      child: GestureDetector(
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => StoryViewerScreen(state: state, userId: owner.id, onlyIds: [s.id]),
+        )),
+        child: Column(children: [
+          Container(
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: const Color(0xFFDBDBDB), width: 1.5)),
+            child: Avatar(s.imagePath, size: 56),
+          ),
+          const SizedBox(height: 4),
+          SizedBox(
+            width: 64,
+            child: Text(
+              owner.username,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Color(0xFF262626), fontSize: 11),
+            ),
+          ),
+        ]),
+      ),
     );
   }
 
@@ -443,9 +484,9 @@ class ProfileScreen extends StatelessWidget {
               bottom: 6,
               left: 6,
               child: Row(children: [
-                Icon(Icons.play_arrow_outlined, color: SpaceColors.text, size: 16),
+                const Icon(Icons.play_arrow, color: Colors.white, size: 16),
                 const SizedBox(width: 2),
-                Text('$views', style: TextStyle(color: SpaceColors.text, fontSize: 12, fontWeight: FontWeight.bold)),
+                Text(compact(p.views < 1 ? views : p.views), style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
               ]),
             ),
           ]),
@@ -468,7 +509,11 @@ class ProfileScreen extends StatelessWidget {
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 1.5, mainAxisSpacing: 1.5, childAspectRatio: 3 / 4),
       itemBuilder: (context, index) {
         final p = items[index];
-        return Stack(fit: StackFit.expand, children: [
+        return GestureDetector(
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(
+            builder: (_) => PostDetailFeedScreen(state: state, posts: items, initialIndex: index, onOpenProfile: onOpenProfile ?? (_) {}),
+          )),
+          child: Stack(fit: StackFit.expand, children: [
           MediaView(p.imagePath, video: p.isVideo),
           Positioned(
             bottom: 6,
@@ -476,16 +521,25 @@ class ProfileScreen extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(3),
               decoration: BoxDecoration(color: Color(0x99000000), shape: BoxShape.circle),
-              child: Icon(Icons.person_pin_outlined, color: SpaceColors.text, size: 14),
+              child: Icon(Icons.person_pin_outlined, color: Colors.white, size: 14),
             ),
           ),
-        ]);
+        ]),
+        );
       },
     );
   }
   Widget _grid(List<Post> items) {
     if (items.isEmpty) {
-      return Center(child: Text('Nada por acá todavía', style: TextStyle(color: SpaceColors.textMuted)));
+      return Center(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          const Icon(Icons.camera_alt_outlined, size: 48, color: Color(0xFF262626)),
+          const SizedBox(height: 12),
+          const Text('Todavía no hay publicaciones', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20)),
+          if (user.id == state.me.id)
+            TextButton(onPressed: onOpenCreate, child: const Text('Compartir tu primera foto')),
+        ]),
+      );
     }
     return GridView.builder(
       padding: EdgeInsets.zero,
@@ -494,7 +548,7 @@ class ProfileScreen extends StatelessWidget {
         crossAxisCount: 3,
         crossAxisSpacing: 1.5,
         mainAxisSpacing: 1.5,
-        childAspectRatio: 3 / 4,
+        childAspectRatio: 1,
       ),
       itemBuilder: (context, index) {
         final p = items[index];
