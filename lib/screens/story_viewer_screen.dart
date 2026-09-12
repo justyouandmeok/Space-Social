@@ -35,6 +35,8 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
   final _liveComments = <String>[];
   int _liveIndex = 0;
   Timer? _commentTimer;
+  Timer? _tapTimer;
+  Offset? _lastTap;
 
   List<Story> get stories {
     if (widget.onlyIds != null) {
@@ -68,7 +70,9 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
     _timer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
       if (!_isPaused && mounted) {
         setState(() {
-          _percent += 0.01;
+          final path = stories.isEmpty ? '' : stories[_currentIndex].imagePath.toLowerCase();
+          final video = path.contains('.mp4') || path.contains('.mov') || path.contains('.webm');
+          _percent += video ? 0.0035 : 0.01;
           if (_percent >= 1.0) _nextStory();
         });
       }
@@ -103,6 +107,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
   void dispose() {
     _timer?.cancel();
     _commentTimer?.cancel();
+    _tapTimer?.cancel();
     _reply.dispose();
     super.dispose();
   }
@@ -123,12 +128,23 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
     final user = widget.state.tryUser(widget.userId);
     final caption = story.overlayText;
 
-    return Scaffold(
+    return PopScope(
+      canPop: true,
+      child: Scaffold(
       backgroundColor: Colors.black,
       body: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onLongPressStart: (_) => setState(() => _isPaused = true),
         onLongPressEnd: (_) => setState(() => _isPaused = false),
+        onDoubleTapDown: (d) => _lastTap = d.globalPosition,
         onDoubleTap: () async {
+          _tapTimer?.cancel();
+          final w = MediaQuery.of(context).size.width;
+          final x = _lastTap?.dx ?? w / 2;
+          if (x > w * 0.72) {
+            if (mounted) Navigator.of(context).pop();
+            return;
+          }
           HapticFeedback.lightImpact();
           setState(() {
             _liked = true;
@@ -143,17 +159,22 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
           });
         },
         onTapUp: (details) {
-          final width = MediaQuery.of(context).size.width;
-          if (details.globalPosition.dx < width / 3) {
-            _previousStory();
-          } else {
-            _nextStory();
-          }
+          _tapTimer?.cancel();
+          final pos = details.globalPosition;
+          _tapTimer = Timer(const Duration(milliseconds: 220), () {
+            if (!mounted) return;
+            final width = MediaQuery.of(context).size.width;
+            if (pos.dx < width / 3) {
+              _previousStory();
+            } else {
+              _nextStory();
+            }
+          });
         },
         child: Stack(
           fit: StackFit.expand,
           children: [
-            MediaView(story.imagePath),
+            MediaView(story.imagePath, autoplay: !_isPaused, active: !_isPaused, showMute: false, showPlayButton: false, tapToPause: false),
             if (_showHeart)
               const Center(
                 child: Icon(Icons.favorite, color: Colors.white, size: 118, shadows: [
@@ -171,7 +192,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
               ),
             ),
             Positioned(
-              top: 50,
+              top: MediaQuery.of(context).padding.top + 8,
               left: 12,
               right: 12,
               child: Column(children: [
@@ -338,7 +359,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
                 ),
               ),
             Positioned(
-              bottom: 24,
+              bottom: MediaQuery.of(context).padding.bottom + 10,
               left: 16,
               right: 16,
               child: Column(
@@ -432,6 +453,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 }

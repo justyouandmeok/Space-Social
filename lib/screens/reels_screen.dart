@@ -91,6 +91,7 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
       );
     }
 
+    final bottomPad = MediaQuery.of(context).padding.bottom;
     return Scaffold(
       backgroundColor: Colors.black,
       body: PageView.builder(
@@ -109,14 +110,6 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
           final liked = post.likedBy(state.me.id);
           final active = playing && index == _page;
           return GestureDetector(
-            onTapUp: (d) {
-              final w = MediaQuery.of(context).size.width;
-              if (d.localPosition.dx < w * 0.28 && _page > 0) {
-                _pager.previousPage(duration: const Duration(milliseconds: 180), curve: Curves.easeOut);
-              } else if (d.localPosition.dx > w * 0.72 && _page < items.length - 1) {
-                _pager.nextPage(duration: const Duration(milliseconds: 180), curve: Curves.easeOut);
-              }
-            },
             onDoubleTap: () {
               HapticFeedback.lightImpact();
               _like(post.id);
@@ -126,7 +119,7 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
             child: Stack(
             fit: StackFit.expand,
             children: [
-              MediaView(post.imagePath, video: post.isVideo, autoplay: active, active: active, followGlobalMute: true, speed: _holdSpeed && index == _page ? 2 : 1, progressBar: active, showMute: false),
+              MediaView(post.imagePath, video: post.isVideo || post.isReelLike, autoplay: active, active: active, followGlobalMute: true, speed: _holdSpeed && index == _page ? 2 : 1, progressBar: active, showMute: false, showPlayButton: false, tapToPause: false),
               const DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -145,7 +138,7 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
                   ]),
                 ),
               if (!(_holdSpeed && index == _page)) Positioned(
-                top: 48,
+                top: MediaQuery.of(context).padding.top + 6,
                 left: 16,
                 right: 56,
                 child: Row(children: [
@@ -161,40 +154,18 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
                 ]),
               ),
               if (!(_holdSpeed && index == _page)) Positioned(
-                top: 44,
-                right: 8,
-                child: Row(children: [
-                  IconButton(
-                    onPressed: () {
-                      showModalBottomSheet(
-                        context: context,
-                        backgroundColor: const Color(0xFF1C1C1C),
-                        builder: (_) => SafeArea(
-                          child: Column(mainAxisSize: MainAxisSize.min, children: [
-                            const Padding(
-                              padding: EdgeInsets.all(16),
-                              child: Text('Tu algoritmo', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18)),
-                            ),
-                            ListTile(title: const Text('Ver más de este tema', style: TextStyle(color: Colors.white)), onTap: () => Navigator.pop(context)),
-                            ListTile(title: const Text('Ver menos de este tema', style: TextStyle(color: Colors.white)), onTap: () => Navigator.pop(context)),
-                            ListTile(title: const Text('No me interesa', style: TextStyle(color: Colors.white)), onTap: () => Navigator.pop(context)),
-                          ]),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.favorite_border, color: Colors.white),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) => PostScreen(state: state, initialMode: 2),
-                    )),
-                    icon: const Icon(Icons.camera_alt_outlined, color: Colors.white, size: 26),
-                  ),
-                ]),
+                top: MediaQuery.of(context).padding.top,
+                right: 4,
+                child: IconButton(
+                  onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => PostScreen(state: state, initialMode: 2),
+                  )),
+                  icon: const Icon(Icons.camera_alt_outlined, color: Colors.white, size: 26),
+                ),
               ),
               if (!(_holdSpeed && index == _page)) Positioned(
-                right: 12,
-                bottom: 24,
+                right: 10,
+                bottom: 16 + bottomPad,
                 child: Column(children: [
                   _action(
                     liked ? Icons.favorite : Icons.favorite_border,
@@ -239,9 +210,9 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
                 ]),
               ),
               if (!(_holdSpeed && index == _page)) Positioned(
-                left: 16,
-                bottom: 24,
-                right: 80,
+                left: 14,
+                bottom: 16 + bottomPad,
+                right: 78,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
