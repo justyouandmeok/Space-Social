@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config.dart';
 import 'screens/main_screen.dart';
@@ -35,6 +36,13 @@ class _SpaceSocialAppState extends State<SpaceSocialApp> {
   Widget build(BuildContext context) {
     SpaceColors.dark = state.darkMode;
     LumaColors.dark = state.darkMode;
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: state.darkMode ? Brightness.light : Brightness.dark,
+      statusBarBrightness: state.darkMode ? Brightness.dark : Brightness.light,
+      systemNavigationBarColor: SpaceColors.nav,
+      systemNavigationBarIconBrightness: state.darkMode ? Brightness.light : Brightness.dark,
+    ));
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Space Social',

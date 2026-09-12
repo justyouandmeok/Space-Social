@@ -114,11 +114,11 @@ class ProfileScreen extends StatelessWidget {
                               gradient: state.storiesOf(user.id).isNotEmpty
                                   ? const LinearGradient(colors: [Color(0xFFF58529), Color(0xFFDD2A7B), Color(0xFF8134AF)])
                                   : null,
-                              border: state.storiesOf(user.id).isEmpty ? Border.all(color: const Color(0xFFDBDBDB), width: 1) : null,
+                              border: state.storiesOf(user.id).isEmpty ? Border.all(color: SpaceColors.hairline, width: 1) : null,
                             ),
                             child: Container(
                               padding: const EdgeInsets.all(2),
-                              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                              decoration: BoxDecoration(color: SpaceColors.bg, shape: BoxShape.circle),
                               child: Avatar(user.avatarPath, size: 86),
                             ),
                           ),
@@ -159,13 +159,13 @@ class ProfileScreen extends StatelessWidget {
                       GestureDetector(
                         onTap: () => LinksBottomSheet.show(context, user),
                         child: Row(children: [
-                          const Icon(Icons.link, color: Color(0xFF00376B), size: 16),
+                          Icon(Icons.link, color: SpaceColors.link, size: 16),
                           const SizedBox(width: 4),
                           Flexible(
                             child: Text(
                               user.website.replaceFirst(RegExp(r'^https?://'), ''),
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(color: Color(0xFF00376B), fontWeight: FontWeight.w600, fontSize: 13),
+                              style: TextStyle(color: SpaceColors.link, fontWeight: FontWeight.w600, fontSize: 13),
                             ),
                           ),
                         ]),
@@ -198,8 +198,8 @@ class ProfileScreen extends StatelessWidget {
                             onPressed: onOpenCreate,
                             style: ElevatedButton.styleFrom(
                               elevation: 0,
-                              backgroundColor: const Color(0xFFEFEFEF),
-                              foregroundColor: Colors.black,
+                              backgroundColor: SpaceColors.btn,
+                              foregroundColor: SpaceColors.onBtn,
                               padding: EdgeInsets.zero,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                             ),
@@ -357,11 +357,11 @@ class ProfileScreen extends StatelessWidget {
               pinned: true,
               delegate: _TabBarDelegate(
                 tabBar: TabBar(
-                  indicatorColor: const Color(0xFF262626),
+                  indicatorColor: SpaceColors.icon,
                   indicatorWeight: 0.8,
-                  dividerColor: const Color(0xFFDBDBDB),
-                  labelColor: const Color(0xFF262626),
-                  unselectedLabelColor: const Color(0xFF8E8E8E),
+                  dividerColor: SpaceColors.hairline,
+                  labelColor: SpaceColors.icon,
+                  unselectedLabelColor: SpaceColors.textMuted,
                   tabs: const [
                     Tab(icon: Icon(Icons.grid_on, size: 22)),
                     Tab(icon: Icon(Icons.movie_outlined, size: 22)),
@@ -387,9 +387,9 @@ class ProfileScreen extends StatelessWidget {
 
   static Widget _stat(String count, String label) {
     return Column(children: [
-      Text(count, style: const TextStyle(color: Color(0xFF262626), fontWeight: FontWeight.w700, fontSize: 16, height: 1.1)),
+      Text(count, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w700, fontSize: 16, height: 1.1)),
       const SizedBox(height: 2),
-      Text(label, style: const TextStyle(color: Color(0xFF8E8E8E), fontSize: 12, height: 1.1)),
+      Text(label, style: TextStyle(color: SpaceColors.textMuted, fontSize: 12, height: 1.1)),
     ]);
   }
 
@@ -397,8 +397,8 @@ class ProfileScreen extends StatelessWidget {
     return ElevatedButton(
       onPressed: onTap,
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFFEFEEF1),
-        foregroundColor: Colors.black,
+        backgroundColor: SpaceColors.btn,
+        foregroundColor: SpaceColors.onBtn,
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
@@ -435,7 +435,7 @@ class ProfileScreen extends StatelessWidget {
         child: Column(children: [
           Container(
             padding: const EdgeInsets.all(2),
-            decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: const Color(0xFFDBDBDB), width: 1.5)),
+            decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: SpaceColors.hairline, width: 1.5)),
             child: Avatar(s.imagePath, size: 56),
           ),
           const SizedBox(height: 4),
@@ -446,7 +446,7 @@ class ProfileScreen extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Color(0xFF262626), fontSize: 11),
+              style: TextStyle(color: SpaceColors.text, fontSize: 11),
             ),
           ),
         ]),
@@ -543,7 +543,7 @@ class ProfileScreen extends StatelessWidget {
     if (items.isEmpty) {
       return Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          const Icon(Icons.camera_alt_outlined, size: 48, color: Color(0xFF262626)),
+          Icon(Icons.camera_alt_outlined, size: 48, color: SpaceColors.icon),
           const SizedBox(height: 12),
           const Text('Todavía no hay publicaciones', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20)),
           if (user.id == state.me.id)
@@ -619,7 +619,7 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => false;
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => true;
 }
 
 
@@ -754,7 +754,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   padding: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFFDBDBDB)),
+                    border: Border.all(color: SpaceColors.hairline),
                   ),
                   child: avatar != null
                       ? ClipOval(child: Image.file(avatar!, width: 88, height: 88, fit: BoxFit.cover))
@@ -845,8 +845,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           style: TextStyle(color: SpaceColors.text),
           decoration: InputDecoration(
             prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: SpaceColors.textMuted, size: 20) : null,
-            enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFFDBDBDB))),
-            focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF262626))),
+            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: SpaceColors.hairline)),
+            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: SpaceColors.text)),
           ),
         ),
       ]),
@@ -861,15 +861,15 @@ class SettingsScreen extends StatelessWidget {
 
   Widget _h(String t) => Padding(
         padding: const EdgeInsets.fromLTRB(16, 22, 16, 6),
-        child: Text(t, style: const TextStyle(color: Color(0xFF8E8E8E), fontSize: 13, fontWeight: FontWeight.w600)),
+        child: Text(t, style: TextStyle(color: SpaceColors.textMuted, fontSize: 13, fontWeight: FontWeight.w600)),
       );
 
   Widget _i(IconData icon, String title, VoidCallback onTap, {String? sub}) => ListTile(
         dense: true,
-        leading: Icon(icon, color: const Color(0xFF262626), size: 22),
-        title: Text(title, style: const TextStyle(color: Color(0xFF262626), fontSize: 16)),
-        subtitle: sub == null ? null : Text(sub, style: const TextStyle(color: Color(0xFF8E8E8E), fontSize: 13)),
-        trailing: const Icon(Icons.chevron_right, color: Color(0xFFC7C7C7), size: 20),
+        leading: Icon(icon, color: SpaceColors.icon, size: 22),
+        title: Text(title, style: TextStyle(color: SpaceColors.text, fontSize: 16)),
+        subtitle: sub == null ? null : Text(sub, style: TextStyle(color: SpaceColors.textMuted, fontSize: 13)),
+        trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted, size: 20),
         onTap: onTap,
       );
 
@@ -879,7 +879,7 @@ class SettingsScreen extends StatelessWidget {
       backgroundColor: SpaceColors.bg,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: const Text('Configuración y actividad', style: TextStyle(color: Color(0xFF262626), fontWeight: FontWeight.w700, fontSize: 18)),
+        title: Text('Configuración y actividad', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w700, fontSize: 18)),
       ),
       body: ListView(children: [
         Padding(
@@ -888,10 +888,10 @@ class SettingsScreen extends StatelessWidget {
             readOnly: true,
             decoration: InputDecoration(
               hintText: 'Buscar',
-              hintStyle: const TextStyle(color: Color(0xFF8E8E8E)),
-              prefixIcon: const Icon(Icons.search, color: Color(0xFF8E8E8E)),
+              hintStyle: TextStyle(color: SpaceColors.textMuted),
+              prefixIcon: Icon(Icons.search, color: SpaceColors.textMuted),
               filled: true,
-              fillColor: const Color(0xFFEFEFEF),
+              fillColor: SpaceColors.chip,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
               contentPadding: const EdgeInsets.symmetric(vertical: 0),
             ),
@@ -899,16 +899,16 @@ class SettingsScreen extends StatelessWidget {
         ),
         ListTile(
           leading: Avatar(state.me.avatarPath, size: 48),
-          title: const Text('Centro de cuentas', style: TextStyle(color: Color(0xFF262626), fontWeight: FontWeight.w700, fontSize: 16)),
-          subtitle: Text('Contraseña, seguridad y @${state.me.username}', style: const TextStyle(color: Color(0xFF8E8E8E), fontSize: 13)),
-          trailing: const Icon(Icons.chevron_right, color: Color(0xFFC7C7C7)),
+          title: Text('Centro de cuentas', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w700, fontSize: 16)),
+          subtitle: Text('Contraseña, seguridad y @${state.me.username}', style: TextStyle(color: SpaceColors.textMuted, fontSize: 13)),
+          trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => EditProfileScreen(state: state))),
         ),
-        const Divider(height: 1, color: Color(0xFFDBDBDB)),
+        Divider(height: 1, color: SpaceColors.hairline),
         ListTile(
-          leading: const Icon(Icons.lock_outline, color: Color(0xFF262626)),
-          title: const Text('Contraseña y seguridad', style: TextStyle(color: Color(0xFF262626), fontSize: 16)),
-          trailing: const Icon(Icons.chevron_right, color: Color(0xFFC7C7C7)),
+          leading: const Icon(Icons.lock_outline, color: SpaceColors.text),
+          title: const Text('Contraseña y seguridad', style: TextStyle(color: SpaceColors.text, fontSize: 16)),
+          trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ChangePasswordScreen(state: state))),
         ),
         ListTile(
@@ -941,7 +941,7 @@ class SettingsScreen extends StatelessWidget {
         ),
         const Padding(
           padding: EdgeInsets.fromLTRB(16, 16, 16, 6),
-          child: Text('Cómo usas la app', style: TextStyle(color: Color(0xFF8E8E8E), fontSize: 13, fontWeight: FontWeight.w600)),
+          child: Text('Cómo usas la app', style: TextStyle(color: SpaceColors.textMuted, fontSize: 13, fontWeight: FontWeight.w600)),
         ),
         ListTile(
           leading: Icon(Icons.history, color: SpaceColors.text),

@@ -80,18 +80,18 @@ class _SearchScreenState extends State<SearchScreen> {
         title: Container(
           height: 36,
           decoration: BoxDecoration(
-            color: const Color(0xFFEFEFEF),
+            color: SpaceColors.chip,
             borderRadius: BorderRadius.circular(10),
           ),
           child: TextField(
             controller: _searchController,
             onChanged: (_) => setState(() {}),
             onSubmitted: (v) => _remember(v.trim()),
-            style: const TextStyle(color: Color(0xFF262626), fontSize: 16),
-            decoration: const InputDecoration(
-              prefixIcon: Icon(Icons.search, color: Color(0xFF8E8E8E), size: 20),
+            style: TextStyle(color: SpaceColors.text, fontSize: 16),
+            decoration: InputDecoration(
+              prefixIcon: Icon(Icons.search, color: SpaceColors.textMuted, size: 20),
               hintText: 'Buscar',
-              hintStyle: TextStyle(color: Color(0xFF8E8E8E), fontSize: 16),
+              hintStyle: TextStyle(color: SpaceColors.textMuted, fontSize: 16),
               border: InputBorder.none,
               isDense: true,
               contentPadding: EdgeInsets.symmetric(vertical: 8),
@@ -124,7 +124,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         Text(u.username, style: const TextStyle(fontWeight: FontWeight.w600)),
                         if (u.isVerified) const VerifiedBadge(size: 12),
                       ]),
-                      subtitle: Text(u.name, style: const TextStyle(color: Color(0xFF8E8E8E))),
+                      subtitle: Text(u.name, style: TextStyle(color: SpaceColors.textMuted)),
                       onTap: () {
                         _remember(u.username);
                         widget.onOpenProfile(u.id);

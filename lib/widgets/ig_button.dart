@@ -27,8 +27,8 @@ class IgButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           elevation: 0,
           shadowColor: Colors.transparent,
-          backgroundColor: primary ? const Color(0xFF0095F6) : const Color(0xFFEFEFEF),
-          foregroundColor: primary ? Colors.white : Colors.black,
+          backgroundColor: primary ? const Color(0xFF0095F6) : SpaceColors.btn,
+          foregroundColor: primary ? Colors.white : SpaceColors.onBtn,
           disabledBackgroundColor: const Color(0xFFB2DFFC),
           disabledForegroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -65,7 +65,7 @@ class IgHandle extends StatelessWidget {
         margin: const EdgeInsets.only(top: 8, bottom: 6),
         width: 36,
         height: 4,
-        decoration: BoxDecoration(color: const Color(0xFFDBDBDB), borderRadius: BorderRadius.circular(2)),
+        decoration: BoxDecoration(color: SpaceColors.hairline, borderRadius: BorderRadius.circular(2)),
       ),
     );
   }
@@ -77,7 +77,7 @@ class IgTextFieldDecoration {
       hintText: hint,
       hintStyle: TextStyle(color: SpaceColors.textMuted),
       filled: true,
-      fillColor: const Color(0xFFFAFAFA),
+      fillColor: SpaceColors.input,
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),

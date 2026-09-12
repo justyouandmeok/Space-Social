@@ -22,6 +22,11 @@ class SpaceColors {
   static const igBlue = Color(0xFF0095F6);
   static const igRed = Color(0xFFED4956);
   static Color get chip => dark ? const Color(0xFF262626) : const Color(0xFFEFEFEF);
+  static Color get btn => dark ? const Color(0xFF262626) : const Color(0xFFEFEFEF);
+  static Color get onBtn => dark ? const Color(0xFFF5F5F5) : const Color(0xFF262626);
+  static Color get sheet => dark ? const Color(0xFF121212) : const Color(0xFFFFFFFF);
+  static Color get input => dark ? const Color(0xFF1A1A1A) : const Color(0xFFFAFAFA);
+  static Color get link => dark ? const Color(0xFF4CB5F9) : const Color(0xFF00376B);
 }
 
 const spacePageTransitions = PageTransitionsTheme(

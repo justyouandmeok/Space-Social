@@ -49,7 +49,7 @@ class _AuthScreenState extends State<AuthScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
           children: [
             const SizedBox(height: 48),
-            const Text('Space Social', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'GrandHotel', fontSize: 56, color: Color(0xFF262626), height: 1)),
+            Text('Space Social', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'GrandHotel', fontSize: 56, color: SpaceColors.text, height: 1)),
             const SizedBox(height: 40),
             _field(email, register ? 'Correo' : 'Correo, usuario o teléfono'),
             if (register) _field(user, 'Nombre de usuario'),
@@ -75,9 +75,9 @@ class _AuthScreenState extends State<AuthScreen> {
             ),
             const SizedBox(height: 18),
             Row(children: [
-              const Expanded(child: Divider(color: Color(0xFFDBDBDB))),
+              Expanded(child: Divider(color: SpaceColors.hairline)),
               Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Text('O', style: TextStyle(color: SpaceColors.textMuted, fontWeight: FontWeight.w700, fontSize: 12))),
-              const Expanded(child: Divider(color: Color(0xFFDBDBDB))),
+              Expanded(child: Divider(color: SpaceColors.hairline)),
             ]),
             const SizedBox(height: 8),
             TextButton(
@@ -102,9 +102,9 @@ class _AuthScreenState extends State<AuthScreen> {
           hintStyle: TextStyle(color: SpaceColors.textMuted),
           filled: true,
           fillColor: const Color(0xFFFAFAFA),
-          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: const BorderSide(color: Color(0xFFDBDBDB))),
-          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: const BorderSide(color: Color(0xFFA8A8A8))),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: const BorderSide(color: Color(0xFFDBDBDB))),
+          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: SpaceColors.hairline)),
+          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: SpaceColors.textMuted)),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: SpaceColors.hairline)),
         ),
       ),
     );

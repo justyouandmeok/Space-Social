@@ -43,7 +43,7 @@ class NotificationsScreen extends StatelessWidget {
       backgroundColor: SpaceColors.bg,
       appBar: AppBar(
         backgroundColor: SpaceColors.bg,
-        title: const Text('Notificaciones', style: TextStyle(color: Color(0xFF262626), fontWeight: FontWeight.w700, fontSize: 22)),
+        title: const Text('Notificaciones', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w700, fontSize: 22)),
         actions: [
           TextButton(onPressed: () => state.clearActivity(), child: const Text('Limpiar', style: TextStyle(color: Color(0xFF0095F6), fontWeight: FontWeight.w600))),
         ],
@@ -75,7 +75,7 @@ class NotificationsScreen extends StatelessWidget {
   Widget _header(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Text(title, style: const TextStyle(color: Color(0xFF262626), fontWeight: FontWeight.w700, fontSize: 16)),
+      child: Text(title, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w700, fontSize: 16)),
     );
   }
 

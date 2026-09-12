@@ -50,10 +50,10 @@ class DirectMessagesScreen extends StatelessWidget {
       backgroundColor: SpaceColors.bg,
       appBar: AppBar(
         backgroundColor: SpaceColors.bg,
-        title: Text(state.me.username, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 22, color: Color(0xFF262626))),
+        title: Text(state.me.username, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 22, color: SpaceColors.text)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.star_border, color: Color(0xFF262626)),
+            icon: Icon(Icons.star_border, color: SpaceColors.icon),
             onPressed: () {
               final items = state.messages.where((m) => state.starredMessages.contains(m.id)).toList();
               Navigator.of(context).push(MaterialPageRoute(
@@ -76,7 +76,7 @@ class DirectMessagesScreen extends StatelessWidget {
               ));
             },
           ),
-          IconButton(icon: const Icon(Icons.edit_outlined, color: Color(0xFF262626)), onPressed: () {
+          IconButton(icon: Icon(Icons.edit_outlined, color: SpaceColors.icon), onPressed: () {
             final people = state.users.where((u) => u.id != me).toList();
             showModalBottomSheet(context: context, backgroundColor: SpaceColors.surface, builder: (ctx) => SafeArea(child: ListView(
               children: [
@@ -99,12 +99,12 @@ class DirectMessagesScreen extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
           child: Container(
             height: 40,
-            decoration: BoxDecoration(color: const Color(0xFFEFEFEF), borderRadius: BorderRadius.circular(10)),
-            child: const Row(children: [
-              SizedBox(width: 10),
-              Icon(Icons.search, color: Color(0xFF8E8E8E), size: 20),
-              SizedBox(width: 8),
-              Text('Buscar', style: TextStyle(color: Color(0xFF8E8E8E), fontSize: 16)),
+            decoration: BoxDecoration(color: SpaceColors.chip, borderRadius: BorderRadius.circular(10)),
+            child: Row(children: [
+              const SizedBox(width: 10),
+              Icon(Icons.search, color: SpaceColors.textMuted, size: 20),
+              const SizedBox(width: 8),
+              Text('Buscar', style: TextStyle(color: SpaceColors.textMuted, fontSize: 16)),
             ]),
           ),
         ),
@@ -306,10 +306,10 @@ class DirectMessagesScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       decoration: BoxDecoration(
-        color: on ? const Color(0xFF262626) : const Color(0xFFEFEFEF),
+        color: on ? SpaceColors.text : SpaceColors.chip,
         borderRadius: BorderRadius.circular(18),
       ),
-      child: Text(label, style: TextStyle(color: on ? Colors.white : const Color(0xFF262626), fontSize: 13, fontWeight: FontWeight.w600)),
+      child: Text(label, style: TextStyle(color: on ? SpaceColors.bg : SpaceColors.text, fontSize: 13, fontWeight: FontWeight.w600)),
     );
   }
 }
@@ -359,7 +359,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
           Avatar(widget.user.avatarPath, size: 32),
           const SizedBox(width: 10),
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(widget.user.username, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF262626))),
+            Text(widget.user.username, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: SpaceColors.text)),
             Text(_msgController.text.isNotEmpty ? 'Escribiendo…' : widget.user.name, style: const TextStyle(fontSize: 12, color: Color(0xFF8E8E8E))),
           ]),
         ]),
@@ -448,7 +448,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                         margin: const EdgeInsets.symmetric(vertical: 3),
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                         decoration: BoxDecoration(
-                          color: isMe ? const Color(0xFF3797F0) : const Color(0xFFEFEFEF),
+                          color: isMe ? const Color(0xFF3797F0) : SpaceColors.chip,
                           borderRadius: BorderRadius.only(
                             topLeft: const Radius.circular(18),
                             topRight: const Radius.circular(18),
@@ -460,7 +460,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                           ? SizedBox(width: 180, height: 180, child: MediaView(msg.text.substring(5)))
                           : msg.text.startsWith('POST::')
                               ? _sharedPost(widget.state, msg.text.substring(6))
-                              : Text(msg.text, style: TextStyle(color: isMe ? Colors.white : const Color(0xFF262626), fontSize: 15, height: 1.25)),
+                              : Text(msg.text, style: TextStyle(color: isMe ? Colors.white : SpaceColors.text, fontSize: 15, height: 1.25)),
                       ),
                       ),
                     );
@@ -472,16 +472,16 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
           child: Wrap(spacing: 8, children: [
             for (final t in ['Hola!', '¿Cómo estás?', 'Dale', 'Jaja'])
               ActionChip(
-                backgroundColor: const Color(0xFFEFEFEF),
+                backgroundColor: SpaceColors.chip,
                 side: BorderSide.none,
-                label: Text(t, style: const TextStyle(fontSize: 13, color: Color(0xFF262626))),
+                label: Text(t, style: TextStyle(fontSize: 13, color: SpaceColors.text)),
                 onPressed: () { _msgController.text = t; _sendMessage(); },
               ),
           ]),
         ),
         Container(
           padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
-          color: Colors.white,
+          color: SpaceColors.bg,
           child: Row(children: [
             GestureDetector(
               onTap: () async {
@@ -501,12 +501,12 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
             Expanded(
               child: TextField(
                 controller: _msgController,
-                style: const TextStyle(color: Color(0xFF262626), fontSize: 15),
+                style: TextStyle(color: SpaceColors.text, fontSize: 15),
                 decoration: InputDecoration(
                   hintText: 'Mensaje...',
                   hintStyle: const TextStyle(color: Color(0xFF8E8E8E)),
                   filled: true,
-                  fillColor: const Color(0xFFEFEFEF),
+                  fillColor: SpaceColors.chip,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(22), borderSide: BorderSide.none),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 ),

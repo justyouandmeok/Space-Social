@@ -25,9 +25,9 @@ class ProfileDrawerModal extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.72),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      decoration: BoxDecoration(
+        color: SpaceColors.sheet,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: SafeArea(
         top: false,
@@ -35,7 +35,7 @@ class ProfileDrawerModal extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const SizedBox(height: 8),
-            Container(width: 36, height: 4, decoration: BoxDecoration(color: Color(0xFFDBDBDB), borderRadius: BorderRadius.circular(2))),
+            Container(width: 36, height: 4, decoration: BoxDecoration(color: SpaceColors.hairline, borderRadius: BorderRadius.circular(2))),
             const SizedBox(height: 8),
             Flexible(
               child: ListView(
@@ -72,7 +72,7 @@ class ProfileDrawerModal extends StatelessWidget {
                     Navigator.pop(context);
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const OrdersScreen()));
                   }),
-                  const Divider(color: Color(0xFFDBDBDB)),
+                  Divider(color: SpaceColors.hairline),
                   _tile(Icons.logout, 'Cerrar sesión', () {
                     Navigator.pop(context);
                     state.logout();
@@ -86,7 +86,9 @@ class ProfileDrawerModal extends StatelessWidget {
     );
   }
 
-  static Widget _tile(IconData icon, String title, VoidCallback onTap, {Color textColor = const Color(0xFF262626), Color iconColor = const Color(0xFF262626)}) {
+  static Widget _tile(IconData icon, String title, VoidCallback onTap, {Color? textColor, Color? iconColor}) {
+    textColor ??= SpaceColors.text;
+    iconColor ??= SpaceColors.icon;
     return ListTile(
       dense: true,
       contentPadding: const EdgeInsets.symmetric(horizontal: 8),

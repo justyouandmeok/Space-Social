@@ -489,7 +489,7 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
                       : live.likes.isEmpty
                           ? 'Sé el primero en dar Me gusta'
                           : '${compact(live.likes.length)} me gusta',
-                  style: const TextStyle(color: Color(0xFF262626), fontWeight: FontWeight.w600, fontSize: 14),
+                  style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w600, fontSize: 14),
                 ),
               ),
               if (live.caption.isNotEmpty) ...[
@@ -516,7 +516,7 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
                   live.userId == widget.state.me.id
                       ? '${timeAgo(live.createdAt).toUpperCase()} · ${compact(live.views)} reproducciones'
                       : timeAgo(live.createdAt).toUpperCase(),
-                  style: const TextStyle(color: Color(0xFF8E8E8E), fontSize: 10, letterSpacing: 0.2),
+                  style: TextStyle(color: SpaceColors.textMuted, fontSize: 10, letterSpacing: 0.2),
                 ),
               ),
               const SizedBox(height: 12),
@@ -565,12 +565,12 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
     var start = 0;
     for (final m in re.allMatches(caption)) {
       if (m.start > start) {
-        spans.add(TextSpan(text: caption.substring(start, m.start), style: const TextStyle(color: Color(0xFF262626), fontSize: 14, height: 1.3)));
+        spans.add(TextSpan(text: caption.substring(start, m.start), style: TextStyle(color: SpaceColors.text, fontSize: 14, height: 1.3)));
       }
       final token = m.group(0)!;
       spans.add(TextSpan(
         text: token,
-        style: const TextStyle(color: Color(0xFF00376B), fontSize: 14, height: 1.3, fontWeight: FontWeight.w600),
+        style: TextStyle(color: SpaceColors.link, fontSize: 14, height: 1.3, fontWeight: FontWeight.w600),
         recognizer: TapGestureRecognizer()
           ..onTap = () {
             final q = token.replaceFirst('@', '').replaceFirst('#', '');
@@ -605,10 +605,10 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
       start = m.end;
     }
     if (start < caption.length) {
-      spans.add(TextSpan(text: caption.substring(start), style: const TextStyle(color: Color(0xFF262626), fontSize: 14, height: 1.3)));
+      spans.add(TextSpan(text: caption.substring(start), style: TextStyle(color: SpaceColors.text, fontSize: 14, height: 1.3)));
     }
     if (spans.isEmpty) {
-      spans.add(TextSpan(text: caption, style: const TextStyle(color: Color(0xFF262626), fontSize: 14, height: 1.3)));
+      spans.add(TextSpan(text: caption, style: TextStyle(color: SpaceColors.text, fontSize: 14, height: 1.3)));
     }
     return spans;
   }
