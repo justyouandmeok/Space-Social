@@ -86,7 +86,7 @@ class ProfileScreen extends StatelessWidget {
         ],
       ),
       body: DefaultTabController(
-        length: 3,
+        length: 4,
         child: NestedScrollView(
           headerSliverBuilder: (context, _) => [
             SliverToBoxAdapter(
@@ -365,6 +365,7 @@ class ProfileScreen extends StatelessWidget {
                   tabs: const [
                     Tab(icon: Icon(Icons.grid_on, size: 22)),
                     Tab(icon: Icon(Icons.movie_outlined, size: 22)),
+                    Tab(icon: Icon(Icons.repeat, size: 22)),
                     Tab(icon: Icon(Icons.assignment_ind_outlined, size: 22)),
                   ],
                 ),
@@ -375,6 +376,7 @@ class ProfileScreen extends StatelessWidget {
             children: [
               _grid(posts),
               _reelsGrid(reels),
+              _repostsGrid(),
               _taggedGrid(),
             ],
           ),
@@ -493,6 +495,14 @@ class ProfileScreen extends StatelessWidget {
         );
       },
     );
+  }
+
+  Widget _repostsGrid() {
+    final items = state.posts.where((p) => state.reposts.contains(p.id)).toList();
+    if (items.isEmpty) {
+      return Center(child: Text('Todavía no reposteaste nada', style: TextStyle(color: SpaceColors.textMuted)));
+    }
+    return _grid(items);
   }
 
   Widget _taggedGrid() {

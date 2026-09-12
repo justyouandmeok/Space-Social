@@ -394,7 +394,7 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
               child: Text(widget.state.isPendingFollow(user.id) ? 'Solicitado' : 'Seguir', style: const TextStyle(color: Color(0xFF0095F6), fontWeight: FontWeight.w700, fontSize: 13)),
             ),
           IconButton(
-            icon: const Icon(Icons.more_horiz, color: Color(0xFF262626)),
+            icon: Icon(Icons.more_horiz, color: SpaceColors.icon),
             onPressed: () => _options(context, live, user),
           ),
         ]),
@@ -421,23 +421,36 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
           child: Row(children: [
             IconButton(
               visualDensity: VisualDensity.compact,
-              icon: CustomPaint(size: const Size(26, 26), painter: HeartPainter(liked ? const Color(0xFFED4956) : const Color(0xFF262626), filled: liked)),
+              icon: CustomPaint(size: const Size(26, 26), painter: HeartPainter(liked ? const Color(0xFFED4956) : SpaceColors.icon, filled: liked)),
               onPressed: () => widget.state.toggleLike(live.id),
             ),
             IconButton(
               visualDensity: VisualDensity.compact,
-              icon: CustomPaint(size: const Size(26, 26), painter: CommentPainter(const Color(0xFF262626))),
+              icon: CustomPaint(size: const Size(26, 26), painter: CommentPainter(SpaceColors.icon)),
               onPressed: () => CommentsBottomSheet.show(context, widget.state, live.id),
             ),
             IconButton(
               visualDensity: VisualDensity.compact,
-              icon: CustomPaint(size: const Size(26, 26), painter: SharePainter(const Color(0xFF262626))),
+              icon: Icon(Icons.repeat, color: widget.state.reposts.contains(live.id) ? const Color(0xFF0095F6) : SpaceColors.icon, size: 24),
+              onPressed: () async {
+                await widget.state.toggleRepost(live.id);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(widget.state.reposts.contains(live.id) ? 'Se reposteó el contenido' : 'Se anuló el repost'),
+                    action: SnackBarAction(label: 'Anular', onPressed: () => widget.state.toggleRepost(live.id)),
+                  ));
+                }
+              },
+            ),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              icon: CustomPaint(size: const Size(26, 26), painter: SharePainter(SpaceColors.icon)),
               onPressed: () => ShareSheet.show(context, widget.state, post: live),
             ),
             const Spacer(),
             IconButton(
               visualDensity: VisualDensity.compact,
-              icon: CustomPaint(size: const Size(26, 26), painter: BookmarkPainter(const Color(0xFF262626), filled: saved)),
+              icon: CustomPaint(size: const Size(26, 26), painter: BookmarkPainter(SpaceColors.icon, filled: saved)),
               onPressed: () => widget.state.toggleSave(live.id),
             ),
           ]),

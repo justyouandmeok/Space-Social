@@ -190,7 +190,9 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
                     onTap: () => _like(post.id),
                   ),
                   _action(Icons.mode_comment_outlined, compact(post.comments.length), onTap: () => CommentsBottomSheet.show(context, state, post.id)),
+                  _action(Icons.repeat, '', onTap: () => state.toggleRepost(post.id)),
                   _action(Icons.send_outlined, '', onTap: () => ShareSheet.show(context, state, post: post)),
+                  _action(post.savedFor(state.me.id) ? Icons.bookmark : Icons.bookmark_border, '', onTap: () => state.toggleSave(post.id)),
                   _action(Icons.more_vert, '', onTap: () {
                     showModalBottomSheet(context: context, backgroundColor: const Color(0xFF1C1C1C), builder: (ctx) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
                       Padding(padding: const EdgeInsets.only(top: 8), child: Container(width: 36, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)))),

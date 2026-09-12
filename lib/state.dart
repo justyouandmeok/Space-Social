@@ -67,6 +67,7 @@ class AppState extends ChangeNotifier {
   Set<String> blocked = {};
   Set<String> muted = {};
   Set<String> favorites = {};
+  Set<String> reposts = {};
   Set<String> closeFriends = {};
   Set<String> archived = {};
   Set<String> pinnedPosts = {};
@@ -440,6 +441,7 @@ class AppState extends ChangeNotifier {
         blocked = {...List<String>.from(data['blocked'] ?? const [])};
         muted = {...List<String>.from(data['muted'] ?? const [])};
         favorites = {...List<String>.from(data['favorites'] ?? const [])};
+        reposts = {...List<String>.from(data['reposts'] ?? const [])};
         closeFriends = {...List<String>.from(data['closeFriends'] ?? const [])};
         archived = {...List<String>.from(data['archived'] ?? const [])};
         pinnedPosts = {...List<String>.from(data['pinnedPosts'] ?? const [])};
@@ -1799,6 +1801,7 @@ class AppState extends ChangeNotifier {
       'blocked': blocked.toList(),
       'muted': muted.toList(),
       'favorites': favorites.toList(),
+      'reposts': reposts.toList(),
       'closeFriends': closeFriends.toList(),
       'archived': archived.toList(),
       'pinnedPosts': pinnedPosts.toList(),
@@ -1935,6 +1938,16 @@ class AppState extends ChangeNotifier {
     } else {
       muted.add(userId);
     }
+    await _savePrefs();
+  }
+
+  Future<void> toggleRepost(String postId) async {
+    if (reposts.contains(postId)) {
+      reposts.remove(postId);
+    } else {
+      reposts.add(postId);
+    }
+    notifyListeners();
     await _savePrefs();
   }
 
