@@ -471,7 +471,12 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
                 ),
               Padding(
                 padding: const EdgeInsets.only(top: 4),
-                child: Text(timeAgo(live.createdAt).toUpperCase(), style: const TextStyle(color: Color(0xFF8E8E8E), fontSize: 10, letterSpacing: 0.2)),
+                child: Text(
+                  live.userId == widget.state.me.id
+                      ? '${timeAgo(live.createdAt).toUpperCase()} · ${compact(live.views)} reproducciones'
+                      : timeAgo(live.createdAt).toUpperCase(),
+                  style: const TextStyle(color: Color(0xFF8E8E8E), fontSize: 10, letterSpacing: 0.2),
+                ),
               ),
               const SizedBox(height: 12),
             ],

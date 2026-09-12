@@ -132,7 +132,21 @@ class FeedScreen extends StatelessWidget {
                   childCount: items.length,
                 ),
               ),
-          ],
+            if (items.isNotEmpty)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text('También te puede gustar', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 8),
+                    Wrap(spacing: 8, children: state.users.where((u) => u.id != state.me.id && !state.isFollowing(u.id)).take(6).map((u) => ActionChip(
+                      avatar: Avatar(u.avatarPath, size: 20),
+                      label: Text(u.username),
+                      onPressed: () => onOpenProfile(u.id),
+                    )).toList()),
+                  ]),
+                ),
+              ),
         ),
       ),
     );

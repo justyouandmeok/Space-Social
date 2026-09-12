@@ -921,6 +921,12 @@ class SettingsScreen extends StatelessWidget {
           subtitle: Text('${state.pendingMentions.length}', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => MentionsScreen(state: state))),
         ),
+        ListTile(
+          leading: Icon(Icons.library_music_outlined, color: SpaceColors.text),
+          title: Text('Audios guardados', style: TextStyle(color: SpaceColors.text)),
+          subtitle: Text('${state.savedAudios.length}', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => SavedAudioScreen(state: state))),
+        ),
         SwitchListTile(secondary: Icon(Icons.shield_outlined, color: SpaceColors.text), title: Text('Filtro de contenido sensible', style: TextStyle(color: SpaceColors.text)), value: state.sensitiveFilter, onChanged: (_) => state.toggleSensitiveFilter()),
         SwitchListTile(secondary: Icon(Icons.recommend_outlined, color: SpaceColors.text), title: Text('Ocultar sugerencias', style: TextStyle(color: SpaceColors.text)), value: state.hideSuggested, onChanged: (_) => state.toggleHideSuggested()),
         ListTile(
@@ -1342,6 +1348,35 @@ class MessagePolicyScreen extends StatelessWidget {
           RadioListTile<String>(value: 'nobody', groupValue: state.messagePolicy, onChanged: (v) => state.setMessagePolicy(v!), title: Text('Nadie', style: TextStyle(color: SpaceColors.text))),
         ]),
       ),
+    );
+  }
+}
+
+class SavedAudioScreen extends StatelessWidget {
+  const SavedAudioScreen({super.key, required this.state});
+  final AppState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final items = state.posts.where((p) => state.savedAudios.contains(p.id)).toList();
+    return Scaffold(
+      backgroundColor: SpaceColors.bg,
+      appBar: AppBar(backgroundColor: SpaceColors.bg, title: Text('Audios guardados', style: TextStyle(color: SpaceColors.text))),
+      body: items.isEmpty
+          ? Center(child: Text('Todavía no guardaste audios', style: TextStyle(color: SpaceColors.textMuted)))
+          : ListView.builder(
+              itemCount: items.length,
+              itemBuilder: (context, i) {
+                final p = items[i];
+                final u = state.tryUser(p.userId);
+                return ListTile(
+                  leading: const Icon(Icons.music_note),
+                  title: Text('Audio original · @${u?.username ?? 'usuario'}', style: TextStyle(color: SpaceColors.text)),
+                  subtitle: Text(p.caption, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: SpaceColors.textMuted)),
+                  trailing: IconButton(icon: const Icon(Icons.delete_outline), onPressed: () => state.toggleSavedAudio(p.id)),
+                );
+              },
+            ),
     );
   }
 }

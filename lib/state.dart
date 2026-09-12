@@ -176,6 +176,7 @@ class AppState extends ChangeNotifier {
       if (archived.contains(p.id)) return false;
       if (hiddenPosts.contains(p.id)) return false;
       if (sensitiveFilter && _isSensitive(p.caption)) return false;
+      if (commentFilters.any((w) => p.caption.toLowerCase().contains(w))) return false;
       if (blocked.contains(p.userId) || muted.contains(p.userId)) return false;
       return canSee(p.userId);
     }).toList();
