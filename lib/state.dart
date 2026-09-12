@@ -95,6 +95,8 @@ class AppState extends ChangeNotifier {
   final pinnedComments = <String, int>{};
   final collections = <String, List<String>>{};
   final pendingMentions = <String>[];
+  String profileMusic = '';
+  final collabInvites = <String, String>{};
 
   bool get isLoggedIn => currentUserId != null;
   bool get isAdmin => isLoggedIn && SpaceConfig.adminEmails.map((e) => e.toLowerCase()).contains(me.email.toLowerCase());
@@ -456,6 +458,10 @@ class AppState extends ChangeNotifier {
         pendingMentions
           ..clear()
           ..addAll(List<String>.from(data['pendingMentions'] ?? const []));
+        profileMusic = (data['profileMusic'] as String?) ?? '';
+        collabInvites
+          ..clear()
+          ..addAll(Map<String, String>.from((data['collabInvites'] as Map?) ?? const {}));
       }
     }
 
@@ -1191,6 +1197,41 @@ class AppState extends ChangeNotifier {
     await _savePrefs();
   }
 
+  Future<void> setProfileMusic(String v) async {
+    profileMusic = v.trim();
+    await _savePrefs();
+  }
+
+  Future<void> inviteCollab(String postId, String userId) async {
+    collabInvites[postId] = userId;
+    await _savePrefs();
+  }
+
+  Future<void> addYours(Post source, String prompt) async {
+    if (!isLoggedIn) return;
+    final id = newId();
+    final created = DateTime.now();
+    final caption = 'Add yours · $prompt\n${source.caption}';
+    final local = Post(id: id, userId: me.id, imagePath: source.imagePath, caption: caption, createdAt: created, isReel: source.isReel, isVideo: source.isVideo);
+    posts = [local, ...posts];
+    notifyListeners();
+    try {
+      await _db.collection('posts').doc(id).set({
+        'id': id,
+        'userId': me.id,
+        'imagePath': source.imagePath,
+        'caption': caption,
+        'createdAt': created.toIso8601String(),
+        'likes': <String>[],
+        'comments': <Map<String, dynamic>>[],
+        'savedBy': <String>[],
+        'isReel': source.isReel,
+        'isVideo': source.isVideo,
+        'views': 0,
+      });
+    } catch (_) {}
+  }
+
   Future<void> addToCollection(String name, String postId) async {
     final n = name.trim();
     if (n.isEmpty) return;
@@ -1624,6 +1665,8 @@ class AppState extends ChangeNotifier {
       'pinnedComments': pinnedComments,
       'collections': collections,
       'pendingMentions': pendingMentions,
+      'profileMusic': profileMusic,
+      'collabInvites': collabInvites,
     }, SetOptions(merge: true));
     notifyListeners();
   }

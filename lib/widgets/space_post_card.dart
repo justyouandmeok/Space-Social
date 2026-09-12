@@ -122,6 +122,37 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
               onTap: () { Navigator.pop(ctx); widget.state.toggleRestrict(user.id); },
             ),
           ],
+          if (post.caption.contains('ADDYOURS:'))
+            ListTile(
+              title: Text('Add yours', style: TextStyle(color: SpaceColors.text)),
+              onTap: () {
+                Navigator.pop(ctx);
+                widget.state.addYours(post, 'sumate');
+              },
+            ),
+          if (mine)
+            ListTile(
+              title: Text('Invitar colaborador', style: TextStyle(color: SpaceColors.text)),
+              onTap: () {
+                Navigator.pop(ctx);
+                final people = widget.state.users.where((u) => u.id != widget.state.me.id && widget.state.isFollowing(u.id)).toList();
+                showModalBottomSheet(
+                  context: context,
+                  backgroundColor: SpaceColors.surface,
+                  builder: (d) => ListView(
+                    children: people
+                        .map((u) => ListTile(
+                              title: Text(u.username, style: TextStyle(color: SpaceColors.text)),
+                              onTap: () {
+                                widget.state.inviteCollab(post.id, u.id);
+                                Navigator.pop(d);
+                              },
+                            ))
+                        .toList(),
+                  ),
+                );
+              },
+            ),
           ListTile(
             title: Text('Copiar pie', style: TextStyle(color: SpaceColors.text)),
             onTap: () {

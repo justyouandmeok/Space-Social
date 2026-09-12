@@ -138,6 +138,15 @@ class ProfileScreen extends StatelessWidget {
                           ),
                         ]),
                       ),
+                    if (isMe && state.profileMusic.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Row(children: [
+                          Icon(Icons.music_note, size: 16, color: SpaceColors.text),
+                          const SizedBox(width: 4),
+                          Text(state.profileMusic, style: TextStyle(color: SpaceColors.text, fontSize: 13)),
+                        ]),
+                      ),
                     const SizedBox(height: 12),
                     if (isMe)
                       Row(children: [
@@ -623,6 +632,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           _field('Pronombres', _pronounsController),
           _field('Presentación / Bio', _bioController, maxLines: 3),
           _field('Enlaces', _linksController, prefixIcon: Icons.link),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text('Música del perfil', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+            subtitle: Text(widget.state.profileMusic.isEmpty ? 'Sin canción' : widget.state.profileMusic, style: TextStyle(color: SpaceColors.text)),
+            onTap: () {
+              final c = TextEditingController(text: widget.state.profileMusic);
+              showDialog(
+                context: context,
+                builder: (d) => AlertDialog(
+                  title: const Text('Canción'),
+                  content: TextField(controller: c, decoration: const InputDecoration(hintText: 'Artista — tema')),
+                  actions: [
+                    TextButton(onPressed: () => Navigator.pop(d), child: const Text('Cancelar')),
+                    TextButton(onPressed: () { widget.state.setProfileMusic(c.text); Navigator.pop(d); setState(() {}); }, child: const Text('Guardar')),
+                  ],
+                ),
+              );
+            },
+          ),
           _field('Categoría', _categoryController),
           _field('Género', _genderController),
           _field('Cumpleaños', _birthdayController),

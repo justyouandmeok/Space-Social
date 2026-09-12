@@ -131,7 +131,20 @@ class _PostScreenState extends State<PostScreen> {
               IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close, color: Colors.white)),
               const Expanded(child: Text('En vivo', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18))),
             ]),
-            const Expanded(child: Center(child: Text('El vivo llega en una próxima ola', style: TextStyle(color: Colors.white70)))),
+            const Expanded(child: Center(child: Text('Tocá empezar para abrir una historia en vivo', style: TextStyle(color: Colors.white70)))),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE53935), minimumSize: const Size.fromHeight(48)),
+                onPressed: () async {
+                  final x = await ImagePicker().pickImage(source: ImageSource.camera);
+                  if (x == null) return;
+                  await widget.state.publishStory(File(x.path), overlayText: 'LIVE ${cap.text}'.trim());
+                  if (mounted) Navigator.pop(context);
+                },
+                child: const Text('Empezar en vivo', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+              ),
+            ),
             _modesBar(),
           ]),
         ),
@@ -272,6 +285,7 @@ class _PostScreenState extends State<PostScreen> {
                   ),
                 ),
                 Wrap(spacing: 8, runSpacing: 8, children: [
+                  _chipBtn('Add yours', () { cap.text = '${cap.text} ADDYOURS:sumate'.trim(); setState(() {}); }),
                   _chipBtn('# Hashtags', () { cap.text = '${cap.text} #'; cap.selection = TextSelection.collapsed(offset: cap.text.length); }),
                   _chipBtn('Vincular un reel', () {}),
                   _chipBtn('Encuesta', () {

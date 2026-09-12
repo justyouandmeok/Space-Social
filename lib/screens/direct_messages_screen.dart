@@ -377,6 +377,13 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                   },
                 ),
         ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
+          child: Wrap(spacing: 6, children: [
+            for (final t in ['Hola!', '¿Cómo estás?', 'Dale', 'Jaja'])
+              ActionChip(label: Text(t, style: const TextStyle(fontSize: 12)), onPressed: () { _msgController.text = t; _sendMessage(); }),
+          ]),
+        ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           color: SpaceColors.surface,
