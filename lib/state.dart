@@ -99,6 +99,8 @@ class AppState extends ChangeNotifier {
   final collabInvites = <String, String>{};
   Set<String> hideLikesPosts = {};
   final storyAnswers = <String, List<String>>{};
+  List<String> recentProfiles = [];
+  double textScale = 1.0;
 
   bool get isLoggedIn => currentUserId != null;
   bool get isAdmin => isLoggedIn && SpaceConfig.adminEmails.map((e) => e.toLowerCase()).contains(me.email.toLowerCase());
@@ -468,6 +470,8 @@ class AppState extends ChangeNotifier {
         storyAnswers
           ..clear()
           ..addAll(((data['storyAnswers'] as Map?) ?? const {}).map((k, v) => MapEntry('$k', List<String>.from(v as List? ?? const []))));
+        recentProfiles = List<String>.from(data['recentProfiles'] ?? const []);
+        textScale = (data['textScale'] as num?)?.toDouble() ?? 1.0;
       }
     }
 
@@ -1203,6 +1207,17 @@ class AppState extends ChangeNotifier {
     await _savePrefs();
   }
 
+  Future<void> rememberProfile(String userId) async {
+    if (!isLoggedIn || userId == me.id) return;
+    recentProfiles = [userId, ...recentProfiles.where((e) => e != userId)].take(12).toList();
+    await _savePrefs();
+  }
+
+  Future<void> setTextScale(double v) async {
+    textScale = v;
+    await _savePrefs();
+  }
+
   Future<void> toggleHideLikesPost(String postId) async {
     if (hideLikesPosts.contains(postId)) {
       hideLikesPosts.remove(postId);
@@ -1698,6 +1713,8 @@ class AppState extends ChangeNotifier {
       'collabInvites': collabInvites,
       'hideLikesPosts': hideLikesPosts.toList(),
       'storyAnswers': storyAnswers,
+      'recentProfiles': recentProfiles,
+      'textScale': textScale,
     }, SetOptions(merge: true));
     notifyListeners();
   }

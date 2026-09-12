@@ -104,6 +104,13 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
     super.dispose();
   }
 
+  String _countdownLabel(String raw) {
+    final parts = raw.replaceFirst('COUNTDOWN:', '').split('|');
+    final title = parts.first;
+    final hours = int.tryParse(parts.length > 1 ? parts[1] : '24') ?? 24;
+    return '$title · ${hours}h';
+  }
+
   @override
   Widget build(BuildContext context) {
     if (stories.isEmpty) {
@@ -272,7 +279,12 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (caption.isNotEmpty) ...[
+                  if (caption.startsWith('COUNTDOWN:'))
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Text(_countdownLabel(caption), style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700)),
+                    )
+                  else if (caption.isNotEmpty) ...[
                     Text(caption.replaceFirst('ASK:', 'Pregunta: '), style: const TextStyle(color: Colors.white, fontSize: 16)),
                     const SizedBox(height: 12),
                   ],

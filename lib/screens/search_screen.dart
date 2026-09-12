@@ -128,6 +128,28 @@ class _SearchScreenState extends State<SearchScreen> {
             },
           ),
         ),
+        if (q.isEmpty && widget.state.recentProfiles.isNotEmpty)
+          SizedBox(
+            height: 88,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              children: widget.state.recentProfiles.map((id) {
+                final u = widget.state.tryUser(id);
+                if (u == null) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: GestureDetector(
+                    onTap: () => widget.onOpenProfile(u.id),
+                    child: Column(children: [
+                      Avatar(u.avatarPath, size: 56),
+                      Text(u.username, style: const TextStyle(fontSize: 11)),
+                    ]),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
         if (q.isEmpty && _recent.isNotEmpty)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),

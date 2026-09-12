@@ -937,6 +937,12 @@ class SettingsScreen extends StatelessWidget {
         ),
         SwitchListTile(secondary: Icon(Icons.notifications_none, color: SpaceColors.text), title: Text('Notificaciones', style: TextStyle(color: SpaceColors.text)), value: state.notificationsOn, onChanged: (_) => state.toggleNotificationsPref()),
         ListTile(
+          leading: Icon(Icons.format_size, color: SpaceColors.text),
+          title: Text('Tamaño del texto', style: TextStyle(color: SpaceColors.text)),
+          subtitle: Text('${(state.textScale * 100).round()}%', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+          onTap: () => state.setTextScale(state.textScale >= 1.2 ? 1.0 : (state.textScale + 0.1)),
+        ),
+        ListTile(
           leading: Icon(Icons.palette_outlined, color: SpaceColors.text),
           title: Text('Tema', style: TextStyle(color: SpaceColors.text)),
           subtitle: Text('Claro — fondo blanco y texto negro', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),

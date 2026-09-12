@@ -141,6 +141,7 @@ class _MainScreenState extends State<MainScreen> {
       setState(() => _currentIndex = 4);
       return;
     }
+    state.rememberProfile(userId);
     Navigator.of(context).push(MaterialPageRoute(
       builder: (_) => ProfileScreen(state: state, user: u, onOpenProfile: _openProfile),
     ));

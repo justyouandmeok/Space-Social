@@ -285,6 +285,7 @@ class _PostScreenState extends State<PostScreen> {
                   ),
                 ),
                 Wrap(spacing: 8, runSpacing: 8, children: [
+                  _chipBtn('Cuenta regresiva', () { cap.text = 'COUNTDOWN:${cap.text.isEmpty ? 'Evento' : cap.text}|24'; setState(() {}); }),
                   _chipBtn('Pregunta', () { cap.text = 'ASK:${cap.text.isEmpty ? 'Respondé esto' : cap.text}'; setState(() {}); }),
                   _chipBtn('Add yours', () { cap.text = '${cap.text} ADDYOURS:sumate'.trim(); setState(() {}); }),
                   _chipBtn('# Hashtags', () { cap.text = '${cap.text} #'; cap.selection = TextSelection.collapsed(offset: cap.text.length); }),

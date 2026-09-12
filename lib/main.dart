@@ -38,6 +38,10 @@ class _SpaceSocialAppState extends State<SpaceSocialApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Space Social',
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(state.textScale)),
+        child: child ?? const SizedBox.shrink(),
+      ),
       theme: buildSpaceTheme(dark: false),
       themeMode: ThemeMode.light,
       themeAnimationDuration: const Duration(milliseconds: 280),
