@@ -109,6 +109,7 @@ class AppState extends ChangeNotifier {
   Set<String> pinnedChats = {};
   String inboxFilter = 'all';
   Set<String> starredMessages = {};
+  DateTime? activityClearedAt;
 
   bool get hasNewActivity {
     if (activity.isEmpty) return false;
@@ -497,6 +498,7 @@ class AppState extends ChangeNotifier {
         pinnedChats = {...List<String>.from(data['pinnedChats'] ?? const [])};
         inboxFilter = (data['inboxFilter'] as String?) ?? 'all';
         starredMessages = {...List<String>.from(data['starredMessages'] ?? const [])};
+        activityClearedAt = DateTime.tryParse(data['activityClearedAt'] as String? ?? '');
       }
     }
 
@@ -1248,6 +1250,11 @@ class AppState extends ChangeNotifier {
     await _savePrefs();
   }
 
+  Future<void> clearActivity() async {
+    activityClearedAt = DateTime.now();
+    await _savePrefs();
+  }
+
   Future<void> setInboxFilter(String v) async {
     inboxFilter = v;
     await _savePrefs();
@@ -1805,6 +1812,7 @@ class AppState extends ChangeNotifier {
       'pinnedChats': pinnedChats.toList(),
       'inboxFilter': inboxFilter,
       'starredMessages': starredMessages.toList(),
+      if (activityClearedAt != null) 'activityClearedAt': activityClearedAt!.toIso8601String(),
     }, SetOptions(merge: true));
     notifyListeners();
   }

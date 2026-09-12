@@ -16,6 +16,7 @@ class NotificationsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final items = state.activity.where((a) {
+      if (state.activityClearedAt != null && !a.createdAt.isAfter(state.activityClearedAt!)) return false;
       if (state.quietMode) return false;
       if (a.actorId == state.me.id) return false;
       final t = a.text.toLowerCase();
@@ -43,6 +44,9 @@ class NotificationsScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: SpaceColors.bg,
         title: const Text('Notificaciones', style: TextStyle(color: Color(0xFF262626), fontWeight: FontWeight.bold, fontSize: 22)),
+        actions: [
+          TextButton(onPressed: () => state.clearActivity(), child: const Text('Limpiar')),
+        ],
       ),
       body: items.isEmpty
           ? Center(child: Text('Todavía no hay actividad', style: TextStyle(color: SpaceColors.textMuted)))

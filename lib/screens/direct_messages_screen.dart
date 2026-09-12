@@ -52,6 +52,30 @@ class DirectMessagesScreen extends StatelessWidget {
         backgroundColor: SpaceColors.bg,
         title: Text(state.me.username, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 22, color: Color(0xFF262626))),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.star_border, color: Color(0xFF262626)),
+            onPressed: () {
+              final items = state.messages.where((m) => state.starredMessages.contains(m.id)).toList();
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => Scaffold(
+                  backgroundColor: SpaceColors.bg,
+                  appBar: AppBar(backgroundColor: SpaceColors.bg, title: Text('Destacados', style: TextStyle(color: SpaceColors.text))),
+                  body: items.isEmpty
+                      ? Center(child: Text('No hay mensajes destacados', style: TextStyle(color: SpaceColors.textMuted)))
+                      : ListView(
+                          children: items.map((m) {
+                            final other = m.fromId == me ? m.toId : m.fromId;
+                            final u = state.tryUser(other);
+                            return ListTile(
+                              title: Text(u?.username ?? 'usuario', style: TextStyle(color: SpaceColors.text)),
+                              subtitle: Text(m.text, maxLines: 2, overflow: TextOverflow.ellipsis),
+                            );
+                          }).toList(),
+                        ),
+                ),
+              ));
+            },
+          ),
           IconButton(icon: const Icon(Icons.edit_outlined, color: Color(0xFF262626)), onPressed: () {
             final people = state.users.where((u) => u.id != me).toList();
             showModalBottomSheet(context: context, backgroundColor: SpaceColors.surface, builder: (ctx) => SafeArea(child: ListView(
@@ -342,7 +366,23 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
         actions: [
           IconButton(
             icon: Icon(widget.state.mutedChats.contains(widget.user.id) ? Icons.notifications_off : Icons.notifications_none, color: SpaceColors.text),
-            onPressed: () => widget.state.toggleMuteChat(widget.user.id),
+            onPressed: () async {
+              if (!widget.state.mutedChats.contains(widget.user.id)) {
+                final ok = await showDialog<bool>(
+                  context: context,
+                  builder: (d) => AlertDialog(
+                    title: const Text('¿Silenciar chat?'),
+                    content: const Text('No vas a recibir avisos de esta conversación.'),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(d, false), child: const Text('Cancelar')),
+                      TextButton(onPressed: () => Navigator.pop(d, true), child: const Text('Silenciar')),
+                    ],
+                  ),
+                );
+                if (ok != true) return;
+              }
+              await widget.state.toggleMuteChat(widget.user.id);
+            },
           ),
         ],
       ),
