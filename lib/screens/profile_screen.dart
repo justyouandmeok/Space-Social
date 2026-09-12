@@ -784,42 +784,57 @@ class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key, required this.state, this.onOpenProfile});
   final AppState state;
   final void Function(String userId)? onOpenProfile;
+
+  Widget _h(String t) => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 22, 16, 6),
+        child: Text(t, style: const TextStyle(color: Color(0xFF8E8E8E), fontSize: 13, fontWeight: FontWeight.w600)),
+      );
+
+  Widget _i(IconData icon, String title, VoidCallback onTap, {String? sub}) => ListTile(
+        dense: true,
+        leading: Icon(icon, color: const Color(0xFF262626), size: 22),
+        title: Text(title, style: const TextStyle(color: Color(0xFF262626), fontSize: 16)),
+        subtitle: sub == null ? null : Text(sub, style: const TextStyle(color: Color(0xFF8E8E8E), fontSize: 13)),
+        trailing: const Icon(Icons.chevron_right, color: Color(0xFFC7C7C7), size: 20),
+        onTap: onTap,
+      );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: SpaceColors.bg,
-      appBar: AppBar(backgroundColor: SpaceColors.bg, title: Text('Configuración y actividad', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold))),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        title: const Text('Configuración y actividad', style: TextStyle(color: Color(0xFF262626), fontWeight: FontWeight.w700, fontSize: 18)),
+      ),
       body: ListView(children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
           child: TextField(
             readOnly: true,
             decoration: InputDecoration(
-              hintText: 'Buscar ajustes',
-              hintStyle: TextStyle(color: SpaceColors.textMuted),
-              prefixIcon: Icon(Icons.search, color: SpaceColors.textMuted),
+              hintText: 'Buscar',
+              hintStyle: const TextStyle(color: Color(0xFF8E8E8E)),
+              prefixIcon: const Icon(Icons.search, color: Color(0xFF8E8E8E)),
               filled: true,
               fillColor: const Color(0xFFEFEFEF),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
               contentPadding: const EdgeInsets.symmetric(vertical: 0),
             ),
           ),
         ),
-        const Padding(
-          padding: EdgeInsets.fromLTRB(16, 4, 16, 6),
-          child: Text('Tu cuenta', style: TextStyle(color: Color(0xFF8E8E8E), fontSize: 13, fontWeight: FontWeight.w600)),
-        ),
         ListTile(
-          leading: Avatar(state.me.avatarPath, size: 44),
-          title: Text('Cuentas', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w700)),
-          subtitle: Text('Contraseña, email y @${state.me.username}', style: TextStyle(color: SpaceColors.textMuted)),
-          trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
+          leading: Avatar(state.me.avatarPath, size: 48),
+          title: const Text('Centro de cuentas', style: TextStyle(color: Color(0xFF262626), fontWeight: FontWeight.w700, fontSize: 16)),
+          subtitle: Text('Contraseña, seguridad y @${state.me.username}', style: const TextStyle(color: Color(0xFF8E8E8E), fontSize: 13)),
+          trailing: const Icon(Icons.chevron_right, color: Color(0xFFC7C7C7)),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => EditProfileScreen(state: state))),
         ),
+        const Divider(height: 1, color: Color(0xFFDBDBDB)),
         ListTile(
-          leading: Icon(Icons.lock_outline, color: SpaceColors.text),
-          title: Text('Cambiar contraseña', style: TextStyle(color: SpaceColors.text)),
-          trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
+          leading: const Icon(Icons.lock_outline, color: Color(0xFF262626)),
+          title: const Text('Contraseña y seguridad', style: TextStyle(color: Color(0xFF262626), fontSize: 16)),
+          trailing: const Icon(Icons.chevron_right, color: Color(0xFFC7C7C7)),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ChangePasswordScreen(state: state))),
         ),
         ListTile(
@@ -899,7 +914,13 @@ class SettingsScreen extends StatelessWidget {
           trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CommentFilterScreen(state: state))),
         ),
-        ListTile(leading: Icon(Icons.alternate_email, color: SpaceColors.text), title: Text('Etiquetas y menciones', style: TextStyle(color: SpaceColors.text)), trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted)),
+        ListTile(
+          leading: Icon(Icons.alternate_email, color: SpaceColors.text),
+          title: Text('Etiquetas y menciones', style: TextStyle(color: SpaceColors.text)),
+          subtitle: Text(state.tagPolicy == 'all' ? 'Todos pueden etiquetarte' : 'Solo quienes seguís', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+          trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
+          onTap: () => state.setTagPolicy(state.tagPolicy == 'all' ? 'following' : 'all'),
+        ),
         ListTile(
           leading: Icon(Icons.visibility_outlined, color: SpaceColors.text),
           title: Text('Ocultar historia', style: TextStyle(color: SpaceColors.text)),
