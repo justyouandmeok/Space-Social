@@ -176,6 +176,11 @@ class Post {
 
   bool likedBy(String uid) => likes.contains(uid);
   bool savedFor(String uid) => savedBy.contains(uid);
+  bool get isReelLike {
+    if (isReel || isVideo) return true;
+    final u = imagePath.toLowerCase();
+    return u.contains('.mp4') || u.contains('.mov') || u.contains('.webm') || u.contains('.m4v');
+  }
 
   Post copyWith({
     String? imagePath,

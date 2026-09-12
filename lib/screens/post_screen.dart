@@ -153,7 +153,7 @@ class _PostScreenState extends State<PostScreen> {
       await widget.state.publishStory(f, overlayText: c, closeFriendsOnly: audience == 'Mejores amigos');
       return;
     }
-    await widget.state.publishPost(image: f, caption: c, location: place, isReel: m == 2, isVideo: v || m == 2);
+    await widget.state.publishPost(image: f, caption: c, location: place, isReel: m == 2 || v, isVideo: v || m == 2);
     if (alsoStory && m != 2) await widget.state.publishStory(f, overlayText: c, closeFriendsOnly: audience == 'Mejores amigos');
   }
 

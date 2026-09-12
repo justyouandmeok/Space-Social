@@ -185,7 +185,7 @@ class AppState extends ChangeNotifier {
       return s;
     }
     var list = List<Post>.from(posts).where((p) {
-      if (p.isReel) return false;
+      if (p.isReelLike) return false;
       if (archived.contains(p.id)) return false;
       if (hiddenPosts.contains(p.id)) return false;
       if (sensitiveFilter && _isSensitive(p.caption)) return false;
@@ -269,7 +269,7 @@ class AppState extends ChangeNotifier {
   }
 
   List<Post> get reels {
-    return posts.where((p) => p.isReel).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return posts.where((p) => p.isReelLike).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
   }
 
   List<Post> get explorePosts =>

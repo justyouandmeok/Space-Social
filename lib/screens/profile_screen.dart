@@ -34,14 +34,14 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final posts = state.postsOf(user.id).where((p) => !p.isReel).toList()
+    final posts = state.postsOf(user.id).where((p) => !p.isReelLike).toList()
       ..sort((a, b) {
         final ap = state.pinnedPosts.contains(a.id) ? 0 : 1;
         final bp = state.pinnedPosts.contains(b.id) ? 0 : 1;
         if (ap != bp) return ap.compareTo(bp);
         return b.createdAt.compareTo(a.createdAt);
       });
-    final reels = state.postsOf(user.id).where((p) => p.isReel).toList();
+    final reels = state.postsOf(user.id).where((p) => p.isReelLike).toList();
     final isMe = state.isLoggedIn && user.id == state.me.id;
     final highlights = state.storiesOf(user.id);
 

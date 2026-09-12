@@ -21,7 +21,7 @@ class FeedScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final seen = <String>{};
     final items = <Post>[];
-    for (final p in [...state.posts.where((p) => p.userId == state.me.id && !p.isReel), ...state.feed]) {
+    for (final p in [...state.posts.where((p) => p.userId == state.me.id && !p.isReelLike), ...state.feed]) {
       if (seen.add(p.id)) items.add(p);
     }
 
