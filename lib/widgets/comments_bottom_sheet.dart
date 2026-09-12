@@ -138,6 +138,16 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                         },
                       ),
               ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
+                child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                  for (final e in const ['❤️','👏','🔥','🙌','😢','😍','😮','😂'])
+                    GestureDetector(
+                      onTap: () { _commentController.text = '${_commentController.text}$e'.trim(); },
+                      child: Text(e, style: const TextStyle(fontSize: 22)),
+                    ),
+                ]),
+              ),
               Container(
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
                 decoration: BoxDecoration(

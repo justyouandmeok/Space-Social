@@ -74,6 +74,33 @@ class DirectMessagesScreen extends StatelessWidget {
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(children: [
+              GestureDetector(
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    backgroundColor: SpaceColors.surface,
+                    builder: (ctx) => SafeArea(
+                      child: Column(mainAxisSize: MainAxisSize.min, children: [
+                        ListTile(title: Text('Filtros', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold))),
+                        ListTile(title: Text('No leídos', style: TextStyle(color: SpaceColors.text)), onTap: () => Navigator.pop(ctx)),
+                        ListTile(title: Text('No respondidos', style: TextStyle(color: SpaceColors.text)), onTap: () => Navigator.pop(ctx)),
+                        ListTile(title: Text('Respuestas a historias', style: TextStyle(color: SpaceColors.text)), onTap: () => Navigator.pop(ctx)),
+                        ListTile(title: Text('Perfiles verificados', style: TextStyle(color: SpaceColors.text)), onTap: () => Navigator.pop(ctx)),
+                      ]),
+                    ),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(border: Border.all(color: SpaceColors.hairline), borderRadius: BorderRadius.circular(18)),
+                  child: Row(children: [
+                    Icon(Icons.filter_list, size: 16, color: SpaceColors.text),
+                    const SizedBox(width: 4),
+                    Text('Filtros', style: TextStyle(color: SpaceColors.text, fontSize: 13)),
+                  ]),
+                ),
+              ),
+              const SizedBox(width: 8),
               _chip('Principal', true),
               const SizedBox(width: 8),
               _chip('Solicitudes', false),

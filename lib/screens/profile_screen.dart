@@ -670,6 +670,11 @@ class SettingsScreen extends StatelessWidget {
         ),
         SwitchListTile(secondary: Icon(Icons.lock_outline, color: SpaceColors.text), title: Text('Cuenta privada', style: TextStyle(color: SpaceColors.text)), value: state.me.privateAccount, onChanged: (_) => state.togglePrivate()),
         SwitchListTile(secondary: Icon(Icons.favorite_border, color: SpaceColors.text), title: Text('Ocultar recuento de Me gusta', style: TextStyle(color: SpaceColors.text)), value: state.hideLikes, onChanged: (_) => state.toggleHideLikes()),
+        Padding(padding: const EdgeInsets.fromLTRB(16, 16, 16, 6), child: Text('Cómo interactúan con vos', style: TextStyle(color: SpaceColors.textMuted, fontSize: 13, fontWeight: FontWeight.w600))),
+        ListTile(leading: Icon(Icons.chat_bubble_outline, color: SpaceColors.text), title: Text('Mensajes y respuestas a historias', style: TextStyle(color: SpaceColors.text)), trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted)),
+        ListTile(leading: Icon(Icons.alternate_email, color: SpaceColors.text), title: Text('Etiquetas y menciones', style: TextStyle(color: SpaceColors.text)), trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted)),
+        ListTile(leading: Icon(Icons.block, color: SpaceColors.text), title: Text('Bloqueados', style: TextStyle(color: SpaceColors.text)), trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted)),
+        ListTile(leading: Icon(Icons.star_border, color: SpaceColors.text), title: Text('Favoritos', style: TextStyle(color: SpaceColors.text)), trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted)),
         Padding(padding: const EdgeInsets.fromLTRB(16, 16, 16, 6), child: Text('Tu app', style: TextStyle(color: SpaceColors.textMuted, fontSize: 13, fontWeight: FontWeight.w600))),
         SwitchListTile(secondary: Icon(Icons.notifications_none, color: SpaceColors.text), title: Text('Notificaciones', style: TextStyle(color: SpaceColors.text)), value: state.notificationsOn, onChanged: (_) => state.toggleNotificationsPref()),
         ListTile(

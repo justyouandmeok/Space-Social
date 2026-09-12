@@ -129,13 +129,21 @@ class _ReelsScreenState extends State<ReelsScreen> {
                   _action(Icons.send_outlined, '', onTap: () => ShareSheet.show(context, state, post: post)),
                   _action(post.savedFor(state.me.id) ? Icons.bookmark : Icons.bookmark_border, '', onTap: () => state.toggleSave(post.id)),
                   _action(Icons.more_vert, '', onTap: () {
-                    showModalBottomSheet(context: context, backgroundColor: SpaceColors.surface, builder: (ctx) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
-                      ListTile(title: const Text('Compartir', style: TextStyle(color: Colors.white)), onTap: () { Navigator.pop(ctx); ShareSheet.show(context, state, post: post); }),
-                      if (mine) ListTile(title: Text('Información · ${post.isVideo ? 'video' : 'foto'}', style: const TextStyle(color: Colors.white)), onTap: () { Navigator.pop(ctx); ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Reel de @${user?.username ?? ''} · ${post.caption}'))); }),
-                      if (mine) ListTile(title: const Text('Eliminar', style: TextStyle(color: Colors.redAccent)), onTap: () { Navigator.pop(ctx); state.deletePost(post.id); }),
-                      if (mine) ListTile(title: const Text('Archivar', style: TextStyle(color: Colors.white)), onTap: () { Navigator.pop(ctx); state.toggleArchive(post.id); }),
-                      ListTile(title: const Text('Copiar enlace', style: TextStyle(color: Colors.white)), onTap: () { Navigator.pop(ctx); ShareSheet.show(context, state, post: post); }),
-                      ListTile(title: const Text('Cerrar', style: TextStyle(color: Colors.white54)), onTap: () => Navigator.pop(ctx)),
+                    showModalBottomSheet(context: context, backgroundColor: const Color(0xFF1C1C1C), builder: (ctx) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      Padding(padding: const EdgeInsets.only(top: 8), child: Container(width: 36, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)))),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                        child: Row(children: [
+                          Expanded(child: _reelQuick(Icons.bookmark_border, 'Guardar', () { Navigator.pop(ctx); state.toggleSave(post.id); })),
+                          const SizedBox(width: 12),
+                          Expanded(child: _reelQuick(Icons.replay, 'Reproducción', () { Navigator.pop(ctx); })),
+                        ]),
+                      ),
+                      ListTile(leading: const Icon(Icons.info_outline, color: Colors.white), title: const Text('Por qué ves esta publicación', style: TextStyle(color: Colors.white)), onTap: () { Navigator.pop(ctx); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Te lo mostramos por actividad similar'))); }),
+                      ListTile(leading: const Icon(Icons.check_circle_outline, color: Colors.white), title: const Text('Me interesa', style: TextStyle(color: Colors.white)), onTap: () { Navigator.pop(ctx); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vamos a mostrarte más de esto'))); }),
+                      ListTile(leading: const Icon(Icons.cancel_outlined, color: Colors.white), title: const Text('No me interesa', style: TextStyle(color: Colors.white)), onTap: () { Navigator.pop(ctx); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vamos a mostrar menos de esto'))); }),
+                      if (mine) ListTile(leading: const Icon(Icons.delete_outline, color: Colors.redAccent), title: const Text('Eliminar', style: TextStyle(color: Colors.redAccent)), onTap: () { Navigator.pop(ctx); state.deletePost(post.id); }),
+                      ListTile(leading: const Icon(Icons.flag_outlined, color: Colors.redAccent), title: const Text('Reportar', style: TextStyle(color: Colors.redAccent)), onTap: () { Navigator.pop(ctx); }),
                     ])));
                   }),
                   const SizedBox(height: 12),
