@@ -340,20 +340,26 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ListTile(
-          dense: true,
-          leading: GestureDetector(
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
+          child: Row(children: [
+          GestureDetector(
             onTap: () => widget.onOpenProfile(user.id),
             child: Container(
-              padding: const EdgeInsets.all(1.5),
-              decoration: const BoxDecoration(
+              padding: const EdgeInsets.all(1.6),
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: LinearGradient(colors: [SpaceColors.cosmicCyan, SpaceColors.nebulaPurple]),
+                gradient: widget.state.storyUnseen(user.id)
+                    ? const LinearGradient(colors: [Color(0xFFF58529), Color(0xFFDD2A7B), Color(0xFF8134AF)])
+                    : null,
+                border: widget.state.storyUnseen(user.id) ? null : Border.all(color: const Color(0xFFDBDBDB), width: 1),
               ),
               child: Avatar(user.avatarPath, size: 32),
             ),
           ),
-          title: GestureDetector(
+          const SizedBox(width: 10),
+          Expanded(
+          child: GestureDetector(
             onTap: () => widget.onOpenProfile(user.id),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
@@ -381,17 +387,17 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
                 ),
             ]),
           ),
-          trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-            if (user.id != widget.state.me.id && !widget.state.isFollowing(user.id))
-              TextButton(
-                onPressed: () => widget.state.toggleFollow(user.id),
-                child: Text(widget.state.isPendingFollow(user.id) ? 'Solicitado' : 'Seguir', style: TextStyle(color: SpaceColors.cosmicCyan, fontWeight: FontWeight.bold)),
-              ),
-            IconButton(
-              icon: Icon(Icons.more_horiz, color: SpaceColors.textMuted),
-              onPressed: () => _options(context, live, user),
+          ),
+          if (user.id != widget.state.me.id && !widget.state.isFollowing(user.id))
+            TextButton(
+              onPressed: () => widget.state.toggleFollow(user.id),
+              child: Text(widget.state.isPendingFollow(user.id) ? 'Solicitado' : 'Seguir', style: const TextStyle(color: Color(0xFF0095F6), fontWeight: FontWeight.w700, fontSize: 13)),
             ),
-          ]),
+          IconButton(
+            icon: const Icon(Icons.more_horiz, color: Color(0xFF262626)),
+            onPressed: () => _options(context, live, user),
+          ),
+        ]),
         ),
         GestureDetector(
           onDoubleTap: _handleDoubleTap,

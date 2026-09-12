@@ -85,60 +85,62 @@ class _MainScreenState extends State<MainScreen> {
           index: _currentIndex,
           children: pages,
         ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: _onTap,
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.white,
-          elevation: 0,
-          selectedItemColor: const Color(0xFF262626),
-          unselectedItemColor: const Color(0xFF8E8E8E),
-          showSelectedLabels: false,
-          showUnselectedLabels: false,
-          items: [
-            BottomNavigationBarItem(
-              icon: CustomPaint(size: const Size(26, 26), painter: HomeOutlinePainter(const Color(0xFF8E8E8E))),
-              activeIcon: CustomPaint(size: const Size(26, 26), painter: HomeOutlinePainter(const Color(0xFF262626), filled: true)),
-              label: 'Inicio',
-            ),
-            BottomNavigationBarItem(
-              icon: CustomPaint(size: const Size(26, 26), painter: ReelsPainter(const Color(0xFF8E8E8E))),
-              activeIcon: CustomPaint(size: const Size(26, 26), painter: ReelsPainter(const Color(0xFF262626), filled: true)),
-              label: 'Reels',
-            ),
-            BottomNavigationBarItem(
-              icon: Stack(
-                clipBehavior: Clip.none,
+        bottomNavigationBar: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            border: Border(top: BorderSide(color: Color(0xFFDBDBDB), width: 0.4)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: SizedBox(
+              height: 50,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  CustomPaint(size: const Size(26, 26), painter: PlaneRightPainter(const Color(0xFF8E8E8E))),
-                  if (state.messages.any((m) => m.toId == state.me.id && !m.read))
-                    Positioned(
-                      right: -2,
-                      top: -2,
-                      child: Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFFFF3040), shape: BoxShape.circle)),
+                  _navItem(0, HomeOutlinePainter(_currentIndex == 0 ? const Color(0xFF262626) : const Color(0xFF8E8E8E), filled: _currentIndex == 0)),
+                  _navItem(1, ReelsPainter(_currentIndex == 1 ? const Color(0xFF262626) : const Color(0xFF8E8E8E), filled: _currentIndex == 1)),
+                  _navItem(2, PlaneRightPainter(_currentIndex == 2 ? const Color(0xFF262626) : const Color(0xFF8E8E8E)), badge: state.messages.any((m) => m.toId == state.me.id && !m.read)),
+                  _navItem(3, SearchOutlinePainter(_currentIndex == 3 ? const Color(0xFF262626) : const Color(0xFF8E8E8E), bold: _currentIndex == 3)),
+                  GestureDetector(
+                    onTap: () => _onTap(4),
+                    behavior: HitTestBehavior.opaque,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Container(
+                        padding: const EdgeInsets.all(1.5),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: _currentIndex == 4 ? const Color(0xFF262626) : Colors.transparent, width: 1.4),
+                        ),
+                        child: Avatar(state.me.avatarPath, size: 24),
+                      ),
                     ),
+                  ),
                 ],
               ),
-              activeIcon: CustomPaint(size: const Size(26, 26), painter: PlaneRightPainter(const Color(0xFF262626))),
-              label: 'Mensajes',
             ),
-            BottomNavigationBarItem(
-              icon: CustomPaint(size: const Size(26, 26), painter: SearchOutlinePainter(const Color(0xFF8E8E8E))),
-              activeIcon: CustomPaint(size: const Size(26, 26), painter: SearchOutlinePainter(const Color(0xFF262626), bold: true)),
-              label: 'Buscar',
-            ),
-            BottomNavigationBarItem(
-              icon: Container(
-                padding: const EdgeInsets.all(1.5),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: _currentIndex == 4 ? SpaceColors.text : Colors.transparent, width: 1.5),
-                ),
-                child: Avatar(state.me.avatarPath, size: 24),
-              ),
-              label: 'Perfil',
-            ),
-          ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _navItem(int index, CustomPainter painter, {bool badge = false}) {
+    return GestureDetector(
+      onTap: () => _onTap(index),
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 56,
+        height: 50,
+        child: Center(
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              CustomPaint(size: const Size(26, 26), painter: painter),
+              if (badge)
+                Positioned(right: -2, top: -2, child: Container(width: 7, height: 7, decoration: const BoxDecoration(color: Color(0xFFED4956), shape: BoxShape.circle))),
+            ],
+          ),
         ),
       ),
     );

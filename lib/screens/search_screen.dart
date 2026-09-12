@@ -80,7 +80,7 @@ class _SearchScreenState extends State<SearchScreen> {
           height: 40,
           decoration: BoxDecoration(
             color: const Color(0xFFEFEFEF),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: TextField(
             controller: _searchController,

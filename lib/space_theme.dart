@@ -13,12 +13,15 @@ class SpaceColors {
   static const like = Color(0xFFFF3040);
 
   static Color get bg => const Color(0xFFFFFFFF);
-  static Color get surface => const Color(0xFFF5F5F5);
+  static Color get surface => const Color(0xFFFAFAFA);
   static Color get text => const Color(0xFF262626);
   static Color get textMuted => const Color(0xFF8E8E8E);
-  static Color get hairline => const Color(0xFFEFEFEF);
+  static Color get hairline => const Color(0xFFDBDBDB);
   static Color get nav => const Color(0xFFFFFFFF);
   static Color get icon => const Color(0xFF262626);
+  static const igBlue = Color(0xFF0095F6);
+  static const igRed = Color(0xFFED4956);
+  static const chip = Color(0xFFEFEFEF);
 }
 
 const spacePageTransitions = PageTransitionsTheme(
@@ -84,8 +87,7 @@ ThemeData buildSpaceTheme({required bool dark}) {
         titleMedium: TextStyle(color: Color(0xFF262626)),
       ),
       listTileTheme: const ListTileThemeData(iconColor: Color(0xFF262626), textColor: Color(0xFF262626)),
-      bottomSheetTheme: const BottomSheetThemeData(backgroundColor: Colors.white, modalBackgroundColor: Colors.white),
-      dialogTheme: const DialogThemeData(backgroundColor: Colors.white),
+      dialogTheme: const DialogThemeData(backgroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(14)))),
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? const Color(0xFF0095F6) : Colors.white),
         trackColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? const Color(0xFF0095F6).withValues(alpha: 0.45) : const Color(0xFFBDBDBD)),
@@ -94,6 +96,18 @@ ThemeData buildSpaceTheme({required bool dark}) {
       dividerColor: const Color(0x22000000),
       splashFactory: NoSplash.splashFactory,
       highlightColor: Colors.transparent,
+      snackBarTheme: const SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Color(0xFF262626),
+        contentTextStyle: TextStyle(color: Colors.white, fontSize: 14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+        elevation: 0,
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: Colors.white,
+        modalBackgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      ),
     );
   }
   return ThemeData(

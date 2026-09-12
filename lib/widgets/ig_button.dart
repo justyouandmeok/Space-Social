@@ -27,7 +27,7 @@ class IgButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           elevation: 0,
           shadowColor: Colors.transparent,
-          backgroundColor: primary ? const Color(0xFF0095F6) : const Color(0xFFF5F5F5),
+          backgroundColor: primary ? const Color(0xFF0095F6) : const Color(0xFFEFEFEF),
           foregroundColor: primary ? Colors.white : Colors.black,
           disabledBackgroundColor: const Color(0xFFB2DFFC),
           disabledForegroundColor: Colors.white,
@@ -53,6 +53,21 @@ class IgFollowButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final label = following ? 'Siguiendo' : pending ? 'Solicitado' : 'Seguir';
     return IgButton(label: label, onTap: onTap, primary: !following && !pending);
+  }
+}
+
+class IgHandle extends StatelessWidget {
+  const IgHandle({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.only(top: 8, bottom: 6),
+        width: 36,
+        height: 4,
+        decoration: BoxDecoration(color: const Color(0xFFDBDBDB), borderRadius: BorderRadius.circular(2)),
+      ),
+    );
   }
 }
 

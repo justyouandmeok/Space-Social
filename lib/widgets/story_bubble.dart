@@ -107,7 +107,7 @@ class StoryBubble extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          Text(mine ? 'Tu historia' : user.username, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, height: 1.1, color: Color(0xFF262626))),
+          Text(mine ? 'Tu historia' : user.username, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11.5, height: 1.15, color: Color(0xFF262626), fontWeight: FontWeight.w400)),
         ]),
       ),
     );

@@ -49,8 +49,8 @@ class _AuthScreenState extends State<AuthScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
           children: [
             const SizedBox(height: 48),
-            const Text('Space Social', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'GrandHotel', fontSize: 52, color: Color(0xFF262626))),
-            const SizedBox(height: 36),
+            const Text('Space Social', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'GrandHotel', fontSize: 56, color: Color(0xFF262626), height: 1)),
+            const SizedBox(height: 40),
             _field(email, register ? 'Correo' : 'Correo, usuario o teléfono'),
             if (register) _field(user, 'Nombre de usuario'),
             if (register) _field(name, 'Nombre'),
@@ -66,9 +66,23 @@ class _AuthScreenState extends State<AuthScreen> {
                     : Text(register ? 'Registrarte' : 'Entrar'),
               ),
             ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () {},
+                child: const Text('¿Olvidaste tu contraseña?', style: TextStyle(color: Color(0xFF00376B), fontSize: 12, fontWeight: FontWeight.w600)),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Row(children: [
+              const Expanded(child: Divider(color: Color(0xFFDBDBDB))),
+              Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Text('O', style: TextStyle(color: SpaceColors.textMuted, fontWeight: FontWeight.w700, fontSize: 12))),
+              const Expanded(child: Divider(color: Color(0xFFDBDBDB))),
+            ]),
+            const SizedBox(height: 8),
             TextButton(
               onPressed: () => setState(() => register = !register),
-              child: Text(register ? '¿Tenés cuenta? Iniciá sesión' : '¿No tenés cuenta? Registrate', style: TextStyle(color: SpaceColors.textMuted)),
+              child: Text(register ? '¿Tenés una cuenta? Iniciá sesión' : '¿No tenés una cuenta? Registrate', style: const TextStyle(color: Color(0xFF0095F6), fontWeight: FontWeight.w600)),
             ),
           ],
         ),

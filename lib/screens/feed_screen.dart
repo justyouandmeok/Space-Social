@@ -62,9 +62,10 @@ class FeedScreen extends StatelessWidget {
               ),
             );
           },
-          child: Row(children: [
-            Text('Space Social', style: TextStyle(fontFamily: 'GrandHotel', fontSize: 30, height: 1, color: Color(0xFF262626), letterSpacing: 0.2)),
-            Icon(Icons.keyboard_arrow_down, color: SpaceColors.text, size: 20),
+          child: Row(mainAxisAlignment: MainAxisAlignment.center, mainAxisSize: MainAxisSize.min, children: [
+            const Text('Space Social', style: TextStyle(fontFamily: 'GrandHotel', fontSize: 32, height: 1, color: Color(0xFF262626), letterSpacing: 0.15)),
+            const SizedBox(width: 2),
+            Icon(Icons.keyboard_arrow_down, color: SpaceColors.text, size: 18),
           ]),
         ),
         actions: [
