@@ -18,6 +18,9 @@ class DirectMessagesScreen extends StatelessWidget {
     final me = state.me.id;
     final others = state.users.where((u) => u.id != me && state.threadWith(u.id).isNotEmpty).toList();
     others.sort((a, b) {
+      final pa = state.pinnedChats.contains(a.id) ? 1 : 0;
+      final pb = state.pinnedChats.contains(b.id) ? 1 : 0;
+      if (pa != pb) return pb.compareTo(pa);
       final la = state.threadWith(a.id);
       final lb = state.threadWith(b.id);
       final ta = la.isEmpty ? DateTime(2000) : la.last.createdAt;
@@ -196,6 +199,7 @@ class DirectMessagesScreen extends StatelessWidget {
                     final last = thread.isEmpty ? null : thread.last;
                     final unread = thread.where((m) => m.toId == me && !m.read).length;
                     return ListTile(
+                      onLongPress: () => state.togglePinnedChat(u.id),
                       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ChatConversationScreen(state: state, user: u))),
                       leading: Container(
                         padding: const EdgeInsets.all(2),
@@ -225,7 +229,13 @@ class DirectMessagesScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      title: Text(u.username, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold)),
+                      title: Row(children: [
+                        if (state.pinnedChats.contains(u.id)) ...[
+                          const Icon(Icons.push_pin, size: 14, color: Color(0xFF8E8E8E)),
+                          const SizedBox(width: 4),
+                        ],
+                        Text(u.username, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold)),
+                      ]),
                       subtitle: Text(
                         last?.text ?? 'Enviar mensaje',
                         maxLines: 1,

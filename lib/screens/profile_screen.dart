@@ -208,7 +208,27 @@ class ProfileScreen extends StatelessWidget {
                             showModalBottomSheet(context: context, backgroundColor: SpaceColors.surface, builder: (ctx) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
                               ListTile(title: Text(state.favorites.contains(user.id) ? 'Sacar de favoritos' : 'Agregar a favoritos', style: TextStyle(color: SpaceColors.text)), onTap: () { Navigator.pop(ctx); state.toggleFavorite(user.id); }),
                               ListTile(title: Text(state.closeFriends.contains(user.id) ? 'Sacar de mejores amigos' : 'Mejores amigos', style: TextStyle(color: SpaceColors.text)), onTap: () { Navigator.pop(ctx); state.toggleCloseFriend(user.id); }),
-                              ListTile(title: Text(state.blocked.contains(user.id) ? 'Desbloquear' : 'Bloquear', style: const TextStyle(color: Colors.redAccent)), onTap: () { Navigator.pop(ctx); state.toggleBlock(user.id); }),
+                              ListTile(
+                                title: Text(state.blocked.contains(user.id) ? 'Desbloquear' : 'Bloquear', style: const TextStyle(color: Colors.redAccent)),
+                                onTap: () async {
+                                  Navigator.pop(ctx);
+                                  if (!state.blocked.contains(user.id)) {
+                                    final ok = await showDialog<bool>(
+                                      context: context,
+                                      builder: (d) => AlertDialog(
+                                        title: Text('¿Bloquear a @${user.username}?'),
+                                        content: const Text('No va a poder ver tu perfil ni escribirte.'),
+                                        actions: [
+                                          TextButton(onPressed: () => Navigator.pop(d, false), child: const Text('Cancelar')),
+                                          TextButton(onPressed: () => Navigator.pop(d, true), child: const Text('Bloquear')),
+                                        ],
+                                      ),
+                                    );
+                                    if (ok != true) return;
+                                  }
+                                  await state.toggleBlock(user.id);
+                                },
+                              ),
                               ListTile(title: Text(state.restricted.contains(user.id) ? 'Dejar de restringir' : 'Restringir', style: TextStyle(color: SpaceColors.text)), onTap: () { Navigator.pop(ctx); state.toggleRestrict(user.id); }),
                             ])));
                           },

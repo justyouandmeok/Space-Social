@@ -106,6 +106,7 @@ class AppState extends ChangeNotifier {
   Set<String> savedAudios = {};
   DateTime? activitySeenAt;
   final reports = <String>[];
+  Set<String> pinnedChats = {};
 
   bool get hasNewActivity {
     if (activity.isEmpty) return false;
@@ -491,6 +492,7 @@ class AppState extends ChangeNotifier {
         reports
           ..clear()
           ..addAll(List<String>.from(data['reports'] ?? const []));
+        pinnedChats = {...List<String>.from(data['pinnedChats'] ?? const [])};
       }
     }
 
@@ -1242,6 +1244,15 @@ class AppState extends ChangeNotifier {
     await _savePrefs();
   }
 
+  Future<void> togglePinnedChat(String userId) async {
+    if (pinnedChats.contains(userId)) {
+      pinnedChats.remove(userId);
+    } else {
+      pinnedChats.add(userId);
+    }
+    await _savePrefs();
+  }
+
   Future<void> fileReport(String targetId, String reason) async {
     reports.add('$targetId|$reason|${DateTime.now().toIso8601String()}');
     await _savePrefs();
@@ -1773,6 +1784,7 @@ class AppState extends ChangeNotifier {
       'savedAudios': savedAudios.toList(),
       if (activitySeenAt != null) 'activitySeenAt': activitySeenAt!.toIso8601String(),
       'reports': reports,
+      'pinnedChats': pinnedChats.toList(),
     }, SetOptions(merge: true));
     notifyListeners();
   }
