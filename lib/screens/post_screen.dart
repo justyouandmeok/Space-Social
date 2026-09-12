@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../state.dart';
 import '../config.dart';
 import '../services/grok_service.dart';
@@ -17,18 +18,25 @@ class PostScreen extends StatefulWidget {
 
 class _PostScreenState extends State<PostScreen> {
   late int mode;
+  int step = 0;
   File? file;
   bool video = false;
   final cap = TextEditingController();
   final loc = TextEditingController();
   bool grokBusy = false;
+  bool sharing = false;
+  bool alsoStory = false;
+  String audience = 'Todos';
   List<AssetEntity> assets = [];
   String? selectedAssetId;
+  final tagged = <String>{};
+
+  static const _places = ['Benavidez, Buenos Aires', 'General Pacheco', 'Tigre', 'Nordelta'];
 
   @override
   void initState() {
     super.initState();
-    mode = widget.initialMode.clamp(0, 2);
+    mode = widget.initialMode.clamp(0, 3);
     _loadGallery();
   }
 
@@ -49,9 +57,15 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   Future<void> _camera() async {
-    final x = await ImagePicker().pickImage(source: ImageSource.camera, imageQuality: 92);
-    if (x == null) return;
-    setState(() { file = File(x.path); video = false; selectedAssetId = null; });
+    if (mode == 2) {
+      final x = await ImagePicker().pickVideo(source: ImageSource.camera);
+      if (x == null) return;
+      setState(() { file = File(x.path); video = true; selectedAssetId = null; });
+    } else {
+      final x = await ImagePicker().pickImage(source: ImageSource.camera, imageQuality: 92);
+      if (x == null) return;
+      setState(() { file = File(x.path); video = false; selectedAssetId = null; });
+    }
   }
 
   Future<void> _use(AssetEntity a) async {
@@ -59,7 +73,6 @@ class _PostScreenState extends State<PostScreen> {
     if (f == null) return;
     setState(() { file = f; video = a.type == AssetType.video; selectedAssetId = a.id; });
   }
-
 
   Future<void> _grokCaption() async {
     final topic = cap.text.trim().isEmpty ? 'una foto en Space Social' : cap.text.trim();
@@ -73,30 +86,61 @@ class _PostScreenState extends State<PostScreen> {
       }
       if (mounted) cap.text = text;
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Grok: $e')));
-      }
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Grok: $e')));
     } finally {
       if (mounted) setState(() => grokBusy = false);
     }
   }
+
+  Future<void> _draft() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('ss_draft_caption', cap.text);
+    await prefs.setString('ss_draft_loc', loc.text);
+    if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Borrador guardado')));
+  }
+
   Future<void> _share() async {
-    if (file == null) return;
+    if (file == null || sharing) return;
+    setState(() => sharing = true);
     final f = file!;
     final m = mode;
-    final c = cap.text;
+    var c = cap.text.trim();
+    if (tagged.isNotEmpty) {
+      final names = widget.state.users.where((u) => tagged.contains(u.id)).map((u) => '@${u.username}').join(' ');
+      c = '$c $names'.trim();
+    }
     final v = video;
+    final place = loc.text;
     Navigator.of(context).pop();
     if (m == 1) {
       await widget.state.publishStory(f, overlayText: c);
     } else {
-      await widget.state.publishPost(image: f, caption: c, location: loc.text, isReel: m == 2, isVideo: v);
+      await widget.state.publishPost(image: f, caption: c, location: place, isReel: m == 2, isVideo: v);
+      if (alsoStory) await widget.state.publishStory(f, overlayText: c);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    const titles = ['Nueva publicación', 'Nueva historia', 'Nuevo reel'];
+    if (mode == 3) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: SafeArea(
+          child: Column(children: [
+            Row(children: [
+              IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close, color: Colors.white)),
+              const Expanded(child: Text('En vivo', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18))),
+            ]),
+            const Expanded(child: Center(child: Text('El vivo llega en una próxima ola', style: TextStyle(color: Colors.white70)))),
+            _modesBar(),
+          ]),
+        ),
+      );
+    }
+
+    if (step == 1 && file != null) return _details();
+
+    const titles = ['Nueva publicación', 'Nueva historia', 'Nuevo reel', 'En vivo'];
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
@@ -106,9 +150,21 @@ class _PostScreenState extends State<PostScreen> {
             child: Row(children: [
               IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close, color: Colors.white, size: 28)),
               Expanded(child: Text(titles[mode], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18))),
-              TextButton(onPressed: file == null ? null : _share, child: const Text('Compartir', style: TextStyle(color: LumaColors.blue, fontWeight: FontWeight.w700, fontSize: 16))),
+              TextButton(
+                onPressed: file == null ? null : () => setState(() => step = 1),
+                child: Text('Siguiente', style: TextStyle(color: file == null ? Colors.white24 : LumaColors.blue, fontWeight: FontWeight.w700, fontSize: 16)),
+              ),
             ]),
           ),
+          if (mode == 2)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+              child: Row(children: [
+                _pill(Icons.inventory_2_outlined, 'Borradores'),
+                const SizedBox(width: 8),
+                _pill(Icons.layers_outlined, 'Plantillas'),
+              ]),
+            ),
           if (file != null)
             Expanded(
               flex: 3,
@@ -116,48 +172,39 @@ class _PostScreenState extends State<PostScreen> {
                   ? const Center(child: Icon(Icons.play_circle, color: Colors.white, size: 72))
                   : Image.file(file!, fit: BoxFit.contain),
             ),
-          if ((mode == 0 || mode == 2) && file != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Column(children: [
-                TextField(
-                  controller: cap,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(hintText: 'Escribí un pie de foto...', hintStyle: TextStyle(color: Colors.white54), border: InputBorder.none),
-                ),
-                TextField(
-                  controller: loc,
-                  style: const TextStyle(color: Colors.white70, fontSize: 13),
-                  decoration: const InputDecoration(hintText: 'Agregar ubicación', hintStyle: TextStyle(color: Colors.white38), prefixIcon: Icon(Icons.place_outlined, color: Colors.white38, size: 18), border: InputBorder.none),
-                ),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    onPressed: grokBusy ? null : _grokCaption,
-                    icon: grokBusy
-                        ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                        : const Icon(Icons.auto_awesome, color: LumaColors.blue, size: 18),
-                    label: const Text('Generar con Grok', style: TextStyle(color: LumaColors.blue)),
-                  ),
-                ),
-              ]),
-            ),
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
             child: Row(children: [
               const Text('Recientes', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
               const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 20),
               const Spacer(),
-              IconButton(onPressed: _camera, icon: const Icon(Icons.photo_camera_outlined, color: Colors.white)),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(color: const Color(0xFF262626), borderRadius: BorderRadius.circular(16)),
+                child: const Row(children: [
+                  Icon(Icons.select_all, color: Colors.white, size: 16),
+                  SizedBox(width: 6),
+                  Text('Seleccionar', style: TextStyle(color: Colors.white, fontSize: 12)),
+                ]),
+              ),
             ]),
           ),
           Expanded(
             flex: 2,
             child: GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, mainAxisSpacing: 1.2, crossAxisSpacing: 1.2),
-              itemCount: assets.length,
+              itemCount: assets.length + 1,
               itemBuilder: (_, i) {
-                final a = assets[i];
+                if (i == 0) {
+                  return GestureDetector(
+                    onTap: _camera,
+                    child: const ColoredBox(
+                      color: Color(0xFF1A1A1A),
+                      child: Icon(Icons.photo_camera_outlined, color: Colors.white, size: 28),
+                    ),
+                  );
+                }
+                final a = assets[i - 1];
                 return FutureBuilder(
                   future: a.thumbnailDataWithSize(const ThumbnailSize(240, 240)),
                   builder: (_, snap) {
@@ -176,18 +223,133 @@ class _PostScreenState extends State<PostScreen> {
               },
             ),
           ),
+          _modesBar(),
+        ]),
+      ),
+    );
+  }
+
+  Widget _details() {
+    return Scaffold(
+      backgroundColor: const Color(0xFF000000),
+      body: SafeArea(
+        child: Column(children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(color: const Color(0xFF262626), borderRadius: BorderRadius.circular(24)),
-              child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-                _mode('PUBLICACIÓN', 0),
-                _mode('HISTORIA', 1),
-                _mode('REEL', 2),
-              ]),
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Row(children: [
+              IconButton(onPressed: () => setState(() => step = 0), icon: const Icon(Icons.arrow_back, color: Colors.white)),
+              Expanded(child: Text(mode == 2 ? 'Nuevo reel' : 'Nueva publicación', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18))),
+            ]),
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              children: [
+                Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: SizedBox(
+                      height: 160,
+                      child: video
+                          ? const ColoredBox(color: Color(0xFF1A1A1A), child: Center(child: Icon(Icons.play_circle, color: Colors.white, size: 48)))
+                          : Image.file(file!, fit: BoxFit.cover),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: cap,
+                  maxLines: 3,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    hintText: 'Escribe una descripción y agrega hashtags...',
+                    hintStyle: TextStyle(color: Colors.white38),
+                    border: InputBorder.none,
+                  ),
+                ),
+                Wrap(spacing: 8, runSpacing: 8, children: [
+                  _chipBtn('# Hashtags', () { cap.text = '${cap.text} #'; cap.selection = TextSelection.collapsed(offset: cap.text.length); }),
+                  _chipBtn('Vincular un reel', () {}),
+                  _chipBtn('Encuesta', () {}),
+                  _chipBtn('Tema', () {}),
+                ]),
+                const SizedBox(height: 8),
+                _row(Icons.person_outline, 'Etiquetar personas', tagged.isEmpty ? '' : '${tagged.length}', _pickPeople),
+                _row(Icons.place_outlined, 'Agregar ubicación', loc.text, () {}),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: _places.map((p) => GestureDetector(
+                    onTap: () => setState(() => loc.text = p),
+                    child: Chip(
+                      label: Text(p, style: const TextStyle(color: Colors.white, fontSize: 12)),
+                      backgroundColor: loc.text == p ? const Color(0xFF262626) : const Color(0xFF1A1A1A),
+                      side: BorderSide(color: loc.text == p ? Colors.white54 : Colors.white12),
+                    ),
+                  )).toList(),
+                ),
+                _row(Icons.link, 'Agregar enlace', 'NUEVO', () {}),
+                _row(Icons.music_note_outlined, 'Renombrar audio', 'Audio original', () {}),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Agregar etiqueta de IA', style: TextStyle(color: Colors.white, fontSize: 14)),
+                  subtitle: const Text('Marcá el contenido si usaste IA.', style: TextStyle(color: Colors.white38, fontSize: 12)),
+                  value: grokBusy,
+                  onChanged: (_) => _grokCaption(),
+                  activeColor: LumaColors.blue,
+                ),
+                _row(Icons.public, 'Público', audience, _pickAudience),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('También en tu historia', style: TextStyle(color: Colors.white, fontSize: 14)),
+                  value: alsoStory,
+                  onChanged: (v) => setState(() => alsoStory = v),
+                  activeColor: LumaColors.blue,
+                ),
+                TextButton.icon(
+                  onPressed: grokBusy ? null : _grokCaption,
+                  icon: const Icon(Icons.auto_awesome, color: LumaColors.blue, size: 18),
+                  label: const Text('Generar con Grok', style: TextStyle(color: LumaColors.blue)),
+                ),
+              ],
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: Row(children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: _draft,
+                  style: OutlinedButton.styleFrom(foregroundColor: Colors.white, side: const BorderSide(color: Colors.white24), padding: const EdgeInsets.symmetric(vertical: 14)),
+                  child: const Text('Guardar borrador'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: sharing ? null : _share,
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0095F6), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 14)),
+                  child: Text(sharing ? '...' : 'Compartir'),
+                ),
+              ),
+            ]),
+          ),
+        ]),
+      ),
+    );
+  }
+
+  Widget _modesBar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(color: const Color(0xFF262626), borderRadius: BorderRadius.circular(24)),
+        child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+          _mode('PUBLICACIÓN', 0),
+          _mode('HISTORIA', 1),
+          _mode('REEL', 2),
+          _mode('VIVO', 3),
         ]),
       ),
     );
@@ -196,10 +358,94 @@ class _PostScreenState extends State<PostScreen> {
   Widget _mode(String t, int i) {
     final on = mode == i;
     return GestureDetector(
-      onTap: () => setState(() => mode = i),
+      onTap: () => setState(() { mode = i; step = 0; }),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        child: Text(t, style: TextStyle(color: on ? Colors.white : Colors.white54, fontWeight: FontWeight.w800, fontSize: 12)),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        child: Text(t, style: TextStyle(color: on ? Colors.white : Colors.white54, fontWeight: FontWeight.w800, fontSize: 11)),
+      ),
+    );
+  }
+
+  Widget _pill(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(color: const Color(0xFF262626), borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.white12)),
+      child: Row(children: [
+        Icon(icon, color: Colors.white, size: 16),
+        const SizedBox(width: 6),
+        Text(label, style: const TextStyle(color: Colors.white, fontSize: 13)),
+      ]),
+    );
+  }
+
+  Widget _chipBtn(String label, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(color: const Color(0xFF1A1A1A), borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.white12)),
+        child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 12)),
+      ),
+    );
+  }
+
+  Widget _row(IconData icon, String title, String trailing, VoidCallback onTap) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(icon, color: Colors.white),
+      title: Text(title, style: const TextStyle(color: Colors.white, fontSize: 15)),
+      trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+        if (trailing.isNotEmpty) Text(trailing, style: const TextStyle(color: Colors.white54, fontSize: 13)),
+        const Icon(Icons.chevron_right, color: Colors.white38),
+      ]),
+      onTap: onTap,
+    );
+  }
+
+  void _pickPeople() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A1A),
+      builder: (_) => SafeArea(
+        child: SizedBox(
+          height: 360,
+          child: ListView(
+            children: widget.state.users.take(30).map((u) {
+              final on = tagged.contains(u.id);
+              return CheckboxListTile(
+                value: on,
+                onChanged: (_) => setState(() { on ? tagged.remove(u.id) : tagged.add(u.id); }),
+                title: Text(u.username, style: const TextStyle(color: Colors.white)),
+                activeColor: LumaColors.blue,
+              );
+            }).toList(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _pickAudience() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A1A),
+      builder: (_) => SafeArea(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          RadioListTile<String>(
+            value: 'Todos',
+            groupValue: audience,
+            onChanged: (v) { setState(() => audience = v!); Navigator.pop(context); },
+            title: const Text('Todos', style: TextStyle(color: Colors.white)),
+            activeColor: LumaColors.blue,
+          ),
+          RadioListTile<String>(
+            value: 'Mejores amigos',
+            groupValue: audience,
+            onChanged: (v) { setState(() => audience = v!); Navigator.pop(context); },
+            title: const Text('Mejores amigos', style: TextStyle(color: Colors.white)),
+            activeColor: LumaColors.blue,
+          ),
+        ]),
       ),
     );
   }
