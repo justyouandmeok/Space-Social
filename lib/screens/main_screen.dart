@@ -88,31 +88,45 @@ class _MainScreenState extends State<MainScreen> {
         bottomNavigationBar: Container(
           decoration: const BoxDecoration(
             color: Colors.white,
-            border: Border(top: BorderSide(color: Color(0xFFDBDBDB), width: 0.4)),
+            border: Border(top: BorderSide(color: Color(0xFFDBDBDB), width: 0.33)),
           ),
           child: SafeArea(
             top: false,
             child: SizedBox(
-              height: 50,
+              height: 48,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _navItem(0, HomeOutlinePainter(_currentIndex == 0 ? const Color(0xFF262626) : const Color(0xFF8E8E8E), filled: _currentIndex == 0)),
-                  _navItem(1, ReelsPainter(_currentIndex == 1 ? const Color(0xFF262626) : const Color(0xFF8E8E8E), filled: _currentIndex == 1)),
-                  _navItem(2, PlaneRightPainter(_currentIndex == 2 ? const Color(0xFF262626) : const Color(0xFF8E8E8E)), badge: state.messages.any((m) => m.toId == state.me.id && !m.read)),
-                  _navItem(3, SearchOutlinePainter(_currentIndex == 3 ? const Color(0xFF262626) : const Color(0xFF8E8E8E), bold: _currentIndex == 3)),
+                  _navItem(0, HomeOutlinePainter(const Color(0xFF262626), filled: _currentIndex == 0)),
+                  _navItem(1, ReelsPainter(const Color(0xFF262626), filled: _currentIndex == 1)),
+                  _navItem(2, PlaneRightPainter(const Color(0xFF262626)), badge: state.messages.any((m) => m.toId == state.me.id && !m.read)),
+                  _navItem(3, SearchOutlinePainter(const Color(0xFF262626), bold: _currentIndex == 3)),
                   GestureDetector(
                     onTap: () => _onTap(4),
                     behavior: HitTestBehavior.opaque,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Container(
-                        padding: const EdgeInsets.all(1.5),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: _currentIndex == 4 ? const Color(0xFF262626) : Colors.transparent, width: 1.4),
+                    child: SizedBox(
+                      width: 56,
+                      height: 48,
+                      child: Center(
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(1.2),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: _currentIndex == 4 ? const Color(0xFF262626) : Colors.transparent, width: 1.2),
+                              ),
+                              child: Avatar(state.me.avatarPath, size: 24),
+                            ),
+                            if (state.hasNewActivity)
+                              Positioned(
+                                right: -1,
+                                bottom: -1,
+                                child: Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFFED4956), shape: BoxShape.circle, border: Border.fromBorderSide(BorderSide(color: Colors.white, width: 1.2)))),
+                              ),
+                          ],
                         ),
-                        child: Avatar(state.me.avatarPath, size: 24),
                       ),
                     ),
                   ),
@@ -136,7 +150,7 @@ class _MainScreenState extends State<MainScreen> {
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              CustomPaint(size: const Size(26, 26), painter: painter),
+              CustomPaint(size: const Size(27, 27), painter: painter),
               if (badge)
                 Positioned(right: -2, top: -2, child: Container(width: 7, height: 7, decoration: const BoxDecoration(color: Color(0xFFED4956), shape: BoxShape.circle))),
             ],

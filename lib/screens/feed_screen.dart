@@ -33,7 +33,7 @@ class FeedScreen extends StatelessWidget {
         toolbarHeight: 44,
         titleSpacing: 0,
         leading: IconButton(
-          icon: CustomPaint(size: const Size(26, 26), painter: AddBoxPainter(SpaceColors.text)),
+          icon: CustomPaint(size: const Size(24, 24), painter: PlusPainter(const Color(0xFF262626))),
           onPressed: () => onOpenCreate(0),
         ),
         title: GestureDetector(

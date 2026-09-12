@@ -347,7 +347,7 @@ class ReelsPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final s = size.width;
-    final r = RRect.fromLTRBR(s * 0.12, s * 0.12, s * 0.88, s * 0.88, Radius.circular(s * 0.22));
+    final r = RRect.fromLTRBR(s * 0.14, s * 0.14, s * 0.86, s * 0.86, Radius.circular(s * 0.16));
     if (filled) {
       canvas.drawRRect(r, _fill(color));
       final tri = Path()
@@ -382,14 +382,28 @@ class PlaneRightPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final s = size.width;
     final path = Path()
-      ..moveTo(s * 0.10, s * 0.18)
-      ..lineTo(s * 0.92, s * 0.50)
-      ..lineTo(s * 0.10, s * 0.82)
-      ..lineTo(s * 0.28, s * 0.50)
+      ..moveTo(s * 0.12, s * 0.88)
+      ..lineTo(s * 0.12, s * 0.38)
+      ..lineTo(s * 0.88, s * 0.12)
+      ..lineTo(s * 0.52, s * 0.88)
+      ..lineTo(s * 0.40, s * 0.58)
       ..close();
     canvas.drawPath(path, _stroke(color, s * 0.07));
-    canvas.drawLine(Offset(s * 0.28, s * 0.50), Offset(s * 0.58, s * 0.50), _stroke(color, s * 0.07));
+    canvas.drawLine(Offset(s * 0.40, s * 0.58), Offset(s * 0.88, s * 0.12), _stroke(color, s * 0.07));
   }
   @override
   bool shouldRepaint(covariant PlaneRightPainter old) => old.color != color;
+}
+
+class PlusPainter extends CustomPainter {
+  PlusPainter(this.color);
+  final Color color;
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = size.width;
+    canvas.drawLine(Offset(s * 0.50, s * 0.18), Offset(s * 0.50, s * 0.82), _stroke(color, s * 0.08));
+    canvas.drawLine(Offset(s * 0.18, s * 0.50), Offset(s * 0.82, s * 0.50), _stroke(color, s * 0.08));
+  }
+  @override
+  bool shouldRepaint(covariant PlusPainter old) => old.color != color;
 }
