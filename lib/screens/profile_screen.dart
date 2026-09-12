@@ -229,7 +229,24 @@ class ProfileScreen extends StatelessWidget {
                                   await state.toggleBlock(user.id);
                                 },
                               ),
-                              ListTile(title: Text(state.restricted.contains(user.id) ? 'Dejar de restringir' : 'Restringir', style: TextStyle(color: SpaceColors.text)), onTap: () { Navigator.pop(ctx); state.toggleRestrict(user.id); }),
+                              ListTile(title: Text(state.restricted.contains(user.id) ? 'Dejar de restringir' : 'Restringir', style: TextStyle(color: SpaceColors.text)), onTap: () async {
+                                  Navigator.pop(ctx);
+                                  if (!state.restricted.contains(user.id)) {
+                                    final ok = await showDialog<bool>(
+                                      context: context,
+                                      builder: (d) => AlertDialog(
+                                        title: Text('¿Restringir a @${user.username}?'),
+                                        content: const Text('Sus comentarios quedan limitados.'),
+                                        actions: [
+                                          TextButton(onPressed: () => Navigator.pop(d, false), child: const Text('Cancelar')),
+                                          TextButton(onPressed: () => Navigator.pop(d, true), child: const Text('Restringir')),
+                                        ],
+                                      ),
+                                    );
+                                    if (ok != true) return;
+                                  }
+                                  await state.toggleRestrict(user.id);
+                                }),
                             ])));
                           },
                         ),

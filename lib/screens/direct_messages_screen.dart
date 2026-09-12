@@ -16,7 +16,19 @@ class DirectMessagesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final me = state.me.id;
-    final others = state.users.where((u) => u.id != me && state.threadWith(u.id).isNotEmpty).toList();
+    var others = state.users.where((u) => u.id != me && state.threadWith(u.id).isNotEmpty).toList();
+    if (state.inboxFilter == 'unread') {
+      others = others.where((u) => state.threadWith(u.id).any((m) => m.toId == me && !m.read)).toList();
+    } else if (state.inboxFilter == 'verified') {
+      others = others.where((u) => u.isVerified).toList();
+    } else if (state.inboxFilter == 'unanswered') {
+      others = others.where((u) {
+        final t = state.threadWith(u.id);
+        return t.isNotEmpty && t.last.fromId != me;
+      }).toList();
+    } else if (state.inboxFilter == 'stories') {
+      others = others.where((u) => state.threadWith(u.id).any((m) => m.text.contains('historia'))).toList();
+    }
     others.sort((a, b) {
       final pa = state.pinnedChats.contains(a.id) ? 1 : 0;
       final pb = state.pinnedChats.contains(b.id) ? 1 : 0;
@@ -85,10 +97,11 @@ class DirectMessagesScreen extends StatelessWidget {
                     builder: (ctx) => SafeArea(
                       child: Column(mainAxisSize: MainAxisSize.min, children: [
                         ListTile(title: Text('Filtros', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold))),
-                        ListTile(title: Text('No leídos', style: TextStyle(color: SpaceColors.text)), onTap: () => Navigator.pop(ctx)),
-                        ListTile(title: Text('No respondidos', style: TextStyle(color: SpaceColors.text)), onTap: () => Navigator.pop(ctx)),
-                        ListTile(title: Text('Respuestas a historias', style: TextStyle(color: SpaceColors.text)), onTap: () => Navigator.pop(ctx)),
-                        ListTile(title: Text('Perfiles verificados', style: TextStyle(color: SpaceColors.text)), onTap: () => Navigator.pop(ctx)),
+                        ListTile(title: Text('Todos', style: TextStyle(color: SpaceColors.text)), onTap: () { state.setInboxFilter('all'); Navigator.pop(ctx); }),
+                        ListTile(title: Text('No leídos', style: TextStyle(color: SpaceColors.text)), onTap: () { state.setInboxFilter('unread'); Navigator.pop(ctx); }),
+                        ListTile(title: Text('No respondidos', style: TextStyle(color: SpaceColors.text)), onTap: () { state.setInboxFilter('unanswered'); Navigator.pop(ctx); }),
+                        ListTile(title: Text('Respuestas a historias', style: TextStyle(color: SpaceColors.text)), onTap: () { state.setInboxFilter('stories'); Navigator.pop(ctx); }),
+                        ListTile(title: Text('Perfiles verificados', style: TextStyle(color: SpaceColors.text)), onTap: () { state.setInboxFilter('verified'); Navigator.pop(ctx); }),
                       ]),
                     ),
                   );
@@ -99,7 +112,7 @@ class DirectMessagesScreen extends StatelessWidget {
                   child: Row(children: [
                     Icon(Icons.filter_list, size: 16, color: SpaceColors.text),
                     const SizedBox(width: 4),
-                    Text('Filtros', style: TextStyle(color: SpaceColors.text, fontSize: 13)),
+                    Text(state.inboxFilter == 'all' ? 'Filtros' : state.inboxFilter, style: TextStyle(color: SpaceColors.text, fontSize: 13)),
                   ]),
                 ),
               ),
@@ -366,6 +379,14 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                                         ),
                                     ]),
                                   ),
+                                ListTile(
+                                  leading: Icon(widget.state.starredMessages.contains(msg.id) ? Icons.star : Icons.star_border, color: SpaceColors.text),
+                                  title: Text(widget.state.starredMessages.contains(msg.id) ? 'Sacar de destacados' : 'Destacar', style: TextStyle(color: SpaceColors.text)),
+                                  onTap: () {
+                                    Navigator.pop(ctx);
+                                    widget.state.toggleStarMessage(msg.id);
+                                  },
+                                ),
                                 if (isMe)
                                   ListTile(
                                     leading: const Icon(Icons.delete_outline, color: Colors.redAccent),
