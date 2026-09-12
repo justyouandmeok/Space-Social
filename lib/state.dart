@@ -104,6 +104,13 @@ class AppState extends ChangeNotifier {
   bool hideSuggested = false;
   int usedMinutes = 0;
   Set<String> savedAudios = {};
+  DateTime? activitySeenAt;
+
+  bool get hasNewActivity {
+    if (activity.isEmpty) return false;
+    final last = activity.map((a) => a.createdAt).reduce((a, b) => a.isAfter(b) ? a : b);
+    return activitySeenAt == null || last.isAfter(activitySeenAt!);
+  }
 
   bool get isLoggedIn => currentUserId != null;
   bool get isAdmin => isLoggedIn && SpaceConfig.adminEmails.map((e) => e.toLowerCase()).contains(me.email.toLowerCase());
@@ -479,6 +486,7 @@ class AppState extends ChangeNotifier {
         hideSuggested = data['hideSuggested'] == true;
         usedMinutes = (data['usedMinutes'] as num?)?.toInt() ?? 0;
         savedAudios = {...List<String>.from(data['savedAudios'] ?? const [])};
+        activitySeenAt = DateTime.tryParse(data['activitySeenAt'] as String? ?? '');
       }
     }
 
@@ -1230,6 +1238,11 @@ class AppState extends ChangeNotifier {
     await _savePrefs();
   }
 
+  Future<void> markActivitySeen() async {
+    activitySeenAt = DateTime.now();
+    await _savePrefs();
+  }
+
   Future<void> toggleSavedAudio(String key) async {
     if (savedAudios.contains(key)) {
       savedAudios.remove(key);
@@ -1744,6 +1757,7 @@ class AppState extends ChangeNotifier {
       'hideSuggested': hideSuggested,
       'usedMinutes': usedMinutes,
       'savedAudios': savedAudios.toList(),
+      if (activitySeenAt != null) 'activitySeenAt': activitySeenAt!.toIso8601String(),
     }, SetOptions(merge: true));
     notifyListeners();
   }

@@ -155,6 +155,25 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
             ),
           if (mine)
             ListTile(
+              title: Text('Estadísticas', style: TextStyle(color: SpaceColors.text)),
+              onTap: () {
+                Navigator.pop(ctx);
+                showModalBottomSheet(
+                  context: context,
+                  backgroundColor: SpaceColors.surface,
+                  builder: (_) => Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      Text('Estadísticas', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 18)),
+                      const SizedBox(height: 12),
+                      Text('${post.views} reproducciones · ${post.likes.length} Me gusta · ${post.comments.length} comentarios · ${post.savedBy.length} guardados', textAlign: TextAlign.center, style: TextStyle(color: SpaceColors.textMuted)),
+                    ]),
+                  ),
+                );
+              },
+            ),
+          if (mine)
+            ListTile(
               title: Text(widget.state.hideLikesPosts.contains(post.id) ? 'Mostrar Me gusta' : 'Ocultar Me gusta', style: TextStyle(color: SpaceColors.text)),
               onTap: () { Navigator.pop(ctx); widget.state.toggleHideLikesPost(post.id); },
             ),

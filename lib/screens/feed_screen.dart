@@ -69,10 +69,16 @@ class FeedScreen extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            icon: CustomPaint(size: const Size(26, 26), painter: HeartPainter(SpaceColors.text)),
+            icon: Stack(clipBehavior: Clip.none, children: [
+              CustomPaint(size: const Size(26, 26), painter: HeartPainter(SpaceColors.text)),
+              if (state.hasNewActivity)
+                Positioned(right: -2, top: -2, child: Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFFED4956), shape: BoxShape.circle))),
+            ]),
             onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (_) => NotificationsScreen(state: state, onOpenProfile: onOpenProfile)));
-          }),
+              state.markActivitySeen();
+              Navigator.of(context).push(MaterialPageRoute(builder: (_) => NotificationsScreen(state: state, onOpenProfile: onOpenProfile)));
+            },
+          ),
         ],
       ),
       body: RefreshIndicator(
@@ -137,6 +143,15 @@ class FeedScreen extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Center(
+                      child: Column(children: [
+                        Icon(Icons.check_circle_outline, color: SpaceColors.textMuted, size: 36),
+                        const SizedBox(height: 6),
+                        Text('Estás al día', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w700)),
+                        Text('Viste todas las publicaciones nuevas', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+                      ]),
+                    ),
+                    const SizedBox(height: 20),
                     Text('También te puede gustar', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w700)),
                     const SizedBox(height: 8),
                     Wrap(spacing: 8, children: state.users.where((u) => u.id != state.me.id && !state.isFollowing(u.id)).take(6).map((u) => ActionChip(
