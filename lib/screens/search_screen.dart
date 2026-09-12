@@ -72,15 +72,16 @@ class _SearchScreenState extends State<SearchScreen> {
         : widget.state.users.where((u) => u.username.contains(q) || u.name.toLowerCase().contains(q)).toList();
 
     return Scaffold(
-      backgroundColor: SpaceColors.bg,
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: SpaceColors.bg,
+        backgroundColor: Colors.white,
         elevation: 0,
+        titleSpacing: 12,
         title: Container(
-          height: 40,
+          height: 36,
           decoration: BoxDecoration(
             color: const Color(0xFFEFEFEF),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(10),
           ),
           child: TextField(
             controller: _searchController,
@@ -92,187 +93,119 @@ class _SearchScreenState extends State<SearchScreen> {
               hintText: 'Buscar',
               hintStyle: TextStyle(color: Color(0xFF8E8E8E), fontSize: 16),
               border: InputBorder.none,
+              isDense: true,
               contentPadding: EdgeInsets.symmetric(vertical: 8),
             ),
           ),
         ),
       ),
-      body: Column(children: [
-        SizedBox(
-          height: 48,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            itemCount: _categories.length,
-            itemBuilder: (context, index) {
-              final isSelected = _selectedCategory == index;
-              return Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: ChoiceChip(
-                  selected: isSelected,
-                  showCheckmark: false,
-                  label: Text(
-                    _categories[index],
-                    style: TextStyle(
-                      color: const Color(0xFF262626),
-                      fontSize: 13,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                    ),
-                  ),
-                  backgroundColor: Colors.white,
-                  selectedColor: const Color(0xFFEFEFEF),
-                  side: BorderSide(color: isSelected ? const Color(0xFF262626) : const Color(0xFFDBDBDB)),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  onSelected: (_) => setState(() => _selectedCategory = index),
-                ),
-              );
-            },
-          ),
-        ),
-        if (q.isEmpty && widget.state.followedTags.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            child: Wrap(
-              spacing: 8,
-              children: widget.state.followedTags
-                  .map((t) => ActionChip(
-                        label: Text('#$t'),
-                        onPressed: () {
-                          _searchController.text = '#$t';
-                          setState(() {});
+      body: q.isNotEmpty
+          ? ListView(
+              children: [
+                if (_recent.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                    child: Row(children: [
+                      const Text('Recientes', style: TextStyle(fontWeight: FontWeight.w700)),
+                      const Spacer(),
+                      GestureDetector(
+                        onTap: () async {
+                          final p = await SharedPreferences.getInstance();
+                          await p.remove('ss_search');
+                          setState(() => _recent = []);
                         },
-                      ))
-                  .toList(),
-            ),
-          ),
-        if (q.isEmpty && widget.state.recentProfiles.isNotEmpty)
-          SizedBox(
-            height: 88,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              children: widget.state.recentProfiles.map((id) {
-                final u = widget.state.tryUser(id);
-                if (u == null) return const SizedBox.shrink();
-                return Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: GestureDetector(
-                    onTap: () => widget.onOpenProfile(u.id),
-                    child: Column(children: [
-                      Avatar(u.avatarPath, size: 56),
-                      Text(u.username, style: const TextStyle(fontSize: 11)),
+                        child: const Text('Borrar', style: TextStyle(color: Color(0xFF0095F6), fontWeight: FontWeight.w600)),
+                      ),
                     ]),
                   ),
-                );
-              }).toList(),
-            ),
-          ),
-        if (q.isEmpty && _recent.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-            child: Wrap(spacing: 8, children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: GestureDetector(
-                  onTap: () async {
-                    final p = await SharedPreferences.getInstance();
-                    await p.remove('ss_search');
-                    setState(() => _recent = []);
-                  },
-                  child: Text('Recientes · borrar', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
-                ),
-              ),
-              ..._recent.map((s) => ActionChip(
-                    label: Text(s, style: TextStyle(color: SpaceColors.text)),
-                    backgroundColor: SpaceColors.surface,
-                    onPressed: () {
-                      _searchController.text = s;
-                      setState(() {});
-                    },
-                  )),
-            ]),
-          ),
-        if (people.isNotEmpty)
-          SizedBox(
-            height: 88,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              children: people.map((u) => Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: GestureDetector(
-                      onTap: () => widget.onOpenProfile(u.id),
-                      child: Column(children: [
-                        Avatar(u.avatarPath, size: 56),
-                        const SizedBox(height: 4),
-                        SizedBox(
-                          width: 72,
-                          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                            Flexible(child: Text(u.username, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: SpaceColors.text))),
-                            if (u.isVerified) const VerifiedBadge(size: 10),
-                          ]),
-                        ),
+                ...people.map((u) => ListTile(
+                      leading: Avatar(u.avatarPath, size: 44),
+                      title: Row(children: [
+                        Text(u.username, style: const TextStyle(fontWeight: FontWeight.w600)),
+                        if (u.isVerified) const VerifiedBadge(size: 12),
                       ]),
-                    ),
-                  )).toList(),
-            ),
-          ),
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: () => widget.state.load(),
-            child: GridView.builder(
-            padding: const EdgeInsets.only(top: 4),
+                      subtitle: Text(u.name, style: const TextStyle(color: Color(0xFF8E8E8E))),
+                      onTap: () {
+                        _remember(u.username);
+                        widget.onOpenProfile(u.id);
+                      },
+                    )),
+                const SizedBox(height: 8),
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: posts.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    crossAxisSpacing: 1,
+                    mainAxisSpacing: 1,
+                    childAspectRatio: 0.75,
+                  ),
+                  itemBuilder: (context, index) => _tile(context, posts, index),
+                ),
+              ],
+            )
+          : RefreshIndicator(
+              onRefresh: () => widget.state.load(),
+              child: GridView.builder(
+            padding: EdgeInsets.zero,
             itemCount: posts.length,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
               crossAxisSpacing: 1,
               mainAxisSpacing: 1,
-              childAspectRatio: 1,
+              childAspectRatio: 0.75,
             ),
-            itemBuilder: (context, index) {
-              final p = posts[index];
-              return GestureDetector(
-                onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                  builder: (_) => PostDetailFeedScreen(
-                    state: widget.state,
-                    posts: posts,
-                    initialIndex: index,
-                    onOpenProfile: widget.onOpenProfile,
-                  ),
-                )),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    MediaView(p.imagePath, video: p.isVideo),
-                    if (p.isReel || p.isVideo)
-                      const Positioned(
-                        top: 6,
-                        right: 6,
-                        child: Icon(Icons.play_arrow, color: Colors.white, size: 18),
-                      ),
-                    if (DateTime.now().difference(p.createdAt).inHours < 3)
-                      const Positioned(
-                        top: 6,
-                        left: 6,
-                        child: Text('NUEVO', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w800)),
-                      ),
-                    Positioned(
-                      left: 6,
-                      bottom: 6,
-                      child: Row(children: [
-                        const Icon(Icons.visibility, color: Colors.white, size: 12),
-                        const SizedBox(width: 3),
-                        Text(compact(p.views < 1 ? 1 : p.views), style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
-                      ]),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
+            itemBuilder: (context, index) => _tile(context, posts, index),
           ),
         ),
-      ]),
+    );
+  }
+
+  Widget _tile(BuildContext context, List posts, int index) {
+    final p = posts[index];
+    return GestureDetector(
+      onTap: () => Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => PostDetailFeedScreen(
+          state: widget.state,
+          posts: List.from(posts),
+          initialIndex: index,
+          onOpenProfile: widget.onOpenProfile,
+        ),
+      )),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          MediaView(p.imagePath, video: p.isVideo),
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.center,
+                end: Alignment.bottomCenter,
+                colors: [Colors.transparent, Colors.black54],
+              ),
+            ),
+          ),
+          if (p.isReel || p.isVideo)
+            const Positioned(
+              top: 6,
+              right: 6,
+              child: Icon(Icons.play_arrow, color: Colors.white, size: 18),
+            ),
+          Positioned(
+            left: 6,
+            bottom: 6,
+            child: Row(children: [
+              const Icon(Icons.visibility, color: Colors.white, size: 13),
+              const SizedBox(width: 3),
+              Text(
+                compact(p.views < 1 ? 1 : p.views),
+                style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),
+              ),
+            ]),
+          ),
+        ],
+      ),
     );
   }
 }
