@@ -927,65 +927,87 @@ class AppState extends ChangeNotifier {
   Future<bool> updateProfile({String? name, String? username, String? bio, String? website, String? pronouns, String? category, String? gender, String? birthday, File? avatar}) async {
     if (!isLoggedIn) return false;
     lastError = null;
-    try {
-      var path = me.avatarPath;
-      if (avatar != null) {
-        try {
-          path = await _upload(avatar, SpaceConfig.avatarsBucket, me.id);
-        } catch (_) {
-          lastError = 'La foto tardó o falló. Se guardó el resto del perfil.';
-        }
+    var userName = (username ?? me.username).trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9._]'), '');
+    if (userName.length < 3) userName = me.username;
+    if (userName != me.username) {
+      final free = await usernameAvailable(userName, exceptUserId: me.id).timeout(const Duration(seconds: 6), onTimeout: () => true);
+      if (!free) {
+        lastError = 'Ese usuario ya existe o está reservado 3 meses.';
+        notifyListeners();
+        return false;
       }
-      var userName = (username ?? me.username).trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9._]'), '');
-      if (userName.length < 3) userName = me.username;
-      if (userName != me.username) {
-        if (!await usernameAvailable(userName, exceptUserId: me.id)) {
-          lastError = 'Ese usuario ya existe o está reservado 3 meses.';
-          notifyListeners();
-          return false;
-        }
-        await _db.collection('username_reserved').doc(me.username).set({
-          'username': me.username,
-          'userId': me.id,
-          'until': DateTime.now().add(const Duration(days: 90)).toIso8601String(),
-        });
-      }
-      await _db.collection('users').doc(me.id).set({
-        'id': me.id,
-        'email': me.email,
-        'username': userName,
-        'name': (name ?? me.name).trim(),
-        'bio': bio ?? me.bio,
-        'website': website ?? me.website,
-        'pronouns': pronouns ?? me.pronouns,
-        'category': category ?? me.category,
-        'gender': gender ?? me.gender,
-        'birthday': birthday ?? me.birthday,
-        'avatarPath': path,
-        'passwordHash': '',
-        'salt': '',
-        'createdAt': (me.createdAt ?? DateTime.now()).toIso8601String(),
-      }, SetOptions(merge: true));
-      try {
-        await _sb.from('usernames').upsert({
-          'username': userName,
-          'email': me.email.toLowerCase(),
-          'user_id': me.id,
-        });
-        await _db.collection('usernames').doc(userName).set({
-          'username': userName,
-          'email': me.email.toLowerCase(),
-          'userId': me.id,
-        });
-      } catch (_) {}
-      notifyListeners();
-      unawaited(_refresh().then((_) => _saveCache()));
-      return true;
-    } catch (_) {
-      lastError = 'No se pudo guardar el perfil. Probá de nuevo.';
-      notifyListeners();
-      return false;
     }
+    final nextName = (name ?? me.name).trim();
+    final nextBio = bio ?? me.bio;
+    final nextWeb = website ?? me.website;
+    final nextPronouns = pronouns ?? me.pronouns;
+    final nextCat = category ?? me.category;
+    final nextGender = gender ?? me.gender;
+    final nextBirth = birthday ?? me.birthday;
+    var path = avatar?.path ?? me.avatarPath;
+    final uid = me.id;
+    final email = me.email;
+    final oldUsername = me.username;
+    users = [
+      for (final u in users)
+        if (u.id == uid)
+          u.copyWith(
+            username: userName,
+            name: nextName,
+            bio: nextBio,
+            website: nextWeb,
+            pronouns: nextPronouns,
+            category: nextCat,
+            gender: nextGender,
+            birthday: nextBirth,
+            avatarPath: path,
+          )
+        else
+          u,
+    ];
+    notifyListeners();
+    unawaited(() async {
+      try {
+        if (avatar != null) {
+          try {
+            path = await _upload(avatar, SpaceConfig.avatarsBucket, uid).timeout(const Duration(seconds: 25));
+            users = [
+              for (final u in users)
+                if (u.id == uid) u.copyWith(avatarPath: path) else u,
+            ];
+            notifyListeners();
+          } catch (_) {}
+        }
+        if (userName != oldUsername) {
+          try {
+            await _db.collection('username_reserved').doc(oldUsername).set({
+              'username': oldUsername,
+              'userId': uid,
+              'until': DateTime.now().add(const Duration(days: 90)).toIso8601String(),
+            });
+          } catch (_) {}
+        }
+        await _db.collection('users').doc(uid).set({
+          'id': uid,
+          'email': email,
+          'username': userName,
+          'name': nextName,
+          'bio': nextBio,
+          'website': nextWeb,
+          'pronouns': nextPronouns,
+          'category': nextCat,
+          'gender': nextGender,
+          'birthday': nextBirth,
+          'avatarPath': path,
+        }, SetOptions(merge: true));
+        try {
+          await _sb.from('usernames').upsert({'username': userName, 'email': email.toLowerCase(), 'user_id': uid});
+          await _db.collection('usernames').doc(userName).set({'username': userName, 'email': email.toLowerCase(), 'userId': uid});
+        } catch (_) {}
+        await _saveCache();
+      } catch (_) {}
+    }());
+    return true;
   }
 
   Future<bool> publishPost({required File image, required String caption, String location = '', bool isReel = false, bool isVideo = false}) async {

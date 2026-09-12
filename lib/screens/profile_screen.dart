@@ -689,7 +689,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _pick() async {
-    final x = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 90);
+    final x = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 72, maxWidth: 720);
     if (x != null) setState(() => avatar = File(x.path));
   }
 
@@ -712,7 +712,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       Navigator.pop(context);
     } else {
       setState(() => busy = false);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se pudo guardar. Probá otro usuario.')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(widget.state.lastError ?? 'No se pudo guardar. Probá otro usuario.')));
     }
   }
 
@@ -805,9 +805,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ),
           const SizedBox(height: 24),
           Divider(color: SpaceColors.hairline),
-          const ListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text('Los cambios se ven en toda la plataforma al guardar', style: TextStyle(color: SpaceColors.cosmicCyan, fontSize: 14)),
+          SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: ElevatedButton(
+              onPressed: busy ? null : _save,
+              style: ElevatedButton.styleFrom(
+                elevation: 0,
+                backgroundColor: const Color(0xFF0095F6),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: Text(busy ? 'Guardando…' : 'Guardar', style: const TextStyle(fontWeight: FontWeight.w700)),
+            ),
           ),
         ]),
       ),
