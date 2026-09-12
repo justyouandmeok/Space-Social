@@ -414,6 +414,9 @@ class ProfileScreen extends StatelessWidget {
         final p = items[index];
         final pinned = state.pinnedPosts.contains(p.id);
         return GestureDetector(
+          onLongPress: isMe
+              ? () => state.togglePin(p.id)
+              : null,
           onTap: () => Navigator.of(context).push(MaterialPageRoute(
             builder: (_) => PostDetailFeedScreen(
               state: state,
@@ -527,6 +530,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late final _linksController = TextEditingController(text: widget.state.me.website);
   late final _pronounsController = TextEditingController(text: widget.state.me.pronouns);
   late final _categoryController = TextEditingController(text: widget.state.me.category);
+  late final _genderController = TextEditingController(text: widget.state.me.gender);
+  late final _birthdayController = TextEditingController(text: widget.state.me.birthday);
   File? avatar;
   bool busy = false;
 
@@ -538,6 +543,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _linksController.dispose();
     _pronounsController.dispose();
     _categoryController.dispose();
+    _genderController.dispose();
+    _birthdayController.dispose();
     super.dispose();
   }
 
@@ -556,6 +563,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       website: _linksController.text,
       pronouns: _pronounsController.text,
       category: _categoryController.text,
+      gender: _genderController.text,
+      birthday: _birthdayController.text,
       avatar: avatar,
     );
     if (!mounted) return;
@@ -614,6 +623,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           _field('Presentación / Bio', _bioController, maxLines: 3),
           _field('Enlaces', _linksController, prefixIcon: Icons.link),
           _field('Categoría', _categoryController),
+          _field('Género', _genderController),
+          _field('Cumpleaños', _birthdayController),
           const SizedBox(height: 24),
           Divider(color: SpaceColors.hairline),
           const ListTile(
@@ -703,6 +714,13 @@ class SettingsScreen extends StatelessWidget {
           title: Text('Archivo', style: TextStyle(color: SpaceColors.text)),
           trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ArchiveScreen(state: state))),
+        ),
+        ListTile(
+          leading: Icon(Icons.timer_outlined, color: SpaceColors.text),
+          title: Text('Tiempo en la app', style: TextStyle(color: SpaceColors.text)),
+          subtitle: Text('Tu uso de hoy', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+          trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => TimeSpentScreen(openedAt: DateTime.now()))),
         ),
         ListTile(
           leading: Icon(Icons.history, color: SpaceColors.text),
@@ -1034,6 +1052,30 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   },
             child: Text(busy ? 'Guardando...' : 'Guardar'),
           ),
+        ]),
+      ),
+    );
+  }
+}
+
+class TimeSpentScreen extends StatelessWidget {
+  const TimeSpentScreen({super.key, required this.openedAt});
+  final DateTime openedAt;
+
+  @override
+  Widget build(BuildContext context) {
+    final minutes = DateTime.now().difference(openedAt).inMinutes.clamp(1, 24 * 60);
+    return Scaffold(
+      backgroundColor: SpaceColors.bg,
+      appBar: AppBar(backgroundColor: SpaceColors.bg, title: Text('Tiempo en la app', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold))),
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('Hoy', style: TextStyle(color: SpaceColors.textMuted)),
+          const SizedBox(height: 8),
+          Text('$minutes min', style: TextStyle(color: SpaceColors.text, fontSize: 42, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 16),
+          Text('Este es el tiempo de esta sesión. En Instagram el recuento diario se arma con todas las aperturas del día.', style: TextStyle(color: SpaceColors.textMuted, height: 1.4)),
         ]),
       ),
     );

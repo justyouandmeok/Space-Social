@@ -821,7 +821,7 @@ class AppState extends ChangeNotifier {
 
   Future<void> switchUser(String userId) async {}
 
-  Future<bool> updateProfile({String? name, String? username, String? bio, String? website, String? pronouns, String? category, File? avatar}) async {
+  Future<bool> updateProfile({String? name, String? username, String? bio, String? website, String? pronouns, String? category, String? gender, String? birthday, File? avatar}) async {
     if (!isLoggedIn) return false;
     lastError = null;
     try {
@@ -856,6 +856,8 @@ class AppState extends ChangeNotifier {
         'website': website ?? me.website,
         'pronouns': pronouns ?? me.pronouns,
         'category': category ?? me.category,
+        'gender': gender ?? me.gender,
+        'birthday': birthday ?? me.birthday,
         'avatarPath': path,
         'passwordHash': '',
         'salt': '',
@@ -1160,6 +1162,41 @@ class AppState extends ChangeNotifier {
     await _db.collection('follows').doc('${fromId}_$currentUserId').delete();
     await _refresh();
     notifyListeners();
+  }
+
+  Future<void> removeFollower(String fromId) async {
+    if (!isLoggedIn) return;
+    await _db.collection('follows').doc('${fromId}_$currentUserId').delete();
+    await _refresh();
+    notifyListeners();
+  }
+
+  Future<bool> sharePostToStory(Post post) async {
+    if (!isLoggedIn) return false;
+    final owner = tryUser(post.userId);
+    final id = newId();
+    final created = DateTime.now();
+    try {
+      await _db.collection('stories').doc(id).set({
+        'id': id,
+        'userId': me.id,
+        'imagePath': post.imagePath,
+        'createdAt': created.toIso8601String(),
+        'overlayText': 'De @${owner?.username ?? 'usuario'}',
+        'closeFriendsOnly': false,
+        'allowedUserIds': <String>[],
+      });
+      stories = [
+        Story(id: id, userId: me.id, imagePath: post.imagePath, createdAt: created, overlayText: 'De @${owner?.username ?? 'usuario'}'),
+        ...stories,
+      ];
+      notifyListeners();
+      return true;
+    } catch (_) {
+      lastError = 'No se pudo compartir en historia.';
+      notifyListeners();
+      return false;
+    }
   }
 
   Future<void> sharePostTo(String toId, Post post) async {

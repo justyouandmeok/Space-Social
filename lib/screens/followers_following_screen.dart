@@ -47,9 +47,10 @@ class _FollowersFollowingScreenState extends State<FollowersFollowingScreen> {
   Widget build(BuildContext context) {
     final followers = widget.state.followersOf(widget.user.id);
     final following = widget.state.followingOf(widget.user.id);
+    final notBack = following.where((id) => !followers.contains(id)).toList();
     return DefaultTabController(
-      initialIndex: widget.initialTabIndex,
-      length: 2,
+      initialIndex: widget.initialTabIndex.clamp(0, 2),
+      length: 3,
       child: Scaffold(
         backgroundColor: SpaceColors.bg,
         appBar: AppBar(
@@ -63,6 +64,7 @@ class _FollowersFollowingScreenState extends State<FollowersFollowingScreen> {
             tabs: [
               Tab(text: '${followers.length} seguidores'),
               Tab(text: '${following.length} siguiendo'),
+              const Tab(text: 'No recíprocos'),
             ],
           ),
         ),
@@ -91,6 +93,7 @@ class _FollowersFollowingScreenState extends State<FollowersFollowingScreen> {
             child: TabBarView(children: [
               _list(_users(followers), followersTab: true),
               _list(_users(following), followersTab: false),
+              _list(_users(notBack), followersTab: false),
             ]),
           ),
         ]),
@@ -128,7 +131,7 @@ class _FollowersFollowingScreenState extends State<FollowersFollowingScreen> {
                 ]),
               ),
             ),
-            if (u.id != widget.state.me.id)
+            if (u.id != widget.state.me.id) ...[
               IgFollowButton(
                 following: following,
                 onTap: () async {
@@ -136,6 +139,27 @@ class _FollowersFollowingScreenState extends State<FollowersFollowingScreen> {
                   setState(() {});
                 },
               ),
+              if (followersTab && widget.user.id == widget.state.me.id)
+                IconButton(
+                  icon: Icon(Icons.more_horiz, color: SpaceColors.textMuted),
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      backgroundColor: SpaceColors.surface,
+                      builder: (ctx) => SafeArea(
+                        child: ListTile(
+                          title: const Text('Eliminar seguidor', style: TextStyle(color: Colors.redAccent)),
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            widget.state.removeFollower(u.id);
+                            setState(() {});
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
+            ],
           ]),
         );
       },

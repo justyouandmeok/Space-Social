@@ -163,6 +163,16 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
             },
           ),
           ListTile(
+            title: Text('Compartir en historia', style: TextStyle(color: SpaceColors.text)),
+            onTap: () async {
+              Navigator.pop(ctx);
+              final ok = await widget.state.sharePostToStory(post);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(ok ? 'Se compartió en tu historia' : (widget.state.lastError ?? 'No se pudo'))));
+              }
+            },
+          ),
+          ListTile(
             title: const Text('Reportar', style: TextStyle(color: Colors.redAccent)),
             onTap: () {
               Navigator.pop(ctx);
