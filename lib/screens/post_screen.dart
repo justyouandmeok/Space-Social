@@ -28,7 +28,11 @@ class _PostScreenState extends State<PostScreen> {
   bool alsoStory = false;
   String audience = 'Todos';
   List<AssetEntity> assets = [];
+  List<AssetPathEntity> albums = [];
+  AssetPathEntity? album;
   String? selectedAssetId;
+  bool denied = false;
+  double crop = 1;
   final tagged = <String>{};
 
   static const _places = ['Benavidez, Buenos Aires', 'General Pacheco', 'Tigre', 'Nordelta'];
@@ -49,16 +53,24 @@ class _PostScreenState extends State<PostScreen> {
 
   Future<void> _loadGallery() async {
     final p = await PhotoManager.requestPermissionExtend();
-    if (!p.isAuth && !p.hasAccess) return;
+    if (!p.isAuth && !p.hasAccess) {
+      if (mounted) setState(() => denied = true);
+      return;
+    }
     final paths = await PhotoManager.getAssetPathList(type: RequestType.common);
     if (paths.isEmpty) return;
-    var list = await paths.first.getAssetListPaged(page: 0, size: 180);
+    album ??= paths.first;
+    var list = await album!.getAssetListPaged(page: 0, size: 180);
     if (mode == 2) {
       final vids = list.where((a) => a.type == AssetType.video).toList();
       if (vids.isNotEmpty) list = [...vids, ...list.where((a) => a.type != AssetType.video)];
     }
     if (!mounted) return;
-    setState(() => assets = list);
+    setState(() {
+      albums = paths;
+      assets = list;
+      denied = false;
+    });
     if (file == null && list.isNotEmpty) _use(list.first);
   }
 
@@ -197,25 +209,57 @@ class _PostScreenState extends State<PostScreen> {
             ),
           Expanded(
             flex: 3,
-            child: ColoredBox(
-              color: Colors.black,
-              child: file == null
-                  ? const Center(child: Icon(Icons.photo_outlined, color: Colors.white24, size: 64))
-                  : Center(
-                      child: AspectRatio(
-                        aspectRatio: mode == 0 ? 1 : 9 / 16,
-                        child: video
-                            ? const ColoredBox(color: Color(0xFF111111), child: Center(child: Icon(Icons.play_circle, color: Colors.white, size: 64)))
-                            : Image.file(file!, fit: BoxFit.cover),
-                      ),
+            child: Stack(children: [
+              ColoredBox(
+                color: Colors.black,
+                child: SizedBox.expand(
+                  child: file == null
+                      ? Center(
+                          child: denied
+                              ? TextButton(
+                                  onPressed: () async {
+                                    await PhotoManager.openSetting();
+                                    _loadGallery();
+                                  },
+                                  child: const Text('Permitir acceso a la galería', style: TextStyle(color: Color(0xFF0095F6))),
+                                )
+                              : const Icon(Icons.photo_outlined, color: Colors.white24, size: 64),
+                        )
+                      : Center(
+                          child: AspectRatio(
+                            aspectRatio: mode == 0 ? crop : 9 / 16,
+                            child: video
+                                ? const ColoredBox(color: Color(0xFF111111), child: Center(child: Icon(Icons.play_circle, color: Colors.white, size: 64)))
+                                : Image.file(file!, fit: BoxFit.cover),
+                          ),
+                        ),
+                ),
+              ),
+              if (mode == 0)
+                Positioned(
+                  left: 12,
+                  bottom: 12,
+                  child: GestureDetector(
+                    onTap: () => setState(() => crop = crop == 1 ? 4 / 5 : 1),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                      child: const Icon(Icons.crop, color: Colors.white, size: 18),
                     ),
-            ),
+                  ),
+                ),
+            ]),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
             child: Row(children: [
-              const Text('Recientes', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
-              const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 20),
+              GestureDetector(
+                onTap: _pickAlbum,
+                child: Row(children: [
+                  Text(album?.name ?? 'Recientes', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+                  const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 20),
+                ]),
+              ),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -437,6 +481,28 @@ class _PostScreenState extends State<PostScreen> {
         ]),
       ),
     );
+  }
+
+  Future<void> _pickAlbum() async {
+    if (albums.isEmpty) return;
+    final picked = await showModalBottomSheet<AssetPathEntity>(
+      context: context,
+      backgroundColor: const Color(0xFF1C1C1C),
+      builder: (_) => ListView(
+        children: albums
+            .take(30)
+            .map((a) => ListTile(
+                  title: Text(a.name, style: const TextStyle(color: Colors.white)),
+                  onTap: () => Navigator.pop(context, a),
+                ))
+            .toList(),
+      ),
+    );
+    if (picked == null) return;
+    album = picked;
+    file = null;
+    selectedAssetId = null;
+    await _loadGallery();
   }
 
   Widget _modesBar() {
