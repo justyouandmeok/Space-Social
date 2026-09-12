@@ -52,8 +52,14 @@ class _PostScreenState extends State<PostScreen> {
     if (!p.isAuth && !p.hasAccess) return;
     final paths = await PhotoManager.getAssetPathList(type: RequestType.common);
     if (paths.isEmpty) return;
-    final list = await paths.first.getAssetListPaged(page: 0, size: 180);
-    if (mounted) setState(() => assets = list);
+    var list = await paths.first.getAssetListPaged(page: 0, size: 180);
+    if (mode == 2) {
+      final vids = list.where((a) => a.type == AssetType.video).toList();
+      if (vids.isNotEmpty) list = [...vids, ...list.where((a) => a.type != AssetType.video)];
+    }
+    if (!mounted) return;
+    setState(() => assets = list);
+    if (file == null && list.isNotEmpty) _use(list.first);
   }
 
   Future<void> _camera() async {
@@ -164,8 +170,19 @@ class _PostScreenState extends State<PostScreen> {
               IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close, color: Colors.white, size: 28)),
               Expanded(child: Text(titles[mode], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18))),
               TextButton(
-                onPressed: file == null ? null : () => setState(() => step = 1),
-                child: Text('Siguiente', style: TextStyle(color: file == null ? Colors.white24 : LumaColors.blue, fontWeight: FontWeight.w700, fontSize: 16)),
+                onPressed: file == null
+                    ? null
+                    : () {
+                        if (mode == 1) {
+                          _share();
+                          return;
+                        }
+                        setState(() => step = 1);
+                      },
+                child: Text(
+                  mode == 1 ? 'Compartir' : 'Siguiente',
+                  style: TextStyle(color: file == null ? Colors.white24 : const Color(0xFF0095F6), fontWeight: FontWeight.w700, fontSize: 16),
+                ),
               ),
             ]),
           ),
@@ -178,13 +195,22 @@ class _PostScreenState extends State<PostScreen> {
                 _pill(Icons.layers_outlined, 'Plantillas'),
               ]),
             ),
-          if (file != null)
-            Expanded(
-              flex: 3,
-              child: video
-                  ? const Center(child: Icon(Icons.play_circle, color: Colors.white, size: 72))
-                  : Image.file(file!, fit: BoxFit.contain),
+          Expanded(
+            flex: 3,
+            child: ColoredBox(
+              color: Colors.black,
+              child: file == null
+                  ? const Center(child: Icon(Icons.photo_outlined, color: Colors.white24, size: 64))
+                  : Center(
+                      child: AspectRatio(
+                        aspectRatio: mode == 0 ? 1 : 9 / 16,
+                        child: video
+                            ? const ColoredBox(color: Color(0xFF111111), child: Center(child: Icon(Icons.play_circle, color: Colors.white, size: 64)))
+                            : Image.file(file!, fit: BoxFit.cover),
+                      ),
+                    ),
             ),
+          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
             child: Row(children: [
@@ -228,7 +254,21 @@ class _PostScreenState extends State<PostScreen> {
                         Image.memory(snap.data!, fit: BoxFit.cover),
                         if (selectedAssetId == a.id) Container(color: Colors.white24),
                         if (a.type == AssetType.video)
-                          const Positioned(top: 4, right: 4, child: Icon(Icons.play_circle_fill, color: Colors.white, size: 16)),
+                          const Positioned(bottom: 4, right: 4, child: Icon(Icons.play_arrow, color: Colors.white, size: 16)),
+                        Positioned(
+                          top: 6,
+                          right: 6,
+                          child: Container(
+                            width: 22,
+                            height: 22,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: selectedAssetId == a.id ? const Color(0xFF0095F6) : Colors.black38,
+                              border: Border.all(color: Colors.white, width: 1.5),
+                            ),
+                            child: selectedAssetId == a.id ? const Icon(Icons.check, size: 14, color: Colors.white) : null,
+                          ),
+                        ),
                       ]),
                     );
                   },
@@ -251,7 +291,11 @@ class _PostScreenState extends State<PostScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Row(children: [
               IconButton(onPressed: () => setState(() => step = 0), icon: const Icon(Icons.arrow_back, color: Colors.white)),
-              Expanded(child: Text(mode == 2 ? 'Nuevo reel' : 'Nueva publicación', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18))),
+              Expanded(child: Text(mode == 2 ? 'Nuevo reel' : mode == 1 ? 'Nueva historia' : 'Nueva publicación', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18))),
+              TextButton(
+                onPressed: sharing ? null : _share,
+                child: Text(sharing ? '...' : 'Compartir', style: const TextStyle(color: Color(0xFF0095F6), fontWeight: FontWeight.w700, fontSize: 16)),
+              ),
             ]),
           ),
           Expanded(
@@ -415,7 +459,10 @@ class _PostScreenState extends State<PostScreen> {
     final on = mode == i;
     return Expanded(
       child: GestureDetector(
-        onTap: () => setState(() { mode = i; step = 0; }),
+        onTap: () {
+          setState(() { mode = i; step = 0; });
+          if (i == 2) _loadGallery();
+        },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.symmetric(vertical: 9),
