@@ -57,7 +57,7 @@ class _PostScreenState extends State<PostScreen> {
       if (mounted) setState(() => denied = true);
       return;
     }
-    final paths = await PhotoManager.getAssetPathList(type: RequestType.common);
+    final paths = await PhotoManager.getAssetPathList(type: mode == 2 ? RequestType.video : RequestType.common);
     if (paths.isEmpty) return;
     album ??= paths.first;
     var list = await album!.getAssetListPaged(page: 0, size: 180);
@@ -74,9 +74,26 @@ class _PostScreenState extends State<PostScreen> {
     if (file == null && list.isNotEmpty) _use(list.first);
   }
 
+  Future<void> _pickGalleryVideo() async {
+    final x = await ImagePicker().pickVideo(source: ImageSource.gallery, maxDuration: const Duration(minutes: 3));
+    if (x == null) return;
+    setState(() { file = File(x.path); video = true; selectedAssetId = null; });
+  }
+
   Future<void> _camera() async {
     if (mode == 2) {
-      final x = await ImagePicker().pickVideo(source: ImageSource.camera);
+      final src = await showModalBottomSheet<ImageSource>(
+        context: context,
+        backgroundColor: const Color(0xFF1C1C1C),
+        builder: (_) => SafeArea(
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            ListTile(leading: const Icon(Icons.videocam, color: Colors.white), title: const Text('Grabar video', style: TextStyle(color: Colors.white)), onTap: () => Navigator.pop(context, ImageSource.camera)),
+            ListTile(leading: const Icon(Icons.video_library, color: Colors.white), title: const Text('Elegir video de la galería', style: TextStyle(color: Colors.white)), onTap: () => Navigator.pop(context, ImageSource.gallery)),
+          ]),
+        ),
+      );
+      if (src == null) return;
+      final x = await ImagePicker().pickVideo(source: src, maxDuration: const Duration(minutes: 3));
       if (x == null) return;
       setState(() { file = File(x.path); video = true; selectedAssetId = null; });
     } else {
@@ -89,7 +106,9 @@ class _PostScreenState extends State<PostScreen> {
   Future<void> _use(AssetEntity a) async {
     final f = await a.file;
     if (f == null) return;
-    setState(() { file = f; video = a.type == AssetType.video; selectedAssetId = a.id; });
+    final path = f.path.toLowerCase();
+    final isVid = a.type == AssetType.video || path.endsWith('.mp4') || path.endsWith('.mov') || path.endsWith('.webm') || path.endsWith('.m4v');
+    setState(() { file = f; video = isVid; selectedAssetId = a.id; });
   }
 
   Future<void> _grokCaption() async {
@@ -133,7 +152,7 @@ class _PostScreenState extends State<PostScreen> {
     if (m == 1) {
       await widget.state.publishStory(f, overlayText: c, closeFriendsOnly: audience == 'Mejores amigos');
     } else {
-      await widget.state.publishPost(image: f, caption: c, location: place, isReel: m == 2, isVideo: v);
+      await widget.state.publishPost(image: f, caption: c, location: place, isReel: m == 2, isVideo: v || m == 2);
       if (alsoStory) await widget.state.publishStory(f, overlayText: c, closeFriendsOnly: audience == 'Mejores amigos');
     }
   }

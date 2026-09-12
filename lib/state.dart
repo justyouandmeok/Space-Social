@@ -593,7 +593,7 @@ class AppState extends ChangeNotifier {
           path,
           file,
           fileOptions: FileOptions(upsert: true, contentType: video ? 'video/mp4' : 'image/jpeg'),
-        ).timeout(const Duration(seconds: 40));
+        ).timeout(Duration(seconds: video ? 180 : 45));
     final url = _sb.storage.from(bucket).getPublicUrl(path);
     return url;
   }

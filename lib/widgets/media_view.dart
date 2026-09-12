@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'network_photo.dart';
@@ -49,9 +50,16 @@ class _MediaViewState extends State<MediaView> {
   }
 
   Future<void> _init() async {
-    if (!_isVideo || widget.url.isEmpty || !widget.url.startsWith('http')) return;
+    if (!_isVideo || widget.url.isEmpty) return;
     try {
-      final c = VideoPlayerController.networkUrl(Uri.parse(widget.url.split('?').first));
+      final VideoPlayerController c;
+      if (widget.url.startsWith('http')) {
+        c = VideoPlayerController.networkUrl(Uri.parse(widget.url.split('?').first));
+      } else {
+        final f = File(widget.url);
+        if (!f.existsSync()) return;
+        c = VideoPlayerController.file(f);
+      }
       await c.initialize();
       c.setLooping(true);
       if (widget.followGlobalMute && MediaView.globalMute) await c.setVolume(0);
