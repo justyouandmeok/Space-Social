@@ -77,6 +77,11 @@ class AppState extends ChangeNotifier {
   String messagePolicy = 'all';
   String tagPolicy = 'all';
   List<String> commentFilters = [];
+  String language = 'es';
+  bool twoFactor = false;
+  bool readReceipts = true;
+  String accountType = 'personal';
+  final altTexts = <String, String>{};
 
   bool get isLoggedIn => currentUserId != null;
   bool get isAdmin => isLoggedIn && SpaceConfig.adminEmails.map((e) => e.toLowerCase()).contains(me.email.toLowerCase());
@@ -409,6 +414,13 @@ class AppState extends ChangeNotifier {
         messagePolicy = (data['messagePolicy'] as String?) ?? 'all';
         tagPolicy = (data['tagPolicy'] as String?) ?? 'all';
         commentFilters = List<String>.from(data['commentFilters'] ?? const []);
+        language = (data['language'] as String?) ?? 'es';
+        twoFactor = data['twoFactor'] == true;
+        readReceipts = data['readReceipts'] != false;
+        accountType = (data['accountType'] as String?) ?? 'personal';
+        altTexts
+          ..clear()
+          ..addAll(Map<String, String>.from((data['altTexts'] as Map?) ?? const {}));
       }
     }
 
@@ -1048,6 +1060,31 @@ class AppState extends ChangeNotifier {
     await _savePrefs();
   }
 
+  Future<void> setLanguage(String v) async {
+    language = v;
+    await _savePrefs();
+  }
+
+  Future<void> toggleTwoFactor() async {
+    twoFactor = !twoFactor;
+    await _savePrefs();
+  }
+
+  Future<void> toggleReadReceipts() async {
+    readReceipts = !readReceipts;
+    await _savePrefs();
+  }
+
+  Future<void> setAccountType(String v) async {
+    accountType = v;
+    await _savePrefs();
+  }
+
+  Future<void> setAltText(String postId, String text) async {
+    altTexts[postId] = text.trim();
+    await _savePrefs();
+  }
+
   Future<void> addCommentFilter(String word) async {
     final w = word.trim().toLowerCase();
     if (w.isEmpty) return;
@@ -1277,7 +1314,7 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> markThreadRead(String otherId) async {
-    if (!isLoggedIn) return;
+    if (!isLoggedIn || !readReceipts) return;
     final unread = messages.where((m) => m.fromId == otherId && m.toId == me.id && !m.read).toList();
     for (final m in unread) {
       try {
@@ -1414,6 +1451,11 @@ class AppState extends ChangeNotifier {
       'messagePolicy': messagePolicy,
       'tagPolicy': tagPolicy,
       'commentFilters': commentFilters,
+      'language': language,
+      'twoFactor': twoFactor,
+      'readReceipts': readReceipts,
+      'accountType': accountType,
+      'altTexts': altTexts,
     }, SetOptions(merge: true));
     notifyListeners();
   }

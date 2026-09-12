@@ -155,6 +155,41 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
               ])));
             },
           ),
+          if (mine)
+            ListTile(
+              title: Text('Texto alternativo', style: TextStyle(color: SpaceColors.text)),
+              onTap: () {
+                Navigator.pop(ctx);
+                final c = TextEditingController(text: widget.state.altTexts[post.id] ?? '');
+                showDialog(
+                  context: context,
+                  builder: (d) => AlertDialog(
+                    backgroundColor: SpaceColors.surface,
+                    title: Text('Texto alternativo', style: TextStyle(color: SpaceColors.text)),
+                    content: TextField(controller: c, maxLines: 3, style: TextStyle(color: SpaceColors.text)),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(d), child: const Text('Cancelar')),
+                      TextButton(onPressed: () { widget.state.setAltText(post.id, c.text); Navigator.pop(d); }, child: const Text('Guardar')),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ListTile(
+            title: Text('Ver traducción', style: TextStyle(color: SpaceColors.text)),
+            onTap: () {
+              Navigator.pop(ctx);
+              showDialog(
+                context: context,
+                builder: (d) => AlertDialog(
+                  backgroundColor: SpaceColors.surface,
+                  title: Text('Traducción', style: TextStyle(color: SpaceColors.text)),
+                  content: Text(post.caption.isEmpty ? '(sin pie)' : post.caption, style: TextStyle(color: SpaceColors.text)),
+                  actions: [TextButton(onPressed: () => Navigator.pop(d), child: const Text('Cerrar'))],
+                ),
+              );
+            },
+          ),
           ListTile(
             title: Text('Enviar', style: TextStyle(color: SpaceColors.text)),
             onTap: () {

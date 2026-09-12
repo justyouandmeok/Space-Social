@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -207,7 +208,7 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ),
                     ],
-                    if (isMe) ...[
+                    if (isMe && state.accountType == 'creator') ...[
                       const SizedBox(height: 12),
                       GestureDetector(
                         onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CreatorInsightsScreen(state: state))),
@@ -817,6 +818,31 @@ class SettingsScreen extends StatelessWidget {
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => PeopleManageScreen(state: state, mode: PeopleManageMode.favorites))),
         ),
         Padding(padding: const EdgeInsets.fromLTRB(16, 16, 16, 6), child: Text('Tu app', style: TextStyle(color: SpaceColors.textMuted, fontSize: 13, fontWeight: FontWeight.w600))),
+        ListTile(
+          leading: Icon(Icons.badge_outlined, color: SpaceColors.text),
+          title: Text('Tipo de cuenta', style: TextStyle(color: SpaceColors.text)),
+          subtitle: Text(state.accountType == 'creator' ? 'Creador' : 'Personal', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+          onTap: () => state.setAccountType(state.accountType == 'creator' ? 'personal' : 'creator'),
+        ),
+        ListTile(
+          leading: Icon(Icons.language, color: SpaceColors.text),
+          title: Text('Idioma', style: TextStyle(color: SpaceColors.text)),
+          subtitle: Text(state.language == 'en' ? 'English' : 'Español', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+          onTap: () => state.setLanguage(state.language == 'es' ? 'en' : 'es'),
+        ),
+        SwitchListTile(secondary: Icon(Icons.verified_user_outlined, color: SpaceColors.text), title: Text('Autenticación en dos pasos', style: TextStyle(color: SpaceColors.text)), value: state.twoFactor, onChanged: (_) => state.toggleTwoFactor()),
+        SwitchListTile(secondary: Icon(Icons.done_all, color: SpaceColors.text), title: Text('Confirmaciones de lectura', style: TextStyle(color: SpaceColors.text)), value: state.readReceipts, onChanged: (_) => state.toggleReadReceipts()),
+        ListTile(
+          leading: Icon(Icons.alternate_email, color: SpaceColors.text),
+          title: Text('Quién puede etiquetarte', style: TextStyle(color: SpaceColors.text)),
+          subtitle: Text(state.tagPolicy == 'all' ? 'Todos' : 'Solo personas que seguís', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+          onTap: () => state.setTagPolicy(state.tagPolicy == 'all' ? 'following' : 'all'),
+        ),
+        ListTile(
+          leading: Icon(Icons.download_outlined, color: SpaceColors.text),
+          title: Text('Descargar tu información', style: TextStyle(color: SpaceColors.text)),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => DownloadDataScreen(state: state))),
+        ),
         SwitchListTile(secondary: Icon(Icons.notifications_none, color: SpaceColors.text), title: Text('Notificaciones', style: TextStyle(color: SpaceColors.text)), value: state.notificationsOn, onChanged: (_) => state.toggleNotificationsPref()),
         ListTile(
           leading: Icon(Icons.palette_outlined, color: SpaceColors.text),
@@ -1210,6 +1236,39 @@ class MessagePolicyScreen extends StatelessWidget {
           RadioListTile<String>(value: 'nobody', groupValue: state.messagePolicy, onChanged: (v) => state.setMessagePolicy(v!), title: Text('Nadie', style: TextStyle(color: SpaceColors.text))),
         ]),
       ),
+    );
+  }
+}
+
+class DownloadDataScreen extends StatelessWidget {
+  const DownloadDataScreen({super.key, required this.state});
+  final AppState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final data = {
+      'user': state.me.toJson(),
+      'posts': state.postsOf(state.me.id).map((p) => p.toJson()).toList(),
+      'following': state.followingOf(state.me.id),
+      'followers': state.followersOf(state.me.id),
+    };
+    final text = const JsonEncoder.withIndent('  ').convert(data);
+    return Scaffold(
+      backgroundColor: SpaceColors.bg,
+      appBar: AppBar(
+        backgroundColor: SpaceColors.bg,
+        title: Text('Tu información', style: TextStyle(color: SpaceColors.text)),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.copy, color: SpaceColors.text),
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: text));
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Datos copiados')));
+            },
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Text(text, style: TextStyle(color: SpaceColors.textMuted, fontSize: 12))),
     );
   }
 }
