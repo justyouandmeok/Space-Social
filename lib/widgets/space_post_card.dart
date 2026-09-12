@@ -168,6 +168,8 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
                 Text(user.username, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w600, fontSize: 14)),
                 if (user.isVerified) const VerifiedBadge(size: 13),
               ]),
+              if (user.id != widget.state.me.id && !widget.state.isFollowing(user.id))
+                const Text('Sugerencia para ti', style: TextStyle(color: Color(0xFF8E8E8E), fontSize: 12)),
               if (live.location.isNotEmpty)
                 Text(live.location, style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
             ]),

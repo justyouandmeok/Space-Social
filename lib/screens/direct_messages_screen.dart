@@ -170,7 +170,20 @@ class DirectMessagesScreen extends StatelessWidget {
                     final unread = thread.where((m) => m.toId == me && !m.read).length;
                     return ListTile(
                       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ChatConversationScreen(state: state, user: u))),
-                      leading: Avatar(u.avatarPath, size: 48),
+                      leading: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: state.storiesOf(u.id).isNotEmpty
+                              ? const LinearGradient(colors: [Color(0xFFF58529), Color(0xFFDD2A7B), Color(0xFF8134AF)])
+                              : null,
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                          child: Avatar(u.avatarPath, size: 48),
+                        ),
+                      ),
                       title: Text(u.username, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold)),
                       subtitle: Text(
                         last?.text ?? 'Enviar mensaje',

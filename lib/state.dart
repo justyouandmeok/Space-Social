@@ -901,6 +901,40 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  Future<bool> remixPost(Post source) async {
+    if (!isLoggedIn) return false;
+    final id = newId();
+    final created = DateTime.now();
+    final caption = 'Remix de @${tryUser(source.userId)?.username ?? 'usuario'} ${source.caption}'.trim();
+    final local = Post(id: id, userId: me.id, imagePath: source.imagePath, caption: caption, createdAt: created, isReel: true, isVideo: source.isVideo);
+    posts = [local, ...posts];
+    notifyListeners();
+    try {
+      await _db.collection('posts').doc(id).set({
+        'id': id,
+        'userId': me.id,
+        'imagePath': source.imagePath,
+        'caption': caption,
+        'location': '',
+        'createdAt': created.toIso8601String(),
+        'likes': <String>[],
+        'comments': <Map<String, dynamic>>[],
+        'savedBy': <String>[],
+        'isReel': true,
+        'isVideo': source.isVideo,
+        'views': 0,
+        'taggedUserIds': [source.userId],
+        'remixOf': source.id,
+      });
+      unawaited(_refresh().then((_) => _saveCache()));
+      return true;
+    } catch (e) {
+      lastError = 'No se pudo hacer remix: $e';
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<bool> publishStory(File image, {String overlayText = ''}) async {
     if (!isLoggedIn) return false;
     lastError = null;

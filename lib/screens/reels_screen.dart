@@ -120,6 +120,12 @@ class _ReelsScreenState extends State<ReelsScreen> {
                     onTap: () => state.toggleLike(post.id),
                   ),
                   _action(Icons.chat_bubble_outline, compact(post.comments.length), onTap: () => CommentsBottomSheet.show(context, state, post.id)),
+                  _action(Icons.replay, 'Remix', onTap: () async {
+                    final ok = await state.remixPost(post);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(ok ? 'Remix publicado' : (state.lastError ?? 'No se pudo remixar'))));
+                    }
+                  }),
                   _action(Icons.send_outlined, '', onTap: () => ShareSheet.show(context, state, post: post)),
                   _action(post.savedFor(state.me.id) ? Icons.bookmark : Icons.bookmark_border, '', onTap: () => state.toggleSave(post.id)),
                   _action(Icons.more_vert, '', onTap: () {
