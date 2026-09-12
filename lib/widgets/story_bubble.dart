@@ -27,12 +27,13 @@ class StoryRow extends StatelessWidget {
           final mine = u.id == state.me.id;
           final has = state.storiesOf(u.id).isNotEmpty;
           final unseen = has && state.storyUnseen(u.id);
+          final cf = state.storiesOf(u.id).any((s) => s.closeFriendsOnly) || state.closeFriends.contains(u.id);
           return StoryBubble(
             user: u,
             mine: mine,
             hasStory: has,
             unseen: unseen,
-            closeFriend: state.closeFriends.contains(u.id),
+            closeFriend: cf,
             onTap: () {
               if (mine && !has) {
                 onAddStory();

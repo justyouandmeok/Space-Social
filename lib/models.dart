@@ -156,6 +156,7 @@ class Post {
     this.isVideo = false,
     this.views = 0,
     this.taggedUserIds = const [],
+    this.deletedAt,
   });
 
   final String id;
@@ -171,6 +172,7 @@ class Post {
   final bool isVideo;
   final int views;
   final List<String> taggedUserIds;
+  final DateTime? deletedAt;
 
   bool likedBy(String uid) => likes.contains(uid);
   bool savedFor(String uid) => savedBy.contains(uid);
@@ -212,6 +214,7 @@ class Post {
         'isVideo': isVideo,
         'views': views,
         'taggedUserIds': taggedUserIds,
+        if (deletedAt != null) 'deletedAt': deletedAt!.toIso8601String(),
       };
 
   factory Post.fromJson(Map<String, dynamic> j) => Post(
@@ -230,6 +233,7 @@ class Post {
         isVideo: j['isVideo'] as bool? ?? false,
         views: (j['views'] as num?)?.toInt() ?? 0,
         taggedUserIds: ((j['taggedUserIds'] as List?) ?? const []).cast<String>(),
+        deletedAt: DateTime.tryParse(j['deletedAt'] as String? ?? ''),
       );
 }
 

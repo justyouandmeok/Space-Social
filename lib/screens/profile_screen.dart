@@ -145,8 +145,8 @@ class ProfileScreen extends StatelessWidget {
                         })),
                         const SizedBox(width: 8),
                         Expanded(child: IgButton(label: 'Compartir perfil', expanded: true, onTap: () {
-                          Clipboard.setData(ClipboardData(text: '@${user.username}'));
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Perfil copiado')));
+                          Clipboard.setData(ClipboardData(text: 'https://spacesocial.app/${user.username}'));
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enlace del perfil copiado')));
                         })),
                       ])
                     else
@@ -754,8 +754,33 @@ class SettingsScreen extends StatelessWidget {
         SwitchListTile(secondary: Icon(Icons.lock_outline, color: SpaceColors.text), title: Text('Cuenta privada', style: TextStyle(color: SpaceColors.text)), value: state.me.privateAccount, onChanged: (_) => state.togglePrivate()),
         SwitchListTile(secondary: Icon(Icons.favorite_border, color: SpaceColors.text), title: Text('Ocultar recuento de Me gusta', style: TextStyle(color: SpaceColors.text)), value: state.hideLikes, onChanged: (_) => state.toggleHideLikes()),
         Padding(padding: const EdgeInsets.fromLTRB(16, 16, 16, 6), child: Text('Cómo interactúan con vos', style: TextStyle(color: SpaceColors.textMuted, fontSize: 13, fontWeight: FontWeight.w600))),
-        ListTile(leading: Icon(Icons.chat_bubble_outline, color: SpaceColors.text), title: Text('Mensajes y respuestas a historias', style: TextStyle(color: SpaceColors.text)), trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted)),
+        ListTile(
+          leading: Icon(Icons.chat_bubble_outline, color: SpaceColors.text),
+          title: Text('Mensajes y respuestas a historias', style: TextStyle(color: SpaceColors.text)),
+          subtitle: Text(state.messagePolicy == 'all' ? 'Todos' : state.messagePolicy == 'following' ? 'Personas que seguís' : 'Nadie', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+          trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => MessagePolicyScreen(state: state))),
+        ),
+        ListTile(
+          leading: Icon(Icons.filter_alt_outlined, color: SpaceColors.text),
+          title: Text('Filtros de comentarios', style: TextStyle(color: SpaceColors.text)),
+          trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CommentFilterScreen(state: state))),
+        ),
         ListTile(leading: Icon(Icons.alternate_email, color: SpaceColors.text), title: Text('Etiquetas y menciones', style: TextStyle(color: SpaceColors.text)), trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted)),
+        ListTile(
+          leading: Icon(Icons.visibility_outlined, color: SpaceColors.text),
+          title: Text('Ocultar historia', style: TextStyle(color: SpaceColors.text)),
+          subtitle: Text('${state.hideStoryFrom.length} cuentas', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+          trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => PeopleManageScreen(state: state, mode: PeopleManageMode.hideStory))),
+        ),
+        ListTile(
+          leading: Icon(Icons.delete_outline, color: SpaceColors.text),
+          title: Text('Eliminado recientemente', style: TextStyle(color: SpaceColors.text)),
+          trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => RecentlyDeletedScreen(state: state))),
+        ),
         ListTile(
           leading: Icon(Icons.group_outlined, color: SpaceColors.text),
           title: Text('Mejores amigos', style: TextStyle(color: SpaceColors.text)),
@@ -879,7 +904,7 @@ class FollowRequestsScreen extends StatelessWidget {
   }
 }
 
-enum PeopleManageMode { closeFriends, blocked, favorites, muted, restricted }
+enum PeopleManageMode { closeFriends, blocked, favorites, muted, restricted, hideStory }
 
 class PeopleManageScreen extends StatelessWidget {
   const PeopleManageScreen({super.key, required this.state, required this.mode});
@@ -894,6 +919,7 @@ class PeopleManageScreen extends StatelessWidget {
       PeopleManageMode.favorites => 'Favoritos',
       PeopleManageMode.muted => 'Cuentas silenciadas',
       PeopleManageMode.restricted => 'Cuentas restringidas',
+      PeopleManageMode.hideStory => 'Ocultar historia',
     };
     return ListenableBuilder(
       listenable: state,
@@ -904,6 +930,7 @@ class PeopleManageScreen extends StatelessWidget {
           PeopleManageMode.favorites => state.favorites,
           PeopleManageMode.muted => state.muted,
           PeopleManageMode.restricted => state.restricted,
+          PeopleManageMode.hideStory => state.hideStoryFrom,
         };
         final pool = mode == PeopleManageMode.blocked
             ? state.users.where((u) => u.id != state.me.id).toList()
@@ -935,6 +962,8 @@ class PeopleManageScreen extends StatelessWidget {
                               state.toggleMute(u.id);
                             case PeopleManageMode.restricted:
                               state.toggleRestrict(u.id);
+                            case PeopleManageMode.hideStory:
+                              state.toggleHideStoryFrom(u.id);
                           }
                         },
                         child: Text(
@@ -1125,6 +1154,109 @@ class _DraftsScreenState extends State<DraftsScreen> {
                 child: const Text('Borrar'),
               ),
             ),
+    );
+  }
+}
+
+class RecentlyDeletedScreen extends StatelessWidget {
+  const RecentlyDeletedScreen({super.key, required this.state});
+  final AppState state;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: state,
+      builder: (context, _) {
+        final items = state.trash;
+        return Scaffold(
+          backgroundColor: SpaceColors.bg,
+          appBar: AppBar(backgroundColor: SpaceColors.bg, title: Text('Eliminado recientemente', style: TextStyle(color: SpaceColors.text))),
+          body: items.isEmpty
+              ? Center(child: Text('La papelera está vacía', style: TextStyle(color: SpaceColors.textMuted)))
+              : ListView.builder(
+                  itemCount: items.length,
+                  itemBuilder: (context, i) {
+                    final p = items[i];
+                    return ListTile(
+                      leading: SizedBox(width: 44, height: 44, child: MediaView(p.imagePath, video: p.isVideo)),
+                      title: Text(p.caption.isEmpty ? 'Publicación' : p.caption, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: SpaceColors.text)),
+                      trailing: Wrap(children: [
+                        TextButton(onPressed: () => state.restorePost(p.id), child: const Text('Restaurar')),
+                        TextButton(onPressed: () => state.purgePost(p.id), child: const Text('Borrar', style: TextStyle(color: Colors.redAccent))),
+                      ]),
+                    );
+                  },
+                ),
+        );
+      },
+    );
+  }
+}
+
+class MessagePolicyScreen extends StatelessWidget {
+  const MessagePolicyScreen({super.key, required this.state});
+  final AppState state;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: state,
+      builder: (context, _) => Scaffold(
+        backgroundColor: SpaceColors.bg,
+        appBar: AppBar(backgroundColor: SpaceColors.bg, title: Text('Mensajes', style: TextStyle(color: SpaceColors.text))),
+        body: Column(children: [
+          RadioListTile<String>(value: 'all', groupValue: state.messagePolicy, onChanged: (v) => state.setMessagePolicy(v!), title: Text('Todos', style: TextStyle(color: SpaceColors.text))),
+          RadioListTile<String>(value: 'following', groupValue: state.messagePolicy, onChanged: (v) => state.setMessagePolicy(v!), title: Text('Personas que seguís', style: TextStyle(color: SpaceColors.text))),
+          RadioListTile<String>(value: 'nobody', groupValue: state.messagePolicy, onChanged: (v) => state.setMessagePolicy(v!), title: Text('Nadie', style: TextStyle(color: SpaceColors.text))),
+        ]),
+      ),
+    );
+  }
+}
+
+class CommentFilterScreen extends StatefulWidget {
+  const CommentFilterScreen({super.key, required this.state});
+  final AppState state;
+  @override
+  State<CommentFilterScreen> createState() => _CommentFilterScreenState();
+}
+
+class _CommentFilterScreenState extends State<CommentFilterScreen> {
+  final c = TextEditingController();
+  @override
+  void dispose() {
+    c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: widget.state,
+      builder: (context, _) => Scaffold(
+        backgroundColor: SpaceColors.bg,
+        appBar: AppBar(backgroundColor: SpaceColors.bg, title: Text('Filtros de comentarios', style: TextStyle(color: SpaceColors.text))),
+        body: ListView(padding: const EdgeInsets.all(16), children: [
+          TextField(
+            controller: c,
+            style: TextStyle(color: SpaceColors.text),
+            decoration: InputDecoration(
+              hintText: 'Palabra a filtrar',
+              hintStyle: TextStyle(color: SpaceColors.textMuted),
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.add),
+                onPressed: () {
+                  widget.state.addCommentFilter(c.text);
+                  c.clear();
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          for (final w in widget.state.commentFilters)
+            ListTile(title: Text(w, style: TextStyle(color: SpaceColors.text))),
+        ]),
+      ),
     );
   }
 }

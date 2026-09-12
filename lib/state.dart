@@ -73,6 +73,10 @@ class AppState extends ChangeNotifier {
   Set<String> hiddenPosts = {};
   Set<String> restricted = {};
   Set<String> commentsOff = {};
+  Set<String> hideStoryFrom = {};
+  String messagePolicy = 'all';
+  String tagPolicy = 'all';
+  List<String> commentFilters = [];
 
   bool get isLoggedIn => currentUserId != null;
   bool get isAdmin => isLoggedIn && SpaceConfig.adminEmails.map((e) => e.toLowerCase()).contains(me.email.toLowerCase());
@@ -186,9 +190,12 @@ class AppState extends ChangeNotifier {
     _saveCache();
   }
 
+  List<Post> trash = [];
+
   List<Story> get liveStories =>
       stories.where((s) {
         if (!s.isLive || archived.contains(s.id)) return false;
+        if (isLoggedIn && s.userId != me.id && hideStoryFrom.contains(s.userId)) return false;
         if (!s.closeFriendsOnly) return true;
         if (!isLoggedIn) return false;
         if (s.userId == me.id) return true;
@@ -398,6 +405,10 @@ class AppState extends ChangeNotifier {
         hiddenPosts = {...List<String>.from(data['hiddenPosts'] ?? const [])};
         restricted = {...List<String>.from(data['restricted'] ?? const [])};
         commentsOff = {...List<String>.from(data['commentsOff'] ?? const [])};
+        hideStoryFrom = {...List<String>.from(data['hideStoryFrom'] ?? const [])};
+        messagePolicy = (data['messagePolicy'] as String?) ?? 'all';
+        tagPolicy = (data['tagPolicy'] as String?) ?? 'all';
+        commentFilters = List<String>.from(data['commentFilters'] ?? const []);
       }
     }
 
@@ -408,6 +419,8 @@ class AppState extends ChangeNotifier {
       return Post.fromJson(j);
     }).toList()
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    trash = posts.where((p) => p.deletedAt != null && p.userId == (currentUserId ?? '')).toList();
+    posts = posts.where((p) => p.deletedAt == null).toList();
 
     final followSnap = await _db.collection('follows').get();
     following = {};
@@ -995,9 +1008,51 @@ class AppState extends ChangeNotifier {
     if (!isLoggedIn) return;
     final found = posts.where((p) => p.id == postId);
     if (found.isEmpty || found.first.userId != me.id) return;
+    await _db.collection('posts').doc(postId).set({'deletedAt': DateTime.now().toIso8601String()}, SetOptions(merge: true));
+    await _refresh();
+    notifyListeners();
+  }
+
+  Future<void> restorePost(String postId) async {
+    if (!isLoggedIn) return;
+    await _db.collection('posts').doc(postId).set({'deletedAt': FieldValue.delete()}, SetOptions(merge: true));
+    await _refresh();
+    notifyListeners();
+  }
+
+  Future<void> purgePost(String postId) async {
+    if (!isLoggedIn) return;
+    final found = trash.where((p) => p.id == postId);
+    if (found.isEmpty) return;
     await _db.collection('posts').doc(postId).delete();
     await _refresh();
     notifyListeners();
+  }
+
+  Future<void> setMessagePolicy(String v) async {
+    messagePolicy = v;
+    await _savePrefs();
+  }
+
+  Future<void> setTagPolicy(String v) async {
+    tagPolicy = v;
+    await _savePrefs();
+  }
+
+  Future<void> toggleHideStoryFrom(String userId) async {
+    if (hideStoryFrom.contains(userId)) {
+      hideStoryFrom.remove(userId);
+    } else {
+      hideStoryFrom.add(userId);
+    }
+    await _savePrefs();
+  }
+
+  Future<void> addCommentFilter(String word) async {
+    final w = word.trim().toLowerCase();
+    if (w.isEmpty) return;
+    if (!commentFilters.contains(w)) commentFilters.add(w);
+    await _savePrefs();
   }
 
   Future<void> toggleLike(String postId) async {
@@ -1050,6 +1105,12 @@ class AppState extends ChangeNotifier {
     if (!isLoggedIn || text.trim().isEmpty) return;
     if (commentsOff.contains(postId)) {
       lastError = 'Los comentarios están desactivados.';
+      notifyListeners();
+      return;
+    }
+    final low = text.toLowerCase();
+    if (commentFilters.any((w) => low.contains(w))) {
+      lastError = 'Ese comentario no pasó el filtro.';
       notifyListeners();
       return;
     }
@@ -1267,6 +1328,16 @@ class AppState extends ChangeNotifier {
 
   Future<void> sendMessage(String toId, String text) async {
     if (!isLoggedIn || text.trim().isEmpty || toId == me.id) return;
+    if (messagePolicy == 'nobody') {
+      lastError = 'Tus mensajes están desactivados.';
+      notifyListeners();
+      return;
+    }
+    if (messagePolicy == 'following' && !isFollowing(toId) && !followersOf(me.id).contains(toId)) {
+      lastError = 'Solo recibís mensajes de gente que seguís.';
+      notifyListeners();
+      return;
+    }
     final target = tryUser(toId);
     final pending = target != null && target.privateAccount && !isFollowing(toId);
     await _db.collection('messages').add({
@@ -1339,6 +1410,10 @@ class AppState extends ChangeNotifier {
       'hiddenPosts': hiddenPosts.toList(),
       'restricted': restricted.toList(),
       'commentsOff': commentsOff.toList(),
+      'hideStoryFrom': hideStoryFrom.toList(),
+      'messagePolicy': messagePolicy,
+      'tagPolicy': tagPolicy,
+      'commentFilters': commentFilters,
     }, SetOptions(merge: true));
     notifyListeners();
   }
