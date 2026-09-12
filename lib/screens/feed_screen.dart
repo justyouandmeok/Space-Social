@@ -91,7 +91,7 @@ class FeedScreen extends StatelessWidget {
               ),
             ),
             SliverToBoxAdapter(child: Divider(color: SpaceColors.hairline, height: 0.5)),
-            if (state.followingOf(state.me.id).length < 3)
+            if (!state.hideSuggested && state.followingOf(state.me.id).length < 3)
               SliverToBoxAdapter(
                 child: SizedBox(
                   height: 120,

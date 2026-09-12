@@ -58,7 +58,13 @@ class ProfileScreen extends StatelessWidget {
                 Icon(Icons.lock_outline, size: 16, color: SpaceColors.text),
                 const SizedBox(width: 6),
               ],
-              Flexible(child: Text(user.username, overflow: TextOverflow.ellipsis, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: SpaceColors.text))),
+              Flexible(child: GestureDetector(
+                onLongPress: () {
+                  Clipboard.setData(ClipboardData(text: '@${user.username}'));
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Usuario copiado')));
+                },
+                child: Text(user.username, overflow: TextOverflow.ellipsis, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: SpaceColors.text)),
+              )),
               if (user.isVerified) const VerifiedBadge(size: 16),
               if (isMe) Icon(Icons.keyboard_arrow_down, color: SpaceColors.text, size: 20),
             ],
@@ -123,6 +129,7 @@ class ProfileScreen extends StatelessWidget {
                         style: TextStyle(color: SpaceColors.textMuted, fontSize: 12),
                       ),
                     if (user.bio.isNotEmpty) Text(user.bio, style: TextStyle(color: SpaceColors.text)),
+                    if (user.birthday.isNotEmpty) Text('Cumpleaños · ${user.birthday}', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
                     if (user.website.isNotEmpty)
                       GestureDetector(
                         onTap: () => LinksBottomSheet.show(context, user),
@@ -915,6 +922,7 @@ class SettingsScreen extends StatelessWidget {
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => MentionsScreen(state: state))),
         ),
         SwitchListTile(secondary: Icon(Icons.shield_outlined, color: SpaceColors.text), title: Text('Filtro de contenido sensible', style: TextStyle(color: SpaceColors.text)), value: state.sensitiveFilter, onChanged: (_) => state.toggleSensitiveFilter()),
+        SwitchListTile(secondary: Icon(Icons.recommend_outlined, color: SpaceColors.text), title: Text('Ocultar sugerencias', style: TextStyle(color: SpaceColors.text)), value: state.hideSuggested, onChanged: (_) => state.toggleHideSuggested()),
         ListTile(
           leading: Icon(Icons.devices_outlined, color: SpaceColors.text),
           title: Text('Sesiones', style: TextStyle(color: SpaceColors.text)),

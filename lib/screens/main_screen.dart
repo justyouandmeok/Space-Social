@@ -24,6 +24,15 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   DateTime? _lastBack;
+  bool _limitShown = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future<void>.delayed(const Duration(minutes: 1), () {
+      if (mounted) widget.state.tickUsage();
+    });
+  }
 
   AppState get state => widget.state;
 
@@ -35,6 +44,13 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     if (!state.isLoggedIn) return AuthScreen(state: state);
+    if (!_limitShown && state.dailyLimitMin > 0 && state.usedMinutes >= state.dailyLimitMin) {
+      _limitShown = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Llegaste al límite diario de ${state.dailyLimitMin} min')));
+      });
+    }
 
     final pages = [
       FeedScreen(state: state, onOpenCreate: _openCreate, onOpenProfile: _openProfile),

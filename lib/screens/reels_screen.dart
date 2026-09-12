@@ -198,11 +198,14 @@ class _ReelsScreenState extends State<ReelsScreen> {
                       Text(post.caption, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white)),
                     ],
                     const SizedBox(height: 8),
-                    const Row(children: [
-                      Icon(Icons.music_note, color: Colors.white, size: 14),
-                      SizedBox(width: 4),
-                      Text('Audio original', style: TextStyle(color: Colors.white, fontSize: 12)),
-                    ]),
+                    GestureDetector(
+                      onTap: () => state.toggleSavedAudio(post.id),
+                      child: Row(children: [
+                        Icon(state.savedAudios.contains(post.id) ? Icons.bookmark : Icons.music_note, color: Colors.white, size: 14),
+                        const SizedBox(width: 4),
+                        Text(state.savedAudios.contains(post.id) ? 'Audio guardado' : 'Audio original · @${user?.username ?? 'usuario'}', style: const TextStyle(color: Colors.white, fontSize: 12)),
+                      ]),
+                    ),
                   ],
                 ),
               ),

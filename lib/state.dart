@@ -101,6 +101,9 @@ class AppState extends ChangeNotifier {
   final storyAnswers = <String, List<String>>{};
   List<String> recentProfiles = [];
   double textScale = 1.0;
+  bool hideSuggested = false;
+  int usedMinutes = 0;
+  Set<String> savedAudios = {};
 
   bool get isLoggedIn => currentUserId != null;
   bool get isAdmin => isLoggedIn && SpaceConfig.adminEmails.map((e) => e.toLowerCase()).contains(me.email.toLowerCase());
@@ -472,6 +475,9 @@ class AppState extends ChangeNotifier {
           ..addAll(((data['storyAnswers'] as Map?) ?? const {}).map((k, v) => MapEntry('$k', List<String>.from(v as List? ?? const []))));
         recentProfiles = List<String>.from(data['recentProfiles'] ?? const []);
         textScale = (data['textScale'] as num?)?.toDouble() ?? 1.0;
+        hideSuggested = data['hideSuggested'] == true;
+        usedMinutes = (data['usedMinutes'] as num?)?.toInt() ?? 0;
+        savedAudios = {...List<String>.from(data['savedAudios'] ?? const [])};
       }
     }
 
@@ -1213,6 +1219,25 @@ class AppState extends ChangeNotifier {
     await _savePrefs();
   }
 
+  Future<void> toggleHideSuggested() async {
+    hideSuggested = !hideSuggested;
+    await _savePrefs();
+  }
+
+  Future<void> tickUsage() async {
+    usedMinutes += 1;
+    await _savePrefs();
+  }
+
+  Future<void> toggleSavedAudio(String key) async {
+    if (savedAudios.contains(key)) {
+      savedAudios.remove(key);
+    } else {
+      savedAudios.add(key);
+    }
+    await _savePrefs();
+  }
+
   Future<void> setTextScale(double v) async {
     textScale = v;
     await _savePrefs();
@@ -1715,6 +1740,9 @@ class AppState extends ChangeNotifier {
       'storyAnswers': storyAnswers,
       'recentProfiles': recentProfiles,
       'textScale': textScale,
+      'hideSuggested': hideSuggested,
+      'usedMinutes': usedMinutes,
+      'savedAudios': savedAudios.toList(),
     }, SetOptions(merge: true));
     notifyListeners();
   }

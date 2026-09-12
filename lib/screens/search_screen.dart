@@ -128,6 +128,22 @@ class _SearchScreenState extends State<SearchScreen> {
             },
           ),
         ),
+        if (q.isEmpty && widget.state.followedTags.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: Wrap(
+              spacing: 8,
+              children: widget.state.followedTags
+                  .map((t) => ActionChip(
+                        label: Text('#$t'),
+                        onPressed: () {
+                          _searchController.text = '#$t';
+                          setState(() {});
+                        },
+                      ))
+                  .toList(),
+            ),
+          ),
         if (q.isEmpty && widget.state.recentProfiles.isNotEmpty)
           SizedBox(
             height: 88,
