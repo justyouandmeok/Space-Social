@@ -30,6 +30,7 @@ class FeedScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
+        toolbarHeight: 44,
         titleSpacing: 0,
         leading: IconButton(
           icon: CustomPaint(size: const Size(26, 26), painter: AddBoxPainter(SpaceColors.text)),
@@ -97,25 +98,7 @@ class FeedScreen extends StatelessWidget {
                 )),
               ),
             ),
-            SliverToBoxAdapter(child: Divider(color: SpaceColors.hairline, height: 0.5)),
-            if (!state.hideSuggested && state.followingOf(state.me.id).length < 3)
-              SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 120,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    children: state.users.where((u) => u.id != state.me.id && !state.isFollowing(u.id)).take(8).map((u) => Padding(
-                      padding: const EdgeInsets.only(right: 10),
-                      child: Column(children: [
-                        GestureDetector(onTap: () => onOpenProfile(u.id), child: Avatar(u.avatarPath, size: 56)),
-                        Text(u.username, style: const TextStyle(fontSize: 11)),
-                        TextButton(onPressed: () => state.toggleFollow(u.id), child: const Text('Seguir', style: TextStyle(fontSize: 11))),
-                      ]),
-                    )).toList(),
-                  ),
-                ),
-              ),
+            SliverToBoxAdapter(child: Divider(color: const Color(0xFFDBDBDB), height: 0.33, thickness: 0.33)),
             if (items.isEmpty)
               SliverToBoxAdapter(
                 child: Padding(
@@ -152,14 +135,7 @@ class FeedScreen extends StatelessWidget {
                         Text('Viste todas las publicaciones nuevas', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
                       ]),
                     ),
-                    const SizedBox(height: 20),
-                    Text('También te puede gustar', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w700)),
                     const SizedBox(height: 8),
-                    Wrap(spacing: 8, children: state.users.where((u) => u.id != state.me.id && !state.isFollowing(u.id)).take(6).map((u) => ActionChip(
-                      avatar: Avatar(u.avatarPath, size: 20),
-                      label: Text(u.username),
-                      onPressed: () => onOpenProfile(u.id),
-                    )).toList()),
                   ]),
                 ),
               ),

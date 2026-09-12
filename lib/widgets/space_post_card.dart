@@ -341,7 +341,7 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
+          padding: const EdgeInsets.fromLTRB(10, 6, 2, 6),
           child: Row(children: [
           GestureDetector(
             onTap: () => widget.onOpenProfile(user.id),

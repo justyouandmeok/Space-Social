@@ -86,12 +86,12 @@ class ProfileScreen extends StatelessWidget {
         ],
       ),
       body: DefaultTabController(
-        length: 4,
+        length: 3,
         child: NestedScrollView(
           headerSliverBuilder: (context, _) => [
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -148,7 +148,7 @@ class ProfileScreen extends StatelessWidget {
                       GestureDetector(
                         onTap: () => LinksBottomSheet.show(context, user),
                         child: Row(children: [
-                          Icon(Icons.link, color: SpaceColors.cosmicCyan, size: 16),
+                          const Icon(Icons.link, color: Color(0xFF00376B), size: 16),
                           const SizedBox(width: 4),
                           Flexible(
                             child: Text(
@@ -338,7 +338,6 @@ class ProfileScreen extends StatelessWidget {
                   tabs: const [
                     Tab(icon: Icon(Icons.grid_on, size: 22)),
                     Tab(icon: Icon(Icons.movie_outlined, size: 22)),
-                    Tab(icon: Icon(Icons.replay, size: 22)),
                     Tab(icon: Icon(Icons.assignment_ind_outlined, size: 22)),
                   ],
                 ),
@@ -348,7 +347,6 @@ class ProfileScreen extends StatelessWidget {
           body: TabBarView(
             children: [
               _grid(posts),
-              _reelsGrid(reels),
               _reelsGrid(reels),
               _taggedGrid(),
             ],
