@@ -81,7 +81,10 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                 height: 4,
                 decoration: BoxDecoration(color: SpaceColors.hairline, borderRadius: BorderRadius.circular(2)),
               ),
-              Text('Comentarios', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(
+                widget.state.commentsOff.contains(widget.postId) ? 'Comentarios desactivados' : 'Comentarios',
+                style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 16),
+              ),
               Divider(color: SpaceColors.hairline, height: 20),
               Expanded(
                 child: comments.isEmpty
@@ -160,9 +163,10 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                   Expanded(
                     child: TextField(
                       controller: _commentController,
+                      enabled: !widget.state.commentsOff.contains(widget.postId),
                       style: TextStyle(color: SpaceColors.text),
                       decoration: InputDecoration(
-                        hintText: 'Añade un comentario...',
+                        hintText: widget.state.commentsOff.contains(widget.postId) ? 'Comentarios desactivados' : 'Añade un comentario...',
                         hintStyle: TextStyle(color: SpaceColors.textMuted, fontSize: 14),
                         border: InputBorder.none,
                         isDense: true,

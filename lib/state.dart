@@ -71,6 +71,8 @@ class AppState extends ChangeNotifier {
   Set<String> archived = {};
   Set<String> pinnedPosts = {};
   Set<String> hiddenPosts = {};
+  Set<String> restricted = {};
+  Set<String> commentsOff = {};
 
   bool get isLoggedIn => currentUserId != null;
   bool get isAdmin => isLoggedIn && SpaceConfig.adminEmails.map((e) => e.toLowerCase()).contains(me.email.toLowerCase());
@@ -386,6 +388,8 @@ class AppState extends ChangeNotifier {
         archived = {...List<String>.from(data['archived'] ?? const [])};
         pinnedPosts = {...List<String>.from(data['pinnedPosts'] ?? const [])};
         hiddenPosts = {...List<String>.from(data['hiddenPosts'] ?? const [])};
+        restricted = {...List<String>.from(data['restricted'] ?? const [])};
+        commentsOff = {...List<String>.from(data['commentsOff'] ?? const [])};
       }
     }
 
@@ -1032,6 +1036,11 @@ class AppState extends ChangeNotifier {
 
   Future<void> addComment(String postId, String text) async {
     if (!isLoggedIn || text.trim().isEmpty) return;
+    if (commentsOff.contains(postId)) {
+      lastError = 'Los comentarios están desactivados.';
+      notifyListeners();
+      return;
+    }
     final ref = _db.collection('posts').doc(postId);
     await _db.runTransaction((tx) async {
       final snap = await tx.get(ref);
@@ -1259,6 +1268,8 @@ class AppState extends ChangeNotifier {
       'archived': archived.toList(),
       'pinnedPosts': pinnedPosts.toList(),
       'hiddenPosts': hiddenPosts.toList(),
+      'restricted': restricted.toList(),
+      'commentsOff': commentsOff.toList(),
     }, SetOptions(merge: true));
     notifyListeners();
   }
@@ -1385,6 +1396,41 @@ class AppState extends ChangeNotifier {
   Future<void> hidePost(String postId) async {
     hiddenPosts.add(postId);
     await _savePrefs();
+  }
+
+  Future<void> toggleRestrict(String userId) async {
+    if (userId == me.id) return;
+    if (restricted.contains(userId)) {
+      restricted.remove(userId);
+    } else {
+      restricted.add(userId);
+    }
+    await _savePrefs();
+  }
+
+  Future<void> toggleCommentsOff(String postId) async {
+    if (commentsOff.contains(postId)) {
+      commentsOff.remove(postId);
+    } else {
+      commentsOff.add(postId);
+    }
+    await _savePrefs();
+  }
+
+  Future<bool> editCaption(String postId, String caption) async {
+    if (!isLoggedIn) return false;
+    final i = posts.indexWhere((p) => p.id == postId && p.userId == me.id);
+    if (i < 0) return false;
+    try {
+      await _db.collection('posts').doc(postId).set({'caption': caption.trim()}, SetOptions(merge: true));
+      await _refresh();
+      notifyListeners();
+      return true;
+    } catch (_) {
+      lastError = 'No se pudo editar.';
+      notifyListeners();
+      return false;
+    }
   }
 
   Future<void> toggleArchive(String postId) async {

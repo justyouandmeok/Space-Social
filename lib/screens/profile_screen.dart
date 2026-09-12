@@ -175,10 +175,38 @@ class ProfileScreen extends StatelessWidget {
                               ListTile(title: Text(state.favorites.contains(user.id) ? 'Sacar de favoritos' : 'Agregar a favoritos', style: TextStyle(color: SpaceColors.text)), onTap: () { Navigator.pop(ctx); state.toggleFavorite(user.id); }),
                               ListTile(title: Text(state.closeFriends.contains(user.id) ? 'Sacar de mejores amigos' : 'Mejores amigos', style: TextStyle(color: SpaceColors.text)), onTap: () { Navigator.pop(ctx); state.toggleCloseFriend(user.id); }),
                               ListTile(title: Text(state.blocked.contains(user.id) ? 'Desbloquear' : 'Bloquear', style: const TextStyle(color: Colors.redAccent)), onTap: () { Navigator.pop(ctx); state.toggleBlock(user.id); }),
+                              ListTile(title: Text(state.restricted.contains(user.id) ? 'Dejar de restringir' : 'Restringir', style: TextStyle(color: SpaceColors.text)), onTap: () { Navigator.pop(ctx); state.toggleRestrict(user.id); }),
                             ])));
                           },
                         ),
                       ]),
+                    if (isMe && state.suggested.isNotEmpty) ...[
+                      const SizedBox(height: 14),
+                      Text('Sugerencias para vos', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        height: 86,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: state.suggested.take(8).length,
+                          separatorBuilder: (_, __) => const SizedBox(width: 12),
+                          itemBuilder: (context, i) {
+                            final u = state.suggested[i];
+                            return GestureDetector(
+                              onTap: () => onOpenProfile?.call(u.id),
+                              child: SizedBox(
+                                width: 72,
+                                child: Column(children: [
+                                  Avatar(u.avatarPath, size: 52),
+                                  const SizedBox(height: 4),
+                                  Text(u.username, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: SpaceColors.text, fontSize: 11)),
+                                ]),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                     if (isMe) ...[
                       const SizedBox(height: 12),
                       GestureDetector(
@@ -713,6 +741,13 @@ class SettingsScreen extends StatelessWidget {
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => PeopleManageScreen(state: state, mode: PeopleManageMode.blocked))),
         ),
         ListTile(
+          leading: Icon(Icons.visibility_off_outlined, color: SpaceColors.text),
+          title: Text('Cuentas restringidas', style: TextStyle(color: SpaceColors.text)),
+          subtitle: Text('${state.restricted.length} cuentas', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+          trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => PeopleManageScreen(state: state, mode: PeopleManageMode.restricted))),
+        ),
+        ListTile(
           leading: Icon(Icons.volume_off_outlined, color: SpaceColors.text),
           title: Text('Cuentas silenciadas', style: TextStyle(color: SpaceColors.text)),
           subtitle: Text('${state.muted.length} cuentas', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
@@ -814,7 +849,7 @@ class FollowRequestsScreen extends StatelessWidget {
   }
 }
 
-enum PeopleManageMode { closeFriends, blocked, favorites, muted }
+enum PeopleManageMode { closeFriends, blocked, favorites, muted, restricted }
 
 class PeopleManageScreen extends StatelessWidget {
   const PeopleManageScreen({super.key, required this.state, required this.mode});
@@ -828,6 +863,7 @@ class PeopleManageScreen extends StatelessWidget {
       PeopleManageMode.blocked => 'Cuentas bloqueadas',
       PeopleManageMode.favorites => 'Favoritos',
       PeopleManageMode.muted => 'Cuentas silenciadas',
+      PeopleManageMode.restricted => 'Cuentas restringidas',
     };
     return ListenableBuilder(
       listenable: state,
@@ -837,6 +873,7 @@ class PeopleManageScreen extends StatelessWidget {
           PeopleManageMode.blocked => state.blocked,
           PeopleManageMode.favorites => state.favorites,
           PeopleManageMode.muted => state.muted,
+          PeopleManageMode.restricted => state.restricted,
         };
         final pool = mode == PeopleManageMode.blocked
             ? state.users.where((u) => u.id != state.me.id).toList()
@@ -866,6 +903,8 @@ class PeopleManageScreen extends StatelessWidget {
                               state.toggleFavorite(u.id);
                             case PeopleManageMode.muted:
                               state.toggleMute(u.id);
+                            case PeopleManageMode.restricted:
+                              state.toggleRestrict(u.id);
                           }
                         },
                         child: Text(

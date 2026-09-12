@@ -75,6 +75,35 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
               title: Text(widget.state.pinnedPosts.contains(post.id) ? 'Desfijar' : 'Fijar en el perfil', style: TextStyle(color: SpaceColors.text)),
               onTap: () { Navigator.pop(ctx); widget.state.togglePin(post.id); },
             ),
+            ListTile(
+              title: Text('Editar pie de foto', style: TextStyle(color: SpaceColors.text)),
+              onTap: () {
+                Navigator.pop(ctx);
+                final c = TextEditingController(text: post.caption);
+                showDialog(
+                  context: context,
+                  builder: (d) => AlertDialog(
+                    backgroundColor: SpaceColors.surface,
+                    title: Text('Editar pie', style: TextStyle(color: SpaceColors.text)),
+                    content: TextField(controller: c, maxLines: 4, style: TextStyle(color: SpaceColors.text)),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(d), child: const Text('Cancelar')),
+                      TextButton(
+                        onPressed: () async {
+                          await widget.state.editCaption(post.id, c.text);
+                          if (d.mounted) Navigator.pop(d);
+                        },
+                        child: const Text('Guardar'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              title: Text(widget.state.commentsOff.contains(post.id) ? 'Activar comentarios' : 'Desactivar comentarios', style: TextStyle(color: SpaceColors.text)),
+              onTap: () { Navigator.pop(ctx); widget.state.toggleCommentsOff(post.id); },
+            ),
           ] else ...[
             ListTile(
               title: Text(widget.state.isFollowing(user.id) ? 'Dejar de seguir' : 'Seguir', style: TextStyle(color: SpaceColors.text)),
@@ -87,6 +116,10 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
             ListTile(
               title: Text('No me interesa', style: TextStyle(color: SpaceColors.text)),
               onTap: () { Navigator.pop(ctx); widget.state.hidePost(post.id); },
+            ),
+            ListTile(
+              title: Text(widget.state.restricted.contains(user.id) ? 'Dejar de restringir' : 'Restringir', style: TextStyle(color: SpaceColors.text)),
+              onTap: () { Navigator.pop(ctx); widget.state.toggleRestrict(user.id); },
             ),
           ],
           ListTile(
