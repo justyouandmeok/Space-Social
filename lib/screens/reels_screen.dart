@@ -22,12 +22,34 @@ class ReelsScreen extends StatefulWidget {
   State<ReelsScreen> createState() => _ReelsScreenState();
 }
 
-class _ReelsScreenState extends State<ReelsScreen> {
+class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStateMixin {
   bool friends = false;
   bool _holdSpeed = false;
+  int _page = 0;
+  bool _showHeart = false;
+  late final AnimationController _spin;
   AppState get state => widget.state;
   bool get playing => widget.playing;
   void Function(String userId) get onOpenProfile => widget.onOpenProfile;
+
+  @override
+  void initState() {
+    super.initState();
+    _spin = AnimationController(vsync: this, duration: const Duration(seconds: 6))..repeat();
+  }
+
+  @override
+  void dispose() {
+    _spin.dispose();
+    super.dispose();
+  }
+
+  Future<void> _like(String id) async {
+    await state.toggleLike(id);
+    setState(() => _showHeart = true);
+    await Future<void>.delayed(const Duration(milliseconds: 500));
+    if (mounted) setState(() => _showHeart = false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,19 +80,25 @@ class _ReelsScreenState extends State<ReelsScreen> {
       body: PageView.builder(
         scrollDirection: Axis.vertical,
         itemCount: items.length,
+        onPageChanged: (i) {
+          setState(() => _page = i);
+          final id = items[i].id;
+          if (_countedViews.add(id)) state.recordPostView(id);
+        },
         itemBuilder: (context, index) {
           final post = items[index];
           final user = state.tryUser(post.userId);
           final mine = user?.id == state.me.id;
           final liked = post.likedBy(state.me.id);
+          final active = playing && index == _page;
           return GestureDetector(
-            onDoubleTap: () => state.toggleLike(post.id),
+            onDoubleTap: () => _like(post.id),
             onLongPressStart: (_) => setState(() => _holdSpeed = true),
             onLongPressEnd: (_) => setState(() => _holdSpeed = false),
             child: Stack(
             fit: StackFit.expand,
             children: [
-              MediaView(post.imagePath, video: post.isVideo, autoplay: playing, active: playing, followGlobalMute: true),
+              MediaView(post.imagePath, video: post.isVideo, autoplay: active, active: active, followGlobalMute: true),
               const DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -82,6 +110,8 @@ class _ReelsScreenState extends State<ReelsScreen> {
               ),
               if (_holdSpeed)
                 const Center(child: Text('2x', style: TextStyle(color: Colors.white, fontSize: 48, fontWeight: FontWeight.w800))),
+              if (_showHeart && index == _page)
+                const Center(child: Icon(Icons.favorite, color: Color(0xFFED4956), size: 110)),
               Positioned(
                 top: 48,
                 left: 16,
@@ -115,18 +145,11 @@ class _ReelsScreenState extends State<ReelsScreen> {
                   _action(
                     liked ? Icons.favorite : Icons.favorite_border,
                     compact(post.likes.length),
-                    color: liked ? LumaColors.like : Colors.white,
-                    onTap: () => state.toggleLike(post.id),
+                    color: liked ? const Color(0xFFED4956) : Colors.white,
+                    onTap: () => _like(post.id),
                   ),
-                  _action(Icons.chat_bubble_outline, compact(post.comments.length), onTap: () => CommentsBottomSheet.show(context, state, post.id)),
-                  _action(Icons.replay, 'Remix', onTap: () async {
-                    final ok = await state.remixPost(post);
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(ok ? 'Remix publicado' : (state.lastError ?? 'No se pudo remixar'))));
-                    }
-                  }),
+                  _action(Icons.mode_comment_outlined, compact(post.comments.length), onTap: () => CommentsBottomSheet.show(context, state, post.id)),
                   _action(Icons.send_outlined, '', onTap: () => ShareSheet.show(context, state, post: post)),
-                  _action(post.savedFor(state.me.id) ? Icons.bookmark : Icons.bookmark_border, '', onTap: () => state.toggleSave(post.id)),
                   _action(Icons.more_vert, '', onTap: () {
                     showModalBottomSheet(context: context, backgroundColor: const Color(0xFF1C1C1C), builder: (ctx) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
                       Padding(padding: const EdgeInsets.only(top: 8), child: Container(width: 36, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)))),
@@ -145,17 +168,30 @@ class _ReelsScreenState extends State<ReelsScreen> {
                       ListTile(leading: const Icon(Icons.flag_outlined, color: Colors.redAccent), title: const Text('Reportar', style: TextStyle(color: Colors.redAccent)), onTap: () { Navigator.pop(ctx); }),
                     ])));
                   }),
-                  const SizedBox(height: 12),
-                  GestureDetector(
-                    onTap: () { if (user != null) onOpenProfile(user.id); },
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 2)),
-                      child: ClipOval(child: Avatar(user?.avatarPath ?? '', size: 32)),
+                  const SizedBox(height: 10),
+                  RotationTransition(
+                    turns: _spin,
+                    child: GestureDetector(
+                      onTap: () => state.toggleSavedAudio(post.id),
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 2)),
+                        child: Avatar(user?.avatarPath ?? '', size: 28),
+                      ),
                     ),
                   ),
                 ]),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: LinearProgressIndicator(
+                  value: active ? null : 0,
+                  minHeight: 2,
+                  backgroundColor: Colors.white24,
+                  color: Colors.white,
+                ),
               ),
               Positioned(
                 left: 16,
