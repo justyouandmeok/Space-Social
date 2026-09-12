@@ -4,12 +4,15 @@ import 'package:video_player/video_player.dart';
 import 'network_photo.dart';
 
 class MediaView extends StatefulWidget {
-  const MediaView(this.url, {super.key, this.video = false, this.autoplay = false, this.active = true, this.followGlobalMute = false});
+  const MediaView(this.url, {super.key, this.video = false, this.autoplay = false, this.active = true, this.followGlobalMute = false, this.speed = 1, this.progressBar = false, this.showMute = true});
   final String url;
   final bool video;
   final bool autoplay;
   final bool active;
   final bool followGlobalMute;
+  final double speed;
+  final bool progressBar;
+  final bool showMute;
   static bool globalMute = false;
   static final navIndex = ValueNotifier<int>(0);
 
@@ -63,8 +66,10 @@ class _MediaViewState extends State<MediaView> {
       await c.initialize();
       c.setLooping(true);
       if (widget.followGlobalMute && MediaView.globalMute) await c.setVolume(0);
+      await c.setPlaybackSpeed(widget.speed);
       if (widget.autoplay && widget.active) await c.play();
       if (!widget.active) await c.pause();
+      c.addListener(() { if (mounted && widget.progressBar) setState(() {}); });
       if (!mounted) {
         await c.dispose();
         return;
@@ -80,6 +85,9 @@ class _MediaViewState extends State<MediaView> {
   void didUpdateWidget(covariant MediaView old) {
     super.didUpdateWidget(old);
     if (_c == null) return;
+    if (old.speed != widget.speed) {
+      _c!.setPlaybackSpeed(widget.speed);
+    }
     if (!widget.active) {
       _c!.pause();
     } else if (widget.autoplay && !_c!.value.isPlaying) {
@@ -123,20 +131,33 @@ class _MediaViewState extends State<MediaView> {
           ),
         ),
         if (!_c!.value.isPlaying)
-          const Center(child: Icon(Icons.play_circle_outline, color: Colors.white, size: 64)),
-        Positioned(
-          right: 8,
-          bottom: 8,
-          child: GestureDetector(
-            onTap: () {
-              _muted = !_muted;
-              if (widget.followGlobalMute) MediaView.globalMute = _muted;
-              _c!.setVolume(_muted || (widget.followGlobalMute && MediaView.globalMute) ? 0 : 1);
-              setState(() {});
-            },
-            child: Icon((_muted || (widget.followGlobalMute && MediaView.globalMute)) ? Icons.volume_off : Icons.volume_up, color: Colors.white, size: 20),
+          const Center(child: Icon(Icons.play_circle_fill, color: Colors.white70, size: 72)),
+        if (widget.showMute)
+          Positioned(
+            right: 8,
+            bottom: 8,
+            child: GestureDetector(
+              onTap: () {
+                _muted = !_muted;
+                if (widget.followGlobalMute) MediaView.globalMute = _muted;
+                _c!.setVolume(_muted || (widget.followGlobalMute && MediaView.globalMute) ? 0 : 1);
+                setState(() {});
+              },
+              child: Icon((_muted || (widget.followGlobalMute && MediaView.globalMute)) ? Icons.volume_off : Icons.volume_up, color: Colors.white, size: 20),
+            ),
           ),
-        ),
+        if (widget.progressBar && _c!.value.duration.inMilliseconds > 0)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: LinearProgressIndicator(
+              minHeight: 2,
+              value: _c!.value.position.inMilliseconds / _c!.value.duration.inMilliseconds,
+              backgroundColor: Colors.white24,
+              color: Colors.white,
+            ),
+          ),
       ]),
     );
   }

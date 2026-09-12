@@ -117,7 +117,7 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
             child: Stack(
             fit: StackFit.expand,
             children: [
-              MediaView(post.imagePath, video: post.isVideo, autoplay: active, active: active, followGlobalMute: true),
+              MediaView(post.imagePath, video: post.isVideo, autoplay: active, active: active, followGlobalMute: true, speed: _holdSpeed && index == _page ? 2 : 1, progressBar: active, showMute: false),
               const DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -222,17 +222,6 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
                     ),
                   ),
                 ]),
-              ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: LinearProgressIndicator(
-                  value: active ? null : 0,
-                  minHeight: 2,
-                  backgroundColor: Colors.white24,
-                  color: Colors.white,
-                ),
               ),
               Positioned(
                 left: 16,
