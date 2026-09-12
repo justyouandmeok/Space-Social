@@ -153,6 +153,18 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
                 );
               },
             ),
+          if (mine)
+            ListTile(
+              title: Text(widget.state.hideLikesPosts.contains(post.id) ? 'Mostrar Me gusta' : 'Ocultar Me gusta', style: TextStyle(color: SpaceColors.text)),
+              onTap: () { Navigator.pop(ctx); widget.state.toggleHideLikesPost(post.id); },
+            ),
+          ListTile(
+            title: Text('Copiar enlace', style: TextStyle(color: SpaceColors.text)),
+            onTap: () {
+              Clipboard.setData(ClipboardData(text: 'https://spacesocial.app/p/${post.id}'));
+              Navigator.pop(ctx);
+            },
+          ),
           ListTile(
             title: Text('Copiar pie', style: TextStyle(color: SpaceColors.text)),
             onTap: () {
@@ -431,7 +443,7 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
                   );
                 },
                 child: Text(
-                  (widget.state.hideLikes && live.userId == widget.state.me.id)
+                  ((widget.state.hideLikes || widget.state.hideLikesPosts.contains(live.id)) && live.userId == widget.state.me.id)
                       ? 'Me gusta'
                       : live.likes.isEmpty
                           ? 'Sé el primero en dar Me gusta'

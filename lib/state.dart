@@ -97,6 +97,8 @@ class AppState extends ChangeNotifier {
   final pendingMentions = <String>[];
   String profileMusic = '';
   final collabInvites = <String, String>{};
+  Set<String> hideLikesPosts = {};
+  final storyAnswers = <String, List<String>>{};
 
   bool get isLoggedIn => currentUserId != null;
   bool get isAdmin => isLoggedIn && SpaceConfig.adminEmails.map((e) => e.toLowerCase()).contains(me.email.toLowerCase());
@@ -462,6 +464,10 @@ class AppState extends ChangeNotifier {
         collabInvites
           ..clear()
           ..addAll(Map<String, String>.from((data['collabInvites'] as Map?) ?? const {}));
+        hideLikesPosts = {...List<String>.from(data['hideLikesPosts'] ?? const [])};
+        storyAnswers
+          ..clear()
+          ..addAll(((data['storyAnswers'] as Map?) ?? const {}).map((k, v) => MapEntry('$k', List<String>.from(v as List? ?? const []))));
       }
     }
 
@@ -1197,6 +1203,29 @@ class AppState extends ChangeNotifier {
     await _savePrefs();
   }
 
+  Future<void> toggleHideLikesPost(String postId) async {
+    if (hideLikesPosts.contains(postId)) {
+      hideLikesPosts.remove(postId);
+    } else {
+      hideLikesPosts.add(postId);
+    }
+    await _savePrefs();
+  }
+
+  Future<void> answerStory(String storyId, String text) async {
+    final t = text.trim();
+    if (t.isEmpty) return;
+    final list = storyAnswers.putIfAbsent(storyId, () => <String>[]);
+    list.add('${me.username}: $t');
+    await _savePrefs();
+  }
+
+  Future<void> messageCloseFriends(String text) async {
+    for (final id in closeFriends) {
+      await sendMessage(id, text);
+    }
+  }
+
   Future<void> setProfileMusic(String v) async {
     profileMusic = v.trim();
     await _savePrefs();
@@ -1667,6 +1696,8 @@ class AppState extends ChangeNotifier {
       'pendingMentions': pendingMentions,
       'profileMusic': profileMusic,
       'collabInvites': collabInvites,
+      'hideLikesPosts': hideLikesPosts.toList(),
+      'storyAnswers': storyAnswers,
     }, SetOptions(merge: true));
     notifyListeners();
   }

@@ -837,6 +837,24 @@ class SettingsScreen extends StatelessWidget {
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => PeopleManageScreen(state: state, mode: PeopleManageMode.closeFriends))),
         ),
         ListTile(
+          leading: Icon(Icons.campaign_outlined, color: SpaceColors.text),
+          title: Text('Avisar a mejores amigos', style: TextStyle(color: SpaceColors.text)),
+          onTap: () {
+            final c = TextEditingController();
+            showDialog(
+              context: context,
+              builder: (d) => AlertDialog(
+                title: const Text('Mensaje a mejores amigos'),
+                content: TextField(controller: c),
+                actions: [
+                  TextButton(onPressed: () => Navigator.pop(d), child: const Text('Cancelar')),
+                  TextButton(onPressed: () { state.messageCloseFriends(c.text); Navigator.pop(d); }, child: const Text('Enviar')),
+                ],
+              ),
+            );
+          },
+        ),
+        ListTile(
           leading: Icon(Icons.block, color: SpaceColors.text),
           title: Text('Bloqueados', style: TextStyle(color: SpaceColors.text)),
           subtitle: Text('${state.blocked.length} cuentas', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),

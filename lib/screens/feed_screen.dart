@@ -8,6 +8,7 @@ import 'notifications_screen.dart';
 import 'post_screen.dart';
 import '../space_theme.dart';
 import '../widgets/ig_icons.dart';
+import '../widgets/network_photo.dart';
 
 class FeedScreen extends StatelessWidget {
   const FeedScreen({super.key, required this.state, required this.onOpenCreate, required this.onOpenProfile});
@@ -90,6 +91,24 @@ class FeedScreen extends StatelessWidget {
               ),
             ),
             SliverToBoxAdapter(child: Divider(color: SpaceColors.hairline, height: 0.5)),
+            if (state.followingOf(state.me.id).length < 3)
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 120,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    children: state.users.where((u) => u.id != state.me.id && !state.isFollowing(u.id)).take(8).map((u) => Padding(
+                      padding: const EdgeInsets.only(right: 10),
+                      child: Column(children: [
+                        GestureDetector(onTap: () => onOpenProfile(u.id), child: Avatar(u.avatarPath, size: 56)),
+                        Text(u.username, style: const TextStyle(fontSize: 11)),
+                        TextButton(onPressed: () => state.toggleFollow(u.id), child: const Text('Seguir', style: TextStyle(fontSize: 11))),
+                      ]),
+                    )).toList(),
+                  ),
+                ),
+              ),
             if (items.isEmpty)
               SliverToBoxAdapter(
                 child: Padding(

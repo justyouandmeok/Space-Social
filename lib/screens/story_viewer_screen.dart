@@ -273,9 +273,17 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (caption.isNotEmpty) ...[
-                    Text(caption, style: const TextStyle(color: Colors.white, fontSize: 16)),
+                    Text(caption.replaceFirst('ASK:', 'Pregunta: '), style: const TextStyle(color: Colors.white, fontSize: 16)),
                     const SizedBox(height: 12),
                   ],
+                  if (caption.startsWith('ASK:'))
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        '${widget.state.storyAnswers[story.id]?.length ?? 0} respuestas',
+                        style: const TextStyle(color: Colors.white70, fontSize: 12),
+                      ),
+                    ),
                   Row(children: [
                     Expanded(
                       child: Container(
@@ -314,7 +322,11 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
                       onPressed: () async {
                         final text = _reply.text.trim();
                         if (text.isEmpty) return;
-                        await widget.state.sendMessage(widget.userId, text);
+                        if (caption.startsWith('ASK:')) {
+                          await widget.state.answerStory(story.id, text);
+                        } else {
+                          await widget.state.sendMessage(widget.userId, text);
+                        }
                         setState(() {
                           _liveComments.add('${widget.state.me.username}: $text');
                           _liveIndex = _liveComments.length - 1;
