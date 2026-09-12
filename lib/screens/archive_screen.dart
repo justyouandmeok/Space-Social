@@ -10,12 +10,29 @@ class ArchiveScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = state.posts.where((p) => state.archived.contains(p.id) && p.userId == state.me.id).toList();
+    final stories = state.stories.where((s) => s.userId == state.me.id && state.archived.contains(s.id)).toList();
     return Scaffold(
       backgroundColor: SpaceColors.bg,
       appBar: AppBar(backgroundColor: SpaceColors.bg, title: Text('Archivo')),
-      body: items.isEmpty
+      body: items.isEmpty && stories.isEmpty
           ? Center(child: Text('El archivo está vacío', style: TextStyle(color: SpaceColors.textMuted)))
-          : GridView.builder(
+          : ListView(children: [
+              if (stories.isNotEmpty)
+                Padding(padding: const EdgeInsets.all(12), child: Text('Historias', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold))),
+              if (stories.isNotEmpty)
+                SizedBox(
+                  height: 120,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: stories.map((s) => Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: SizedBox(width: 72, child: MediaView(s.imagePath)),
+                    )).toList(),
+                  ),
+                ),
+              GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
               padding: const EdgeInsets.all(2),
               itemCount: items.length,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 2, mainAxisSpacing: 2),
@@ -32,6 +49,8 @@ class ArchiveScreen extends StatelessWidget {
                 );
               },
             ),
+            ],
+          ),
     );
   }
 }

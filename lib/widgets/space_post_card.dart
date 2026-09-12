@@ -303,6 +303,7 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
                         title: Text(reason, style: TextStyle(color: SpaceColors.text)),
                         onTap: () {
                           Navigator.pop(r);
+                          widget.state.fileReport(post.id, reason);
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Reporte enviado: $reason')));
                         },
                       ),

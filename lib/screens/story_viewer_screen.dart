@@ -251,7 +251,11 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
                               ListTile(
                                 leading: const Icon(Icons.archive_outlined, color: Colors.white),
                                 title: const Text('Archivar', style: TextStyle(color: Colors.white)),
-                                onTap: () => Navigator.pop(ctx),
+                                onTap: () async {
+                                  Navigator.pop(ctx);
+                                  await widget.state.archiveStory(story.id);
+                                  if (context.mounted) Navigator.pop(context);
+                                },
                               ),
                             ] else ...[
                               ListTile(
@@ -263,9 +267,19 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
                                 },
                               ),
                               ListTile(
+                                leading: const Icon(Icons.link, color: Colors.white),
+                                title: const Text('Copiar enlace', style: TextStyle(color: Colors.white)),
+                                onTap: () {
+                                  Navigator.pop(ctx);
+                                },
+                              ),
+                              ListTile(
                                 leading: const Icon(Icons.flag_outlined, color: Colors.redAccent),
                                 title: const Text('Reportar', style: TextStyle(color: Colors.redAccent)),
-                                onTap: () => Navigator.pop(ctx),
+                                onTap: () {
+                                  Navigator.pop(ctx);
+                                  widget.state.fileReport(story.id, 'historia');
+                                },
                               ),
                             ],
                           ]),

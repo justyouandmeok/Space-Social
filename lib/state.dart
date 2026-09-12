@@ -105,6 +105,7 @@ class AppState extends ChangeNotifier {
   int usedMinutes = 0;
   Set<String> savedAudios = {};
   DateTime? activitySeenAt;
+  final reports = <String>[];
 
   bool get hasNewActivity {
     if (activity.isEmpty) return false;
@@ -487,6 +488,9 @@ class AppState extends ChangeNotifier {
         usedMinutes = (data['usedMinutes'] as num?)?.toInt() ?? 0;
         savedAudios = {...List<String>.from(data['savedAudios'] ?? const [])};
         activitySeenAt = DateTime.tryParse(data['activitySeenAt'] as String? ?? '');
+        reports
+          ..clear()
+          ..addAll(List<String>.from(data['reports'] ?? const []));
       }
     }
 
@@ -1238,6 +1242,16 @@ class AppState extends ChangeNotifier {
     await _savePrefs();
   }
 
+  Future<void> fileReport(String targetId, String reason) async {
+    reports.add('$targetId|$reason|${DateTime.now().toIso8601String()}');
+    await _savePrefs();
+  }
+
+  Future<void> archiveStory(String storyId) async {
+    archived.add(storyId);
+    await _savePrefs();
+  }
+
   Future<void> markActivitySeen() async {
     activitySeenAt = DateTime.now();
     await _savePrefs();
@@ -1758,6 +1772,7 @@ class AppState extends ChangeNotifier {
       'usedMinutes': usedMinutes,
       'savedAudios': savedAudios.toList(),
       if (activitySeenAt != null) 'activitySeenAt': activitySeenAt!.toIso8601String(),
+      'reports': reports,
     }, SetOptions(merge: true));
     notifyListeners();
   }
