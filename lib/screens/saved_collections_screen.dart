@@ -91,6 +91,10 @@ class _SavedCollectionsScreenState extends State<SavedCollectionsScreen> {
     }
     final folders = [
       ('Todos los guardados', saved.length, cover, saved),
+      ...widget.state.collections.entries.map((e) {
+        final items = widget.state.posts.where((p) => e.value.contains(p.id)).toList();
+        return (e.key, items.length, items.isEmpty ? '' : items.first.imagePath, items);
+      }),
       ...extra.map((n) {
         final items = postsOf(n);
         final name = n.split('|').first;

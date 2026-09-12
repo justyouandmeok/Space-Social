@@ -304,6 +304,13 @@ class _PostScreenState extends State<PostScreen> {
                     );
                   }),
                   _chipBtn('Tema', () {}),
+                  _chipBtn('Programar', () async {
+                    await widget.state.schedulePost(image: file!, caption: cap.text, delay: const Duration(minutes: 5), location: loc.text, isReel: mode == 2, isVideo: video);
+                    if (mounted) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Se publica en 5 min')));
+                    }
+                  }),
                 ]),
                 const SizedBox(height: 8),
                 _row(Icons.person_outline, 'Etiquetar personas', tagged.isEmpty ? '' : '${tagged.length}', _pickPeople),

@@ -191,6 +191,25 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
             },
           ),
           ListTile(
+            title: Text('Guardar en colección', style: TextStyle(color: SpaceColors.text)),
+            onTap: () {
+              Navigator.pop(ctx);
+              final c = TextEditingController();
+              showDialog(
+                context: context,
+                builder: (d) => AlertDialog(
+                  backgroundColor: SpaceColors.surface,
+                  title: Text('Colección', style: TextStyle(color: SpaceColors.text)),
+                  content: TextField(controller: c, style: TextStyle(color: SpaceColors.text), decoration: InputDecoration(hintText: 'Nombre', hintStyle: TextStyle(color: SpaceColors.textMuted))),
+                  actions: [
+                    TextButton(onPressed: () => Navigator.pop(d), child: const Text('Cancelar')),
+                    TextButton(onPressed: () { widget.state.addToCollection(c.text, post.id); widget.state.toggleSave(post.id); Navigator.pop(d); }, child: const Text('Guardar')),
+                  ],
+                ),
+              );
+            },
+          ),
+          ListTile(
             title: Text('Enviar', style: TextStyle(color: SpaceColors.text)),
             onTap: () {
               Navigator.pop(ctx);
@@ -281,7 +300,22 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
               if (user.id != widget.state.me.id && !widget.state.isFollowing(user.id))
                 const Text('Sugerencia para ti', style: TextStyle(color: Color(0xFF8E8E8E), fontSize: 12)),
               if (live.location.isNotEmpty)
-                Text(live.location, style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+                GestureDetector(
+                  onTap: () {
+                    final items = widget.state.posts.where((p) => p.location == live.location).toList();
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => Scaffold(
+                        backgroundColor: SpaceColors.bg,
+                        appBar: AppBar(backgroundColor: SpaceColors.bg, title: Text(live.location, style: TextStyle(color: SpaceColors.text))),
+                        body: ListView.builder(
+                          itemCount: items.length,
+                          itemBuilder: (c, i) => SpacePostCard(post: items[i], state: widget.state, onOpenProfile: widget.onOpenProfile),
+                        ),
+                      ),
+                    ));
+                  },
+                  child: Text(live.location, style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+                ),
             ]),
           ),
           trailing: Row(mainAxisSize: MainAxisSize.min, children: [

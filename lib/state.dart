@@ -93,6 +93,8 @@ class AppState extends ChangeNotifier {
   Set<String> mutedChats = {};
   Set<String> followedTags = {};
   final pinnedComments = <String, int>{};
+  final collections = <String, List<String>>{};
+  final pendingMentions = <String>[];
 
   bool get isLoggedIn => currentUserId != null;
   bool get isAdmin => isLoggedIn && SpaceConfig.adminEmails.map((e) => e.toLowerCase()).contains(me.email.toLowerCase());
@@ -448,6 +450,12 @@ class AppState extends ChangeNotifier {
         pinnedComments
           ..clear()
           ..addAll(Map<String, int>.from(((data['pinnedComments'] as Map?) ?? const {}).map((k, v) => MapEntry('$k', (v as num).toInt()))));
+        collections
+          ..clear()
+          ..addAll(((data['collections'] as Map?) ?? const {}).map((k, v) => MapEntry('$k', List<String>.from(v as List? ?? const []))));
+        pendingMentions
+          ..clear()
+          ..addAll(List<String>.from(data['pendingMentions'] ?? const []));
       }
     }
 
@@ -963,6 +971,14 @@ class AppState extends ChangeNotifier {
         'views': 0,
         'taggedUserIds': tags,
       });
+      for (final uid in tags) {
+        if (uid == me.id) continue;
+        try {
+          await _db.collection('users').doc(uid).set({
+            'pendingMentions': FieldValue.arrayUnion([id]),
+          }, SetOptions(merge: true));
+        } catch (_) {}
+      }
       posts = posts.map((p) => p.id == id ? p.copyWith(imagePath: url) : p).toList();
       notifyListeners();
       unawaited(_refresh().then((_) => _saveCache()));
@@ -972,6 +988,14 @@ class AppState extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+  }
+
+  Future<void> schedulePost({required File image, required String caption, required Duration delay, String location = '', bool isReel = false, bool isVideo = false}) async {
+    lastError = null;
+    notifyListeners();
+    Future<void>.delayed(delay, () {
+      publishPost(image: image, caption: caption, location: location, isReel: isReel, isVideo: isVideo);
+    });
   }
 
   Future<bool> remixPost(Post source) async {
@@ -1163,6 +1187,30 @@ class AppState extends ChangeNotifier {
       followedTags.remove(t);
     } else {
       followedTags.add(t);
+    }
+    await _savePrefs();
+  }
+
+  Future<void> addToCollection(String name, String postId) async {
+    final n = name.trim();
+    if (n.isEmpty) return;
+    final list = collections.putIfAbsent(n, () => <String>[]);
+    if (!list.contains(postId)) list.add(postId);
+    await _savePrefs();
+  }
+
+  Future<void> approveMention(String postId) async {
+    pendingMentions.remove(postId);
+    await _savePrefs();
+  }
+
+  Future<void> denyMention(String postId) async {
+    pendingMentions.remove(postId);
+    final found = posts.where((p) => p.id == postId);
+    if (found.isNotEmpty) {
+      final p = found.first;
+      final tags = [...p.taggedUserIds]..remove(me.id);
+      await _db.collection('posts').doc(postId).set({'taggedUserIds': tags}, SetOptions(merge: true));
     }
     await _savePrefs();
   }
@@ -1574,6 +1622,8 @@ class AppState extends ChangeNotifier {
       'mutedChats': mutedChats.toList(),
       'followedTags': followedTags.toList(),
       'pinnedComments': pinnedComments,
+      'collections': collections,
+      'pendingMentions': pendingMentions,
     }, SetOptions(merge: true));
     notifyListeners();
   }

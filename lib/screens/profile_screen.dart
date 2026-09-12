@@ -862,6 +862,12 @@ class SettingsScreen extends StatelessWidget {
           title: Text('Descargar tu información', style: TextStyle(color: SpaceColors.text)),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => DownloadDataScreen(state: state))),
         ),
+        ListTile(
+          leading: Icon(Icons.alternate_email, color: SpaceColors.text),
+          title: Text('Menciones pendientes', style: TextStyle(color: SpaceColors.text)),
+          subtitle: Text('${state.pendingMentions.length}', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => MentionsScreen(state: state))),
+        ),
         SwitchListTile(secondary: Icon(Icons.shield_outlined, color: SpaceColors.text), title: Text('Filtro de contenido sensible', style: TextStyle(color: SpaceColors.text)), value: state.sensitiveFilter, onChanged: (_) => state.toggleSensitiveFilter()),
         ListTile(
           leading: Icon(Icons.devices_outlined, color: SpaceColors.text),
@@ -1276,6 +1282,42 @@ class MessagePolicyScreen extends StatelessWidget {
           RadioListTile<String>(value: 'nobody', groupValue: state.messagePolicy, onChanged: (v) => state.setMessagePolicy(v!), title: Text('Nadie', style: TextStyle(color: SpaceColors.text))),
         ]),
       ),
+    );
+  }
+}
+
+class MentionsScreen extends StatelessWidget {
+  const MentionsScreen({super.key, required this.state});
+  final AppState state;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: state,
+      builder: (context, _) {
+        final items = state.posts.where((p) => state.pendingMentions.contains(p.id)).toList();
+        return Scaffold(
+          backgroundColor: SpaceColors.bg,
+          appBar: AppBar(backgroundColor: SpaceColors.bg, title: Text('Menciones', style: TextStyle(color: SpaceColors.text))),
+          body: items.isEmpty
+              ? Center(child: Text('No hay menciones pendientes', style: TextStyle(color: SpaceColors.textMuted)))
+              : ListView.builder(
+                  itemCount: items.length,
+                  itemBuilder: (context, i) {
+                    final p = items[i];
+                    final u = state.tryUser(p.userId);
+                    return ListTile(
+                      leading: SizedBox(width: 44, height: 44, child: MediaView(p.imagePath, video: p.isVideo)),
+                      title: Text('@${u?.username ?? 'usuario'} te etiquetó', style: TextStyle(color: SpaceColors.text)),
+                      trailing: Wrap(children: [
+                        TextButton(onPressed: () => state.approveMention(p.id), child: const Text('Aprobar')),
+                        TextButton(onPressed: () => state.denyMention(p.id), child: const Text('Rechazar')),
+                      ]),
+                    );
+                  },
+                ),
+        );
+      },
     );
   }
 }
