@@ -83,24 +83,18 @@ class _ReelsScreenState extends State<ReelsScreen> {
               if (_holdSpeed)
                 const Center(child: Text('2x', style: TextStyle(color: Colors.white, fontSize: 48, fontWeight: FontWeight.w800))),
               Positioned(
-                top: 44,
-                left: 8,
+                top: 48,
+                left: 16,
                 right: 56,
                 child: Row(children: [
-                  IconButton(
-                    onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) => PostScreen(state: state, initialMode: 2),
-                    )),
-                    icon: const Icon(Icons.add, color: Colors.white, size: 28),
-                  ),
                   GestureDetector(
                     onTap: () => setState(() => friends = false),
-                    child: Text('Reels', style: TextStyle(color: friends ? Colors.white54 : Colors.white, fontSize: 22, fontWeight: FontWeight.w700)),
+                    child: Text('Reels', style: TextStyle(color: friends ? Colors.white54 : Colors.white, fontSize: 24, fontWeight: FontWeight.w800, letterSpacing: -0.4)),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 18),
                   GestureDetector(
                     onTap: () => setState(() => friends = true),
-                    child: Text('Amigos', style: TextStyle(color: friends ? Colors.white : Colors.white54, fontSize: 18, fontWeight: FontWeight.w600)),
+                    child: Text('Amigos', style: TextStyle(color: friends ? Colors.white : Colors.white54, fontSize: 16, fontWeight: FontWeight.w600)),
                   ),
                 ]),
               ),

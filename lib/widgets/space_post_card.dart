@@ -417,25 +417,27 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
           ),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(6, 0, 6, 0),
+          padding: const EdgeInsets.fromLTRB(6, 2, 6, 0),
           child: Row(children: [
             IconButton(
-              icon: CustomPaint(size: const Size(24, 24), painter: HeartPainter(liked ? const Color(0xFFFF3040) : const Color(0xFF262626), filled: liked)),
+              visualDensity: VisualDensity.compact,
+              icon: CustomPaint(size: const Size(26, 26), painter: HeartPainter(liked ? const Color(0xFFED4956) : const Color(0xFF262626), filled: liked)),
               onPressed: () => widget.state.toggleLike(live.id),
             ),
-            if (live.likes.isNotEmpty) Text('${live.likes.length}', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
             IconButton(
-              icon: CustomPaint(size: const Size(24, 24), painter: CommentPainter(const Color(0xFF262626))),
+              visualDensity: VisualDensity.compact,
+              icon: CustomPaint(size: const Size(26, 26), painter: CommentPainter(const Color(0xFF262626))),
               onPressed: () => CommentsBottomSheet.show(context, widget.state, live.id),
             ),
-            if (live.comments.isNotEmpty) Text('${live.comments.length}', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
             IconButton(
-              icon: CustomPaint(size: const Size(24, 24), painter: SharePainter(const Color(0xFF262626))),
+              visualDensity: VisualDensity.compact,
+              icon: CustomPaint(size: const Size(26, 26), painter: SharePainter(const Color(0xFF262626))),
               onPressed: () => ShareSheet.show(context, widget.state, post: live),
             ),
             const Spacer(),
             IconButton(
-              icon: CustomPaint(size: const Size(24, 24), painter: BookmarkPainter(const Color(0xFF262626), filled: saved)),
+              visualDensity: VisualDensity.compact,
+              icon: CustomPaint(size: const Size(26, 26), painter: BookmarkPainter(const Color(0xFF262626), filled: saved)),
               onPressed: () => widget.state.toggleSave(live.id),
             ),
           ]),

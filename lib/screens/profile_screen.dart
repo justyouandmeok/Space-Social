@@ -97,7 +97,21 @@ class ProfileScreen extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Avatar(user.avatarPath, size: 84),
+                        Container(
+                          padding: const EdgeInsets.all(2.5),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: state.storiesOf(user.id).isNotEmpty
+                                ? const LinearGradient(colors: [Color(0xFFF58529), Color(0xFFDD2A7B), Color(0xFF8134AF)])
+                                : null,
+                            border: state.storiesOf(user.id).isEmpty ? Border.all(color: const Color(0xFFDBDBDB), width: 1) : null,
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                            child: Avatar(user.avatarPath, size: 84),
+                          ),
+                        ),
                         const SizedBox(width: 18),
                         Expanded(
                           child: Row(
@@ -140,7 +154,7 @@ class ProfileScreen extends StatelessWidget {
                             child: Text(
                               user.website.replaceFirst(RegExp(r'^https?://'), ''),
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(color: SpaceColors.cosmicCyan, fontWeight: FontWeight.w600, fontSize: 13),
+                              style: const TextStyle(color: Color(0xFF00376B), fontWeight: FontWeight.w600, fontSize: 13),
                             ),
                           ),
                         ]),
@@ -316,13 +330,16 @@ class ProfileScreen extends StatelessWidget {
               pinned: true,
               delegate: _TabBarDelegate(
                 tabBar: TabBar(
-                  indicatorColor: SpaceColors.text,
-                  indicatorWeight: 1,
-                  tabs: [
-                    Tab(icon: Icon(Icons.grid_on, color: SpaceColors.text)),
-                    Tab(icon: Icon(Icons.movie_outlined, color: SpaceColors.text)),
-                    Tab(icon: Icon(Icons.replay, color: SpaceColors.text)),
-                    Tab(icon: Icon(Icons.assignment_ind_outlined, color: SpaceColors.text)),
+                  indicatorColor: const Color(0xFF262626),
+                  indicatorWeight: 0.8,
+                  dividerColor: const Color(0xFFDBDBDB),
+                  labelColor: const Color(0xFF262626),
+                  unselectedLabelColor: const Color(0xFF8E8E8E),
+                  tabs: const [
+                    Tab(icon: Icon(Icons.grid_on, size: 22)),
+                    Tab(icon: Icon(Icons.movie_outlined, size: 22)),
+                    Tab(icon: Icon(Icons.replay, size: 22)),
+                    Tab(icon: Icon(Icons.assignment_ind_outlined, size: 22)),
                   ],
                 ),
               ),
@@ -343,9 +360,9 @@ class ProfileScreen extends StatelessWidget {
 
   static Widget _stat(String count, String label) {
     return Column(children: [
-      Text(count, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 18)),
+      Text(count, style: const TextStyle(color: Color(0xFF262626), fontWeight: FontWeight.w700, fontSize: 16, height: 1.1)),
       const SizedBox(height: 2),
-      Text(label, style: TextStyle(color: SpaceColors.textMuted, fontSize: 13)),
+      Text(label, style: const TextStyle(color: Color(0xFF8E8E8E), fontSize: 12, height: 1.1)),
     ]);
   }
 

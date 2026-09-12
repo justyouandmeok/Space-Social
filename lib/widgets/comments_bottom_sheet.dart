@@ -71,8 +71,8 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
         builder: (_, scrollController) {
           return Container(
             decoration: BoxDecoration(
-              color: SpaceColors.surface,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
             ),
             child: Column(children: [
               Container(
