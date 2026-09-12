@@ -97,9 +97,28 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                           final c = comments[index];
                           final u = widget.state.tryUser(c.userId);
                                                 return GestureDetector(
-                            onLongPress: c.userId == widget.state.me.id
-                                ? () => widget.state.deleteComment(widget.postId, index)
-                                : null,
+                            onLongPress: () {
+                              final mine = c.userId == widget.state.me.id;
+                              final owner = widget.state.posts.any((p) => p.id == widget.postId && p.userId == widget.state.me.id);
+                              showModalBottomSheet(
+                                context: context,
+                                backgroundColor: SpaceColors.surface,
+                                builder: (ctx) => SafeArea(
+                                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                                    if (owner)
+                                      ListTile(
+                                        title: Text(widget.state.pinnedComments[widget.postId] == index ? 'Desfijar comentario' : 'Fijar comentario', style: TextStyle(color: SpaceColors.text)),
+                                        onTap: () { Navigator.pop(ctx); widget.state.pinComment(widget.postId, index); },
+                                      ),
+                                    if (mine)
+                                      ListTile(
+                                        title: const Text('Eliminar', style: TextStyle(color: Colors.redAccent)),
+                                        onTap: () { Navigator.pop(ctx); widget.state.deleteComment(widget.postId, index); },
+                                      ),
+                                  ]),
+                                ),
+                              );
+                            },
                             child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8),
                             child: Row(
@@ -111,6 +130,10 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                                     Row(children: [
                                       Text(u?.username ?? 'usuario', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 13)),
+                                      if (widget.state.pinnedComments[widget.postId] == index) ...[
+                                        const SizedBox(width: 6),
+                                        Icon(Icons.push_pin, size: 12, color: SpaceColors.textMuted),
+                                      ],
                                       const SizedBox(width: 8),
                                       Text(timeAgo(c.createdAt), style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
                                     ]),

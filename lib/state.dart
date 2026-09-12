@@ -85,6 +85,14 @@ class AppState extends ChangeNotifier {
   bool sensitiveFilter = true;
   String phone = '';
   final myPollVotes = <String, String>{};
+  bool quietMode = false;
+  bool notifLikes = true;
+  bool notifComments = true;
+  bool notifFollows = true;
+  int dailyLimitMin = 0;
+  Set<String> mutedChats = {};
+  Set<String> followedTags = {};
+  final pinnedComments = <String, int>{};
 
   bool get isLoggedIn => currentUserId != null;
   bool get isAdmin => isLoggedIn && SpaceConfig.adminEmails.map((e) => e.toLowerCase()).contains(me.email.toLowerCase());
@@ -430,6 +438,16 @@ class AppState extends ChangeNotifier {
         myPollVotes
           ..clear()
           ..addAll(Map<String, String>.from((data['myPollVotes'] as Map?) ?? const {}));
+        quietMode = data['quietMode'] == true;
+        notifLikes = data['notifLikes'] != false;
+        notifComments = data['notifComments'] != false;
+        notifFollows = data['notifFollows'] != false;
+        dailyLimitMin = (data['dailyLimitMin'] as num?)?.toInt() ?? 0;
+        mutedChats = {...List<String>.from(data['mutedChats'] ?? const [])};
+        followedTags = {...List<String>.from(data['followedTags'] ?? const [])};
+        pinnedComments
+          ..clear()
+          ..addAll(Map<String, int>.from(((data['pinnedComments'] as Map?) ?? const {}).map((k, v) => MapEntry('$k', (v as num).toInt()))));
       }
     }
 
@@ -1104,6 +1122,60 @@ class AppState extends ChangeNotifier {
     await _savePrefs();
   }
 
+  Future<void> toggleQuietMode() async {
+    quietMode = !quietMode;
+    await _savePrefs();
+  }
+
+  Future<void> toggleNotifLikes() async {
+    notifLikes = !notifLikes;
+    await _savePrefs();
+  }
+
+  Future<void> toggleNotifComments() async {
+    notifComments = !notifComments;
+    await _savePrefs();
+  }
+
+  Future<void> toggleNotifFollows() async {
+    notifFollows = !notifFollows;
+    await _savePrefs();
+  }
+
+  Future<void> setDailyLimit(int minutes) async {
+    dailyLimitMin = minutes;
+    await _savePrefs();
+  }
+
+  Future<void> toggleMuteChat(String userId) async {
+    if (mutedChats.contains(userId)) {
+      mutedChats.remove(userId);
+    } else {
+      mutedChats.add(userId);
+    }
+    await _savePrefs();
+  }
+
+  Future<void> toggleFollowTag(String tag) async {
+    final t = tag.replaceAll('#', '').toLowerCase();
+    if (t.isEmpty) return;
+    if (followedTags.contains(t)) {
+      followedTags.remove(t);
+    } else {
+      followedTags.add(t);
+    }
+    await _savePrefs();
+  }
+
+  Future<void> pinComment(String postId, int index) async {
+    if (pinnedComments[postId] == index) {
+      pinnedComments.remove(postId);
+    } else {
+      pinnedComments[postId] = index;
+    }
+    await _savePrefs();
+  }
+
   Future<void> votePoll(String postId, String option) async {
     myPollVotes[postId] = option;
     final ref = _db.collection('posts').doc(postId);
@@ -1494,6 +1566,14 @@ class AppState extends ChangeNotifier {
       'sensitiveFilter': sensitiveFilter,
       'phone': phone,
       'myPollVotes': myPollVotes,
+      'quietMode': quietMode,
+      'notifLikes': notifLikes,
+      'notifComments': notifComments,
+      'notifFollows': notifFollows,
+      'dailyLimitMin': dailyLimitMin,
+      'mutedChats': mutedChats.toList(),
+      'followedTags': followedTags.toList(),
+      'pinnedComments': pinnedComments,
     }, SetOptions(merge: true));
     notifyListeners();
   }

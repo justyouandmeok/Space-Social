@@ -302,6 +302,12 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
             Text(widget.user.name, style: TextStyle(fontSize: 11, color: SpaceColors.textMuted)),
           ]),
         ]),
+        actions: [
+          IconButton(
+            icon: Icon(widget.state.mutedChats.contains(widget.user.id) ? Icons.notifications_off : Icons.notifications_none, color: SpaceColors.text),
+            onPressed: () => widget.state.toggleMuteChat(widget.user.id),
+          ),
+        ],
       ),
       body: Column(children: [
         Expanded(
@@ -375,6 +381,13 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           color: SpaceColors.surface,
           child: Row(children: [
+            IconButton(
+              icon: Icon(Icons.mic_none, color: SpaceColors.textMuted),
+              onPressed: () async {
+                await widget.state.sendMessage(widget.user.id, '🎤 Nota de voz · 0:07');
+                if (mounted) setState(() {});
+              },
+            ),
             IconButton(icon: Icon(Icons.image_outlined, color: SpaceColors.textMuted), onPressed: () async {
               final x = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
               if (x == null) return;

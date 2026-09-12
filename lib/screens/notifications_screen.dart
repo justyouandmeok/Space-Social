@@ -16,10 +16,14 @@ class NotificationsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final items = state.activity.where((a) {
+      if (state.quietMode) return false;
       if (a.actorId == state.me.id) return false;
       final t = a.text.toLowerCase();
       if (t.contains('usuario') && (t.contains('cambió') || t.contains('cambio'))) return false;
       if (t.contains('nombre de usuario')) return false;
+      if (!state.notifLikes && (t.contains('gustó') || t.contains('gusta'))) return false;
+      if (!state.notifComments && t.contains('coment')) return false;
+      if (!state.notifFollows && (t.contains('seguir') || a.isFollow)) return false;
       return true;
     }).toList()
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));

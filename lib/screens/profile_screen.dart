@@ -873,6 +873,16 @@ class SettingsScreen extends StatelessWidget {
           title: Text('Publicaciones que te gustaron', style: TextStyle(color: SpaceColors.text)),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ActivityScreen(state: state))),
         ),
+        SwitchListTile(secondary: Icon(Icons.bedtime_outlined, color: SpaceColors.text), title: Text('Modo descanso', style: TextStyle(color: SpaceColors.text)), value: state.quietMode, onChanged: (_) => state.toggleQuietMode()),
+        SwitchListTile(secondary: Icon(Icons.favorite_border, color: SpaceColors.text), title: Text('Avisos de Me gusta', style: TextStyle(color: SpaceColors.text)), value: state.notifLikes, onChanged: (_) => state.toggleNotifLikes()),
+        SwitchListTile(secondary: Icon(Icons.mode_comment_outlined, color: SpaceColors.text), title: Text('Avisos de comentarios', style: TextStyle(color: SpaceColors.text)), value: state.notifComments, onChanged: (_) => state.toggleNotifComments()),
+        SwitchListTile(secondary: Icon(Icons.person_add_alt, color: SpaceColors.text), title: Text('Avisos de seguidores', style: TextStyle(color: SpaceColors.text)), value: state.notifFollows, onChanged: (_) => state.toggleNotifFollows()),
+        ListTile(
+          leading: Icon(Icons.timelapse, color: SpaceColors.text),
+          title: Text('Límite diario', style: TextStyle(color: SpaceColors.text)),
+          subtitle: Text(state.dailyLimitMin == 0 ? 'Sin límite' : '${state.dailyLimitMin} min', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+          onTap: () => state.setDailyLimit(state.dailyLimitMin == 0 ? 30 : state.dailyLimitMin == 30 ? 60 : 0),
+        ),
         SwitchListTile(secondary: Icon(Icons.notifications_none, color: SpaceColors.text), title: Text('Notificaciones', style: TextStyle(color: SpaceColors.text)), value: state.notificationsOn, onChanged: (_) => state.toggleNotificationsPref()),
         ListTile(
           leading: Icon(Icons.palette_outlined, color: SpaceColors.text),

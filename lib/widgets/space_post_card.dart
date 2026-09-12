@@ -458,7 +458,17 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
             Navigator.of(context).push(MaterialPageRoute(
               builder: (_) => Scaffold(
                 backgroundColor: SpaceColors.bg,
-                appBar: AppBar(backgroundColor: SpaceColors.bg, title: Text(token, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold))),
+                appBar: AppBar(
+                  backgroundColor: SpaceColors.bg,
+                  title: Text(token, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold)),
+                  actions: [
+                    if (token.startsWith('#'))
+                      TextButton(
+                        onPressed: () => widget.state.toggleFollowTag(token),
+                        child: Text(widget.state.followedTags.contains(token.replaceAll('#', '').toLowerCase()) ? 'Siguiendo' : 'Seguir'),
+                      ),
+                  ],
+                ),
                 body: posts.isEmpty
                     ? Center(child: Text('Nada con $token', style: TextStyle(color: SpaceColors.textMuted)))
                     : ListView.builder(
