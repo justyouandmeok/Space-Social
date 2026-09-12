@@ -299,7 +299,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
           const SizedBox(width: 10),
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(widget.user.username, style: TextStyle(fontSize: 15, color: SpaceColors.text)),
-            Text(widget.user.name, style: TextStyle(fontSize: 11, color: SpaceColors.textMuted)),
+            Text(_msgController.text.isNotEmpty ? 'Escribiendo…' : widget.user.name, style: TextStyle(fontSize: 11, color: SpaceColors.textMuted)),
           ]),
         ]),
         actions: [
@@ -413,6 +413,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: BorderSide.none),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                 ),
+                onChanged: (_) => setState(() {}),
                 onSubmitted: (_) => _sendMessage(),
               ),
             ),

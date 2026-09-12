@@ -217,7 +217,9 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
           ),
         Expanded(
-          child: GridView.builder(
+          child: RefreshIndicator(
+            onRefresh: () => widget.state.load(),
+            child: GridView.builder(
             padding: const EdgeInsets.only(top: 4),
             itemCount: posts.length,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -247,6 +249,12 @@ class _SearchScreenState extends State<SearchScreen> {
                         right: 6,
                         child: Icon(Icons.play_arrow, color: Colors.white, size: 18),
                       ),
+                    if (DateTime.now().difference(p.createdAt).inHours < 3)
+                      const Positioned(
+                        top: 6,
+                        left: 6,
+                        child: Text('NUEVO', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w800)),
+                      ),
                     Positioned(
                       left: 6,
                       bottom: 6,
@@ -260,6 +268,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
               );
             },
+          ),
           ),
         ),
       ]),

@@ -180,6 +180,14 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
                   Avatar(user?.avatarPath ?? '', size: 36),
                   const SizedBox(width: 10),
                   Text(user?.username ?? '', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                  if (story.closeFriendsOnly) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(color: const Color(0xFF00C853), borderRadius: BorderRadius.circular(8)),
+                      child: const Text('Mejores amigos', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700)),
+                    ),
+                  ],
                   if (story.userId == widget.state.me.id)
                     TextButton(
                       onPressed: () {
