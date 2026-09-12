@@ -69,6 +69,8 @@ class AppState extends ChangeNotifier {
   Set<String> favorites = {};
   Set<String> closeFriends = {};
   Set<String> archived = {};
+  Set<String> pinnedPosts = {};
+  Set<String> hiddenPosts = {};
 
   bool get isLoggedIn => currentUserId != null;
   bool get isAdmin => isLoggedIn && SpaceConfig.adminEmails.map((e) => e.toLowerCase()).contains(me.email.toLowerCase());
@@ -139,6 +141,7 @@ class AppState extends ChangeNotifier {
     var list = List<Post>.from(posts).where((p) {
       if (p.isReel) return false;
       if (archived.contains(p.id)) return false;
+      if (hiddenPosts.contains(p.id)) return false;
       if (blocked.contains(p.userId) || muted.contains(p.userId)) return false;
       return canSee(p.userId);
     }).toList();
@@ -381,6 +384,8 @@ class AppState extends ChangeNotifier {
         favorites = {...List<String>.from(data['favorites'] ?? const [])};
         closeFriends = {...List<String>.from(data['closeFriends'] ?? const [])};
         archived = {...List<String>.from(data['archived'] ?? const [])};
+        pinnedPosts = {...List<String>.from(data['pinnedPosts'] ?? const [])};
+        hiddenPosts = {...List<String>.from(data['hiddenPosts'] ?? const [])};
       }
     }
 
@@ -1252,6 +1257,8 @@ class AppState extends ChangeNotifier {
       'favorites': favorites.toList(),
       'closeFriends': closeFriends.toList(),
       'archived': archived.toList(),
+      'pinnedPosts': pinnedPosts.toList(),
+      'hiddenPosts': hiddenPosts.toList(),
     }, SetOptions(merge: true));
     notifyListeners();
   }
@@ -1363,6 +1370,20 @@ class AppState extends ChangeNotifier {
     } else {
       closeFriends.add(userId);
     }
+    await _savePrefs();
+  }
+
+  Future<void> togglePin(String postId) async {
+    if (pinnedPosts.contains(postId)) {
+      pinnedPosts.remove(postId);
+    } else {
+      pinnedPosts.add(postId);
+    }
+    await _savePrefs();
+  }
+
+  Future<void> hidePost(String postId) async {
+    hiddenPosts.add(postId);
     await _savePrefs();
   }
 

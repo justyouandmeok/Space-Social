@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -70,6 +71,10 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
               title: Text('Eliminar', style: TextStyle(color: Colors.redAccent)),
               onTap: () { Navigator.pop(ctx); widget.state.deletePost(post.id); },
             ),
+            ListTile(
+              title: Text(widget.state.pinnedPosts.contains(post.id) ? 'Desfijar' : 'Fijar en el perfil', style: TextStyle(color: SpaceColors.text)),
+              onTap: () { Navigator.pop(ctx); widget.state.togglePin(post.id); },
+            ),
           ] else ...[
             ListTile(
               title: Text(widget.state.isFollowing(user.id) ? 'Dejar de seguir' : 'Seguir', style: TextStyle(color: SpaceColors.text)),
@@ -78,6 +83,10 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
             ListTile(
               title: Text('Silenciar', style: TextStyle(color: SpaceColors.text)),
               onTap: () { Navigator.pop(ctx); widget.state.toggleMute(user.id); },
+            ),
+            ListTile(
+              title: Text('No me interesa', style: TextStyle(color: SpaceColors.text)),
+              onTap: () { Navigator.pop(ctx); widget.state.hidePost(post.id); },
             ),
           ],
           ListTile(
@@ -269,7 +278,7 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
                 RichText(
                   text: TextSpan(children: [
                     TextSpan(text: '${user.username} ', style: TextStyle(fontWeight: FontWeight.bold, color: SpaceColors.text)),
-                    TextSpan(text: live.caption, style: const TextStyle(color: Color(0xFF262626), fontSize: 14, height: 1.3)),
+                    ..._captionSpans(context, live.caption),
                   ]),
                 ),
               ],
@@ -291,5 +300,49 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
         ),
       ],
     );
+  }
+
+  List<InlineSpan> _captionSpans(BuildContext context, String caption) {
+    final re = RegExp(r'(#[\wáéíóúñÁÉÍÓÚÑ]+|@[\w.]+)');
+    final spans = <InlineSpan>[];
+    var start = 0;
+    for (final m in re.allMatches(caption)) {
+      if (m.start > start) {
+        spans.add(TextSpan(text: caption.substring(start, m.start), style: const TextStyle(color: Color(0xFF262626), fontSize: 14, height: 1.3)));
+      }
+      final token = m.group(0)!;
+      spans.add(TextSpan(
+        text: token,
+        style: const TextStyle(color: Color(0xFF00376B), fontSize: 14, height: 1.3, fontWeight: FontWeight.w600),
+        recognizer: TapGestureRecognizer()
+          ..onTap = () {
+            final q = token.replaceFirst('@', '').replaceFirst('#', '');
+            final posts = widget.state.posts.where((p) {
+              final u = widget.state.tryUser(p.userId);
+              return p.caption.toLowerCase().contains(token.toLowerCase()) || (token.startsWith('@') && (u?.username == q));
+            }).toList();
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => Scaffold(
+                backgroundColor: SpaceColors.bg,
+                appBar: AppBar(backgroundColor: SpaceColors.bg, title: Text(token, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold))),
+                body: posts.isEmpty
+                    ? Center(child: Text('Nada con $token', style: TextStyle(color: SpaceColors.textMuted)))
+                    : ListView.builder(
+                        itemCount: posts.length,
+                        itemBuilder: (c, i) => SpacePostCard(post: posts[i], state: widget.state, onOpenProfile: widget.onOpenProfile),
+                      ),
+              ),
+            ));
+          },
+      ));
+      start = m.end;
+    }
+    if (start < caption.length) {
+      spans.add(TextSpan(text: caption.substring(start), style: const TextStyle(color: Color(0xFF262626), fontSize: 14, height: 1.3)));
+    }
+    if (spans.isEmpty) {
+      spans.add(TextSpan(text: caption, style: const TextStyle(color: Color(0xFF262626), fontSize: 14, height: 1.3)));
+    }
+    return spans;
   }
 }

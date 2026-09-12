@@ -33,7 +33,13 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final posts = state.postsOf(user.id).where((p) => !p.isReel).toList();
+    final posts = state.postsOf(user.id).where((p) => !p.isReel).toList()
+      ..sort((a, b) {
+        final ap = state.pinnedPosts.contains(a.id) ? 0 : 1;
+        final bp = state.pinnedPosts.contains(b.id) ? 0 : 1;
+        if (ap != bp) return ap.compareTo(bp);
+        return b.createdAt.compareTo(a.createdAt);
+      });
     final reels = state.postsOf(user.id).where((p) => p.isReel).toList();
     final isMe = state.isLoggedIn && user.id == state.me.id;
     final highlights = state.storiesOf(user.id);
@@ -378,7 +384,7 @@ class ProfileScreen extends StatelessWidget {
       ),
       itemBuilder: (context, index) {
         final p = items[index];
-        final pinned = index < 3;
+        final pinned = state.pinnedPosts.contains(p.id);
         return GestureDetector(
           onTap: () => Navigator.of(context).push(MaterialPageRoute(
             builder: (_) => PostDetailFeedScreen(
@@ -659,6 +665,12 @@ class SettingsScreen extends StatelessWidget {
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ArchiveScreen(state: state))),
         ),
         ListTile(
+          leading: Icon(Icons.history, color: SpaceColors.text),
+          title: Text('Tu actividad', style: TextStyle(color: SpaceColors.text)),
+          trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ActivityScreen(state: state))),
+        ),
+        ListTile(
           leading: Icon(Icons.insights, color: SpaceColors.text),
           title: Text('Estadísticas', style: TextStyle(color: SpaceColors.text)),
           trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
@@ -699,6 +711,13 @@ class SettingsScreen extends StatelessWidget {
           subtitle: Text('${state.blocked.length} cuentas', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
           trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => PeopleManageScreen(state: state, mode: PeopleManageMode.blocked))),
+        ),
+        ListTile(
+          leading: Icon(Icons.volume_off_outlined, color: SpaceColors.text),
+          title: Text('Cuentas silenciadas', style: TextStyle(color: SpaceColors.text)),
+          subtitle: Text('${state.muted.length} cuentas', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+          trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => PeopleManageScreen(state: state, mode: PeopleManageMode.muted))),
         ),
         ListTile(
           leading: Icon(Icons.star_border, color: SpaceColors.text),
@@ -795,7 +814,7 @@ class FollowRequestsScreen extends StatelessWidget {
   }
 }
 
-enum PeopleManageMode { closeFriends, blocked, favorites }
+enum PeopleManageMode { closeFriends, blocked, favorites, muted }
 
 class PeopleManageScreen extends StatelessWidget {
   const PeopleManageScreen({super.key, required this.state, required this.mode});
@@ -808,6 +827,7 @@ class PeopleManageScreen extends StatelessWidget {
       PeopleManageMode.closeFriends => 'Mejores amigos',
       PeopleManageMode.blocked => 'Cuentas bloqueadas',
       PeopleManageMode.favorites => 'Favoritos',
+      PeopleManageMode.muted => 'Cuentas silenciadas',
     };
     return ListenableBuilder(
       listenable: state,
@@ -816,6 +836,7 @@ class PeopleManageScreen extends StatelessWidget {
           PeopleManageMode.closeFriends => state.closeFriends,
           PeopleManageMode.blocked => state.blocked,
           PeopleManageMode.favorites => state.favorites,
+          PeopleManageMode.muted => state.muted,
         };
         final pool = mode == PeopleManageMode.blocked
             ? state.users.where((u) => u.id != state.me.id).toList()
@@ -843,6 +864,8 @@ class PeopleManageScreen extends StatelessWidget {
                               state.toggleBlock(u.id);
                             case PeopleManageMode.favorites:
                               state.toggleFavorite(u.id);
+                            case PeopleManageMode.muted:
+                              state.toggleMute(u.id);
                           }
                         },
                         child: Text(
@@ -855,6 +878,62 @@ class PeopleManageScreen extends StatelessWidget {
                     );
                   },
                 ),
+        );
+      },
+    );
+  }
+}
+
+class ActivityScreen extends StatelessWidget {
+  const ActivityScreen({super.key, required this.state});
+  final AppState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final liked = state.posts.where((p) => p.likedBy(state.me.id)).toList();
+    final commented = state.posts.where((p) => p.comments.any((c) => c.userId == state.me.id)).toList();
+    final saved = state.posts.where((p) => p.savedFor(state.me.id)).toList();
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        backgroundColor: SpaceColors.bg,
+        appBar: AppBar(
+          backgroundColor: SpaceColors.bg,
+          title: Text('Tu actividad', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold)),
+          bottom: TabBar(
+            labelColor: SpaceColors.text,
+            unselectedLabelColor: SpaceColors.textMuted,
+            indicatorColor: SpaceColors.text,
+            tabs: [
+              Tab(text: 'Me gusta (${liked.length})'),
+              Tab(text: 'Comentarios (${commented.length})'),
+              Tab(text: 'Guardados (${saved.length})'),
+            ],
+          ),
+        ),
+        body: TabBarView(children: [
+          _list(liked),
+          _list(commented),
+          _list(saved),
+        ]),
+      ),
+    );
+  }
+
+  Widget _list(List<Post> items) {
+    if (items.isEmpty) {
+      return Center(child: Text('Nada acá todavía', style: TextStyle(color: SpaceColors.textMuted)));
+    }
+    return ListView.separated(
+      itemCount: items.length,
+      separatorBuilder: (_, __) => Divider(height: 1, color: SpaceColors.hairline),
+      itemBuilder: (context, i) {
+        final p = items[i];
+        final u = state.tryUser(p.userId);
+        return ListTile(
+          leading: SizedBox(width: 44, height: 44, child: MediaView(p.imagePath, video: p.isVideo)),
+          title: Text(u?.username ?? 'usuario', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w600)),
+          subtitle: Text(p.caption.isEmpty ? 'Publicación' : p.caption, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: SpaceColors.textMuted)),
         );
       },
     );
