@@ -626,6 +626,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           _field('Categoría', _categoryController),
           _field('Género', _genderController),
           _field('Cumpleaños', _birthdayController),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text('Teléfono', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+            subtitle: Text(widget.state.phone.isEmpty ? 'Sin número' : widget.state.phone, style: TextStyle(color: SpaceColors.text)),
+            onTap: () {
+              final c = TextEditingController(text: widget.state.phone);
+              showDialog(
+                context: context,
+                builder: (d) => AlertDialog(
+                  title: const Text('Teléfono'),
+                  content: TextField(controller: c, keyboardType: TextInputType.phone),
+                  actions: [
+                    TextButton(onPressed: () => Navigator.pop(d), child: const Text('Cancelar')),
+                    TextButton(onPressed: () { widget.state.setPhone(c.text); Navigator.pop(d); setState(() {}); }, child: const Text('Guardar')),
+                  ],
+                ),
+              );
+            },
+          ),
           const SizedBox(height: 24),
           Divider(color: SpaceColors.hairline),
           const ListTile(
@@ -842,6 +861,17 @@ class SettingsScreen extends StatelessWidget {
           leading: Icon(Icons.download_outlined, color: SpaceColors.text),
           title: Text('Descargar tu información', style: TextStyle(color: SpaceColors.text)),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => DownloadDataScreen(state: state))),
+        ),
+        SwitchListTile(secondary: Icon(Icons.shield_outlined, color: SpaceColors.text), title: Text('Filtro de contenido sensible', style: TextStyle(color: SpaceColors.text)), value: state.sensitiveFilter, onChanged: (_) => state.toggleSensitiveFilter()),
+        ListTile(
+          leading: Icon(Icons.devices_outlined, color: SpaceColors.text),
+          title: Text('Sesiones', style: TextStyle(color: SpaceColors.text)),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => SessionsScreen(state: state))),
+        ),
+        ListTile(
+          leading: Icon(Icons.favorite_border, color: SpaceColors.text),
+          title: Text('Publicaciones que te gustaron', style: TextStyle(color: SpaceColors.text)),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ActivityScreen(state: state))),
         ),
         SwitchListTile(secondary: Icon(Icons.notifications_none, color: SpaceColors.text), title: Text('Notificaciones', style: TextStyle(color: SpaceColors.text)), value: state.notificationsOn, onChanged: (_) => state.toggleNotificationsPref()),
         ListTile(
@@ -1236,6 +1266,35 @@ class MessagePolicyScreen extends StatelessWidget {
           RadioListTile<String>(value: 'nobody', groupValue: state.messagePolicy, onChanged: (v) => state.setMessagePolicy(v!), title: Text('Nadie', style: TextStyle(color: SpaceColors.text))),
         ]),
       ),
+    );
+  }
+}
+
+class SessionsScreen extends StatelessWidget {
+  const SessionsScreen({super.key, required this.state});
+  final AppState state;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: SpaceColors.bg,
+      appBar: AppBar(backgroundColor: SpaceColors.bg, title: Text('Sesiones', style: TextStyle(color: SpaceColors.text))),
+      body: ListView(children: [
+        ListTile(
+          leading: Icon(Icons.phone_android, color: SpaceColors.text),
+          title: Text('Este dispositivo', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w600)),
+          subtitle: Text('@${state.me.username} · ahora', style: TextStyle(color: SpaceColors.textMuted)),
+          trailing: Text('Activa', style: TextStyle(color: Color(0xFF0095F6), fontSize: 12, fontWeight: FontWeight.w600)),
+        ),
+        ListTile(
+          title: Text('Cerrar sesión en este dispositivo', style: TextStyle(color: Color(0xFFED4956))),
+          onTap: () {
+            Navigator.pop(context);
+            Navigator.pop(context);
+            state.logout();
+          },
+        ),
+      ]),
     );
   }
 }

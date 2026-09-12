@@ -24,6 +24,7 @@ class ReelsScreen extends StatefulWidget {
 
 class _ReelsScreenState extends State<ReelsScreen> {
   bool friends = false;
+  bool _holdSpeed = false;
   AppState get state => widget.state;
   bool get playing => widget.playing;
   void Function(String userId) get onOpenProfile => widget.onOpenProfile;
@@ -64,6 +65,8 @@ class _ReelsScreenState extends State<ReelsScreen> {
           final liked = post.likedBy(state.me.id);
           return GestureDetector(
             onDoubleTap: () => state.toggleLike(post.id),
+            onLongPressStart: (_) => setState(() => _holdSpeed = true),
+            onLongPressEnd: (_) => setState(() => _holdSpeed = false),
             child: Stack(
             fit: StackFit.expand,
             children: [
@@ -77,6 +80,8 @@ class _ReelsScreenState extends State<ReelsScreen> {
                   ),
                 ),
               ),
+              if (_holdSpeed)
+                const Center(child: Text('2x', style: TextStyle(color: Colors.white, fontSize: 48, fontWeight: FontWeight.w800))),
               Positioned(
                 top: 44,
                 left: 8,

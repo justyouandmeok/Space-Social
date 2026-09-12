@@ -260,17 +260,49 @@ class _PostScreenState extends State<PostScreen> {
                 TextField(
                   controller: cap,
                   maxLines: 3,
+                  maxLength: 2200,
+                  onChanged: (_) => setState(() {}),
                   style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'Escribe una descripción y agrega hashtags...',
-                    hintStyle: TextStyle(color: Colors.white38),
+                    hintStyle: const TextStyle(color: Colors.white38),
                     border: InputBorder.none,
+                    counterText: '${cap.text.length}/2200',
+                    counterStyle: const TextStyle(color: Colors.white38, fontSize: 11),
                   ),
                 ),
                 Wrap(spacing: 8, runSpacing: 8, children: [
                   _chipBtn('# Hashtags', () { cap.text = '${cap.text} #'; cap.selection = TextSelection.collapsed(offset: cap.text.length); }),
                   _chipBtn('Vincular un reel', () {}),
-                  _chipBtn('Encuesta', () {}),
+                  _chipBtn('Encuesta', () {
+                    final q = TextEditingController();
+                    final a = TextEditingController(text: 'Sí');
+                    final b = TextEditingController(text: 'No');
+                    showDialog(
+                      context: context,
+                      builder: (d) => AlertDialog(
+                        backgroundColor: const Color(0xFF1A1A1A),
+                        title: const Text('Encuesta', style: TextStyle(color: Colors.white)),
+                        content: Column(mainAxisSize: MainAxisSize.min, children: [
+                          TextField(controller: q, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(hintText: 'Pregunta', hintStyle: TextStyle(color: Colors.white38))),
+                          TextField(controller: a, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(hintText: 'Opción 1')),
+                          TextField(controller: b, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(hintText: 'Opción 2')),
+                        ]),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(d), child: const Text('Cancelar')),
+                          TextButton(
+                            onPressed: () {
+                              if (q.text.trim().isEmpty) return;
+                              cap.text = '${cap.text} POLL:${q.text.trim()}|${a.text.trim()}|${b.text.trim()}'.trim();
+                              Navigator.pop(d);
+                              setState(() {});
+                            },
+                            child: const Text('Agregar'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
                   _chipBtn('Tema', () {}),
                 ]),
                 const SizedBox(height: 8),

@@ -82,6 +82,9 @@ class AppState extends ChangeNotifier {
   bool readReceipts = true;
   String accountType = 'personal';
   final altTexts = <String, String>{};
+  bool sensitiveFilter = true;
+  String phone = '';
+  final myPollVotes = <String, String>{};
 
   bool get isLoggedIn => currentUserId != null;
   bool get isAdmin => isLoggedIn && SpaceConfig.adminEmails.map((e) => e.toLowerCase()).contains(me.email.toLowerCase());
@@ -153,6 +156,7 @@ class AppState extends ChangeNotifier {
       if (p.isReel) return false;
       if (archived.contains(p.id)) return false;
       if (hiddenPosts.contains(p.id)) return false;
+      if (sensitiveFilter && _isSensitive(p.caption)) return false;
       if (blocked.contains(p.userId) || muted.contains(p.userId)) return false;
       return canSee(p.userId);
     }).toList();
@@ -421,6 +425,11 @@ class AppState extends ChangeNotifier {
         altTexts
           ..clear()
           ..addAll(Map<String, String>.from((data['altTexts'] as Map?) ?? const {}));
+        sensitiveFilter = data['sensitiveFilter'] != false;
+        phone = (data['phone'] as String?) ?? '';
+        myPollVotes
+          ..clear()
+          ..addAll(Map<String, String>.from((data['myPollVotes'] as Map?) ?? const {}));
       }
     }
 
@@ -1080,6 +1089,32 @@ class AppState extends ChangeNotifier {
     await _savePrefs();
   }
 
+  bool _isSensitive(String text) {
+    final t = text.toLowerCase();
+    return ['nsfw', 'xxx', ' gore', 'violencia extrema'].any(t.contains);
+  }
+
+  Future<void> toggleSensitiveFilter() async {
+    sensitiveFilter = !sensitiveFilter;
+    await _savePrefs();
+  }
+
+  Future<void> setPhone(String v) async {
+    phone = v.trim();
+    await _savePrefs();
+  }
+
+  Future<void> votePoll(String postId, String option) async {
+    myPollVotes[postId] = option;
+    final ref = _db.collection('posts').doc(postId);
+    try {
+      await ref.set({
+        'pollVotes.$option': FieldValue.increment(1),
+      }, SetOptions(merge: true));
+    } catch (_) {}
+    await _savePrefs();
+  }
+
   Future<void> setAltText(String postId, String text) async {
     altTexts[postId] = text.trim();
     await _savePrefs();
@@ -1456,6 +1491,9 @@ class AppState extends ChangeNotifier {
       'readReceipts': readReceipts,
       'accountType': accountType,
       'altTexts': altTexts,
+      'sensitiveFilter': sensitiveFilter,
+      'phone': phone,
+      'myPollVotes': myPollVotes,
     }, SetOptions(merge: true));
     notifyListeners();
   }

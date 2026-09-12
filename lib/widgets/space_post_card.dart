@@ -379,9 +379,10 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
                 RichText(
                   text: TextSpan(children: [
                     TextSpan(text: '${user.username} ', style: TextStyle(fontWeight: FontWeight.bold, color: SpaceColors.text)),
-                    ..._captionSpans(context, live.caption),
+                    ..._captionSpans(context, live.caption.replaceAll(RegExp(r'POLL:[^ ]+'), '').trim()),
                   ]),
                 ),
+                if (live.caption.contains('POLL:')) _poll(live),
               ],
               if (live.comments.isNotEmpty)
                 Padding(
@@ -400,6 +401,38 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
           ),
         ),
       ],
+    );
+  }
+
+  Widget _poll(Post live) {
+    final m = RegExp(r'POLL:([^|]+)\|([^|]+)\|([^ ]+)').firstMatch(live.caption);
+    if (m == null) return const SizedBox.shrink();
+    final q = m.group(1)!;
+    final opts = [m.group(2)!, m.group(3)!];
+    final picked = widget.state.myPollVotes[live.id];
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(q, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 6),
+        for (final o in opts)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: InkWell(
+              onTap: picked == null ? () => widget.state.votePoll(live.id, o) : null,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: picked == o ? const Color(0xFF0095F6) : SpaceColors.hairline),
+                  color: picked == o ? const Color(0x1A0095F6) : SpaceColors.surface,
+                ),
+                child: Text(o, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w600)),
+              ),
+            ),
+          ),
+      ]),
     );
   }
 
