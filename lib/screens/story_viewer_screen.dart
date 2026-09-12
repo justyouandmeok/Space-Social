@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models.dart';
 import '../space_theme.dart';
 import '../state.dart';
@@ -183,6 +184,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
                     TextButton(
                       onPressed: () {
                         final ids = story.viewedBy;
+                        final answers = widget.state.storyAnswers[story.id] ?? const <String>[];
                         showModalBottomSheet(
                           context: context,
                           backgroundColor: SpaceColors.surface,
@@ -190,16 +192,24 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
                             child: ListView(
                               shrinkWrap: true,
                               children: [
-                                ListTile(title: Text('${ids.length} vistas', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                                ListTile(title: Text('${ids.length} vistas', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold))),
                                 ...ids.map((id) {
                                   final u = widget.state.tryUser(id);
                                   return ListTile(
-                                    title: Text(u?.username ?? id, style: const TextStyle(color: Colors.white)),
+                                    leading: Avatar(u?.avatarPath ?? '', size: 36),
+                                    title: Text(u?.username ?? id, style: TextStyle(color: SpaceColors.text)),
+                                    subtitle: Text(u?.name ?? '', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
                                     onTap: () {
+                                      Navigator.pop(context);
                                       Navigator.pop(context);
                                     },
                                   );
                                 }),
+                                if (answers.isNotEmpty) ...[
+                                  const Divider(),
+                                  ListTile(title: Text('Respuestas', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold))),
+                                  ...answers.map((a) => ListTile(title: Text(a, style: TextStyle(color: SpaceColors.text)))),
+                                ],
                               ],
                             ),
                           ),
@@ -225,6 +235,17 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
                                   Navigator.pop(ctx);
                                   await widget.state.deleteStory(story.id);
                                   if (context.mounted) Navigator.pop(context);
+                                },
+                              ),
+                              ListTile(
+                                leading: const Icon(Icons.archive_outlined, color: Colors.white),
+                                title: const Text('Guardar en destacadas', style: TextStyle(color: Colors.white)),
+                                onTap: () async {
+                                  Navigator.pop(ctx);
+                                  final p = await SharedPreferences.getInstance();
+                                  final list = p.getStringList('ss_highlights') ?? [];
+                                  if (!list.contains(story.id)) list.add(story.id);
+                                  await p.setStringList('ss_highlights', list);
                                 },
                               ),
                               ListTile(

@@ -33,6 +33,10 @@ class _PostDetailFeedScreenState extends State<PostDetailFeedScreen> {
       if (!_scrollController.hasClients) return;
       final i = widget.initialIndex.clamp(0, widget.posts.length);
       _scrollController.jumpTo((i * 560.0).clamp(0, _scrollController.position.maxScrollExtent));
+      if (widget.posts.isNotEmpty) {
+        final p = widget.posts[widget.initialIndex.clamp(0, widget.posts.length - 1)];
+        widget.state.recordPostView(p.id);
+      }
     });
   }
 
