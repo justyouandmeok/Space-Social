@@ -209,6 +209,21 @@ class _ReelsScreenState extends State<ReelsScreen> {
     );
   }
 
+  static Widget _reelQuick(IconData icon, String label, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(color: const Color(0xFF2A2A2A), borderRadius: BorderRadius.circular(12)),
+        child: Column(children: [
+          Icon(icon, color: Colors.white),
+          const SizedBox(height: 6),
+          Text(label, style: const TextStyle(color: Colors.white, fontSize: 12)),
+        ]),
+      ),
+    );
+  }
+
   static Widget _action(IconData icon, String label, {Color color = Colors.white, VoidCallback? onTap}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
