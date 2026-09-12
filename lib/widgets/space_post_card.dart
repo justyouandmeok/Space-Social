@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -39,10 +40,11 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
-    _heartController = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
-    _heartScale = Tween<double>(begin: 0.0, end: 1.2).animate(
-      CurvedAnimation(parent: _heartController, curve: Curves.easeOutBack),
-    );
+    _heartController = AnimationController(vsync: this, duration: const Duration(milliseconds: 520));
+    _heartScale = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.28).chain(CurveTween(curve: Curves.easeOutBack)), weight: 55),
+      TweenSequenceItem(tween: Tween(begin: 1.28, end: 1.0).chain(CurveTween(curve: Curves.easeOut)), weight: 45),
+    ]).animate(_heartController);
   }
 
   @override
@@ -318,12 +320,13 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
   }
 
   Future<void> _handleDoubleTap() async {
+    HapticFeedback.lightImpact();
     if (!post.likedBy(widget.state.me.id)) {
-      await widget.state.toggleLike(post.id);
+      unawaited(widget.state.toggleLike(post.id));
     }
     setState(() => _showHeartAnimation = true);
-    await _heartController.forward();
-    await Future<void>.delayed(const Duration(milliseconds: 500));
+    _heartController.forward(from: 0);
+    await Future<void>.delayed(const Duration(milliseconds: 850));
     if (!mounted) return;
     await _heartController.reverse();
     if (mounted) setState(() => _showHeartAnimation = false);
@@ -411,7 +414,9 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
               if (_showHeartAnimation)
                 ScaleTransition(
                   scale: _heartScale,
-                  child: const Icon(Icons.favorite, size: 110, color: Color(0xFFFF3040)),
+                  child: const Icon(Icons.favorite, size: 118, color: Colors.white, shadows: [
+                    Shadow(color: Color(0x66FF3040), blurRadius: 18),
+                  ]),
                 ),
             ],
           ),

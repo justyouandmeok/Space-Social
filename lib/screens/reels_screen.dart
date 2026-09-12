@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../models.dart';
 import '../state.dart';
 import '../store.dart';
@@ -55,9 +57,13 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
   }
 
   Future<void> _like(String id) async {
-    await state.toggleLike(id);
+    final match = state.posts.where((p) => p.id == id);
+    final post = match.isEmpty ? null : match.first;
+    if (post != null && !post.likedBy(state.me.id)) {
+      unawaited(state.toggleLike(id));
+    }
     setState(() => _showHeart = true);
-    await Future<void>.delayed(const Duration(milliseconds: 500));
+    await Future<void>.delayed(const Duration(milliseconds: 850));
     if (mounted) setState(() => _showHeart = false);
   }
 
@@ -111,7 +117,10 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
                 _pager.nextPage(duration: const Duration(milliseconds: 180), curve: Curves.easeOut);
               }
             },
-            onDoubleTap: () => _like(post.id),
+            onDoubleTap: () {
+              HapticFeedback.lightImpact();
+              _like(post.id);
+            },
             onLongPressStart: (_) => setState(() => _holdSpeed = true),
             onLongPressEnd: (_) => setState(() => _holdSpeed = false),
             child: Stack(
@@ -130,7 +139,11 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
               if (_holdSpeed && index == _page)
                 const Positioned(top: 64, right: 16, child: Text('2x', style: TextStyle(color: Colors.white70, fontSize: 18, fontWeight: FontWeight.w700))),
               if (_showHeart && index == _page)
-                const Center(child: Icon(Icons.favorite, color: Color(0xFFED4956), size: 110)),
+                const Center(
+                  child: Icon(Icons.favorite, color: Colors.white, size: 118, shadows: [
+                    Shadow(color: Color(0x66FF3040), blurRadius: 18),
+                  ]),
+                ),
               if (!(_holdSpeed && index == _page)) Positioned(
                 top: 48,
                 left: 16,

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models.dart';
 import '../space_theme.dart';
@@ -29,6 +30,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
   Timer? _timer;
   bool _isPaused = false;
   bool _liked = false;
+  bool _showHeart = false;
   final _reply = TextEditingController();
   final _liveComments = <String>[];
   int _liveIndex = 0;
@@ -126,6 +128,20 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
       body: GestureDetector(
         onLongPressStart: (_) => setState(() => _isPaused = true),
         onLongPressEnd: (_) => setState(() => _isPaused = false),
+        onDoubleTap: () async {
+          HapticFeedback.lightImpact();
+          setState(() {
+            _liked = true;
+            _showHeart = true;
+            _isPaused = true;
+          });
+          unawaited(widget.state.sendMessage(widget.userId, '❤️ le gustó tu historia'));
+          await Future<void>.delayed(const Duration(milliseconds: 850));
+          if (mounted) setState(() {
+            _showHeart = false;
+            _isPaused = false;
+          });
+        },
         onTapUp: (details) {
           final width = MediaQuery.of(context).size.width;
           if (details.globalPosition.dx < width / 3) {
@@ -138,6 +154,12 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
           fit: StackFit.expand,
           children: [
             MediaView(story.imagePath),
+            if (_showHeart)
+              const Center(
+                child: Icon(Icons.favorite, color: Colors.white, size: 118, shadows: [
+                  Shadow(color: Color(0x66FF3040), blurRadius: 18),
+                ]),
+              ),
             Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(

@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:path/path.dart' as p;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 import 'config.dart';
 import 'models.dart';
@@ -390,6 +391,12 @@ class AppState extends ChangeNotifier {
       seenStories = {
         ...(((db['seenStories'] as List?) ?? const []).map((e) => '$e')),
       };
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        darkMode = prefs.getBool('ss_dark_mode') ?? darkMode;
+        LumaColors.dark = darkMode;
+        SpaceColors.dark = darkMode;
+      } catch (_) {}
     } catch (_) {}
   }
 
@@ -434,9 +441,9 @@ class AppState extends ChangeNotifier {
         if (d.id != currentUserId) continue;
         final data = d.data();
         hideLikes = data['hideLikes'] == true;
-        darkMode = false;
-        LumaColors.dark = false;
-        SpaceColors.dark = false;
+        darkMode = data['darkMode'] == true;
+        LumaColors.dark = darkMode;
+        SpaceColors.dark = darkMode;
         notificationsOn = data['notificationsOn'] != false;
         blocked = {...List<String>.from(data['blocked'] ?? const [])};
         muted = {...List<String>.from(data['muted'] ?? const [])};
@@ -505,10 +512,25 @@ class AppState extends ChangeNotifier {
     }
 
     final postsSnap = await _db.collection('posts').get();
+    final localById = {for (final p in posts) p.id: p};
+    final meId = currentUserId;
     posts = postsSnap.docs.map((d) {
       final j = Map<String, dynamic>.from(d.data());
       j['id'] = d.id;
-      return Post.fromJson(j);
+      var post = Post.fromJson(j);
+      final local = localById[post.id];
+      if (meId != null && local != null) {
+        if (local.likedBy(meId) && !post.likedBy(meId)) {
+          post = post.copyWith(likes: [...post.likes, meId]);
+        }
+        if (local.savedFor(meId) && !post.savedFor(meId)) {
+          post = post.copyWith(savedBy: [...post.savedBy, meId]);
+        }
+        if (local.comments.length > post.comments.length) {
+          post = post.copyWith(comments: local.comments);
+        }
+      }
+      return post;
     }).toList()
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     trash = posts.where((p) => p.deletedAt != null && p.userId == (currentUserId ?? '')).toList();
@@ -938,13 +960,10 @@ class AppState extends ChangeNotifier {
     lastError = null;
     var userName = (username ?? me.username).trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9._]'), '');
     if (userName.length < 3) userName = me.username;
-    if (userName != me.username) {
-      final free = await usernameAvailable(userName, exceptUserId: me.id).timeout(const Duration(seconds: 6), onTimeout: () => true);
-      if (!free) {
-        lastError = 'Ese usuario ya existe o está reservado 3 meses.';
-        notifyListeners();
-        return false;
-      }
+    if (userName != me.username && users.any((u) => u.id != me.id && u.username == userName)) {
+      lastError = 'Ese usuario ya existe o está reservado 3 meses.';
+      notifyListeners();
+      return false;
     }
     final nextName = (name ?? me.name).trim();
     final nextBio = bio ?? me.bio;
@@ -1454,18 +1473,34 @@ class AppState extends ChangeNotifier {
 
   Future<void> toggleLike(String postId) async {
     if (!isLoggedIn) return;
-    final ref = _db.collection('posts').doc(postId);
-    await _db.runTransaction((tx) async {
-      final snap = await tx.get(ref);
-      if (!snap.exists) return;
-      final likes = List<String>.from((snap.data()?['likes'] as List?) ?? const []);
-      if (likes.contains(me.id)) {
-        likes.remove(me.id);
-      } else {
-        likes.add(me.id);
-        final owner = snap.data()?['userId'] as String?;
-        if (owner != null && owner != me.id) {
-          tx.set(_db.collection('activity').doc(), {
+    final idx = posts.indexWhere((p) => p.id == postId);
+    if (idx < 0) return;
+    final current = posts[idx];
+    final likes = List<String>.from(current.likes);
+    final adding = !likes.contains(me.id);
+    if (adding) {
+      likes.add(me.id);
+    } else {
+      likes.remove(me.id);
+    }
+    posts = [
+      for (var i = 0; i < posts.length; i++)
+        if (i == idx) current.copyWith(likes: likes) else posts[i],
+    ];
+    notifyListeners();
+    unawaited(_saveCache());
+    unawaited(() async {
+      try {
+        final ref = _db.collection('posts').doc(postId);
+        try {
+          await ref.update({
+            'likes': adding ? FieldValue.arrayUnion([me.id]) : FieldValue.arrayRemove([me.id]),
+          });
+        } catch (_) {
+          await ref.set({...current.copyWith(likes: likes).toJson()}, SetOptions(merge: true));
+        }
+        if (adding && current.userId != me.id) {
+          await _db.collection('activity').doc().set({
             'actorId': me.id,
             'text': 'le gustó tu publicación.',
             'createdAt': DateTime.now().toIso8601String(),
@@ -1473,29 +1508,35 @@ class AppState extends ChangeNotifier {
             'isFollow': false,
           });
         }
-      }
-      tx.update(ref, {'likes': likes});
-    });
-    await _refresh();
-    notifyListeners();
+      } catch (_) {}
+    }());
   }
 
   Future<void> toggleSave(String postId) async {
     if (!isLoggedIn) return;
-    final ref = _db.collection('posts').doc(postId);
-    await _db.runTransaction((tx) async {
-      final snap = await tx.get(ref);
-      if (!snap.exists) return;
-      final saved = List<String>.from((snap.data()?['savedBy'] as List?) ?? const []);
-      if (saved.contains(me.id)) {
-        saved.remove(me.id);
-      } else {
-        saved.add(me.id);
-      }
-      tx.update(ref, {'savedBy': saved});
-    });
-    await _refresh();
+    final idx = posts.indexWhere((p) => p.id == postId);
+    if (idx < 0) return;
+    final current = posts[idx];
+    final saved = List<String>.from(current.savedBy);
+    final adding = !saved.contains(me.id);
+    if (adding) {
+      saved.add(me.id);
+    } else {
+      saved.remove(me.id);
+    }
+    posts = [
+      for (var i = 0; i < posts.length; i++)
+        if (i == idx) current.copyWith(savedBy: saved) else posts[i],
+    ];
     notifyListeners();
+    unawaited(_saveCache());
+    unawaited(() async {
+      try {
+        await _db.collection('posts').doc(postId).set({
+          'savedBy': adding ? FieldValue.arrayUnion([me.id]) : FieldValue.arrayRemove([me.id]),
+        }, SetOptions(merge: true));
+      } catch (_) {}
+    }());
   }
 
   Future<void> addComment(String postId, String text) async {
@@ -1511,32 +1552,32 @@ class AppState extends ChangeNotifier {
       notifyListeners();
       return;
     }
-    final ref = _db.collection('posts').doc(postId);
-    await _db.runTransaction((tx) async {
-      final snap = await tx.get(ref);
-      if (!snap.exists) return;
-      final comments = List<Map<String, dynamic>>.from(
-        ((snap.data()?['comments'] as List?) ?? const []).map((e) => Map<String, dynamic>.from(e as Map)),
-      );
-      comments.add({
-        'userId': me.id,
-        'text': text.trim(),
-        'createdAt': DateTime.now().toIso8601String(),
-      });
-      tx.update(ref, {'comments': comments});
-      final owner = snap.data()?['userId'] as String?;
-      if (owner != null && owner != me.id) {
-        tx.set(_db.collection('activity').doc(), {
-          'actorId': me.id,
-          'text': 'comentó: “${text.trim()}”',
-          'createdAt': DateTime.now().toIso8601String(),
-          'postId': postId,
-          'isFollow': false,
-        });
-      }
-    });
-    await _refresh();
+    final idx = posts.indexWhere((p) => p.id == postId);
+    if (idx < 0) return;
+    final current = posts[idx];
+    final comment = Comment(userId: me.id, text: text.trim(), createdAt: DateTime.now());
+    posts = [
+      for (var i = 0; i < posts.length; i++)
+        if (i == idx) current.copyWith(comments: [...current.comments, comment]) else posts[i],
+    ];
     notifyListeners();
+    unawaited(_saveCache());
+    unawaited(() async {
+      try {
+        await _db.collection('posts').doc(postId).set({
+          'comments': FieldValue.arrayUnion([comment.toJson()]),
+        }, SetOptions(merge: true));
+        if (current.userId != me.id) {
+          await _db.collection('activity').doc().set({
+            'actorId': me.id,
+            'text': 'comentó: “${text.trim()}”',
+            'createdAt': DateTime.now().toIso8601String(),
+            'postId': postId,
+            'isFollow': false,
+          });
+        }
+      } catch (_) {}
+    }());
   }
 
   Future<void> deleteComment(String postId, int index) async {
@@ -1908,6 +1949,12 @@ class AppState extends ChangeNotifier {
     LumaColors.dark = darkMode;
     SpaceColors.dark = darkMode;
     notifyListeners();
+    unawaited(() async {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('ss_dark_mode', darkMode);
+      } catch (_) {}
+    }());
     unawaited(_savePrefs());
     unawaited(_saveCache());
   }
