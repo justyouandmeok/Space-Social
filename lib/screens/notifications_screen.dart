@@ -43,7 +43,7 @@ class NotificationsScreen extends StatelessWidget {
       backgroundColor: SpaceColors.bg,
       appBar: AppBar(
         backgroundColor: SpaceColors.bg,
-        title: const Text('Notificaciones', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w700, fontSize: 22)),
+        title: Text('Notificaciones', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w700, fontSize: 22)),
         actions: [
           TextButton(onPressed: () => state.clearActivity(), child: const Text('Limpiar', style: TextStyle(color: Color(0xFF0095F6), fontWeight: FontWeight.w600))),
         ],

@@ -906,8 +906,8 @@ class SettingsScreen extends StatelessWidget {
         ),
         Divider(height: 1, color: SpaceColors.hairline),
         ListTile(
-          leading: const Icon(Icons.lock_outline, color: SpaceColors.text),
-          title: const Text('Contraseña y seguridad', style: TextStyle(color: SpaceColors.text, fontSize: 16)),
+          leading: Icon(Icons.lock_outline, color: SpaceColors.text),
+          title: Text('Contraseña y seguridad', style: TextStyle(color: SpaceColors.text, fontSize: 16)),
           trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ChangePasswordScreen(state: state))),
         ),
@@ -939,8 +939,8 @@ class SettingsScreen extends StatelessWidget {
           trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => TimeSpentScreen(openedAt: DateTime.now()))),
         ),
-        const Padding(
-          padding: EdgeInsets.fromLTRB(16, 16, 16, 6),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 6),
           child: Text('Cómo usas la app', style: TextStyle(color: SpaceColors.textMuted, fontSize: 13, fontWeight: FontWeight.w600)),
         ),
         ListTile(
