@@ -110,6 +110,11 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     Text(user.name, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w600, fontSize: 14)),
+                    if (user.pronouns.isNotEmpty || user.category.isNotEmpty)
+                      Text(
+                        [if (user.category.isNotEmpty) user.category, if (user.pronouns.isNotEmpty) user.pronouns].join(' · '),
+                        style: TextStyle(color: SpaceColors.textMuted, fontSize: 12),
+                      ),
                     if (user.bio.isNotEmpty) Text(user.bio, style: TextStyle(color: SpaceColors.text)),
                     if (user.website.isNotEmpty)
                       GestureDetector(
@@ -486,6 +491,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late final _usernameController = TextEditingController(text: widget.state.me.username);
   late final _bioController = TextEditingController(text: widget.state.me.bio);
   late final _linksController = TextEditingController(text: widget.state.me.website);
+  late final _pronounsController = TextEditingController(text: widget.state.me.pronouns);
+  late final _categoryController = TextEditingController(text: widget.state.me.category);
   File? avatar;
   bool busy = false;
 
@@ -495,6 +502,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _usernameController.dispose();
     _bioController.dispose();
     _linksController.dispose();
+    _pronounsController.dispose();
+    _categoryController.dispose();
     super.dispose();
   }
 
@@ -511,6 +520,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       username: _usernameController.text,
       bio: _bioController.text,
       website: _linksController.text,
+      pronouns: _pronounsController.text,
+      category: _categoryController.text,
       avatar: avatar,
     );
     if (!mounted) return;
@@ -565,8 +576,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ),
           _field('Nombre', _nameController),
           _field('Nombre de usuario', _usernameController),
+          _field('Pronombres', _pronounsController),
           _field('Presentación / Bio', _bioController, maxLines: 3),
           _field('Enlaces', _linksController, prefixIcon: Icons.link),
+          _field('Categoría', _categoryController),
           const SizedBox(height: 24),
           Divider(color: SpaceColors.hairline),
           const ListTile(
@@ -673,8 +686,27 @@ class SettingsScreen extends StatelessWidget {
         Padding(padding: const EdgeInsets.fromLTRB(16, 16, 16, 6), child: Text('Cómo interactúan con vos', style: TextStyle(color: SpaceColors.textMuted, fontSize: 13, fontWeight: FontWeight.w600))),
         ListTile(leading: Icon(Icons.chat_bubble_outline, color: SpaceColors.text), title: Text('Mensajes y respuestas a historias', style: TextStyle(color: SpaceColors.text)), trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted)),
         ListTile(leading: Icon(Icons.alternate_email, color: SpaceColors.text), title: Text('Etiquetas y menciones', style: TextStyle(color: SpaceColors.text)), trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted)),
-        ListTile(leading: Icon(Icons.block, color: SpaceColors.text), title: Text('Bloqueados', style: TextStyle(color: SpaceColors.text)), trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted)),
-        ListTile(leading: Icon(Icons.star_border, color: SpaceColors.text), title: Text('Favoritos', style: TextStyle(color: SpaceColors.text)), trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted)),
+        ListTile(
+          leading: Icon(Icons.group_outlined, color: SpaceColors.text),
+          title: Text('Mejores amigos', style: TextStyle(color: SpaceColors.text)),
+          subtitle: Text('${state.closeFriends.length} personas', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+          trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => PeopleManageScreen(state: state, mode: PeopleManageMode.closeFriends))),
+        ),
+        ListTile(
+          leading: Icon(Icons.block, color: SpaceColors.text),
+          title: Text('Bloqueados', style: TextStyle(color: SpaceColors.text)),
+          subtitle: Text('${state.blocked.length} cuentas', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+          trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => PeopleManageScreen(state: state, mode: PeopleManageMode.blocked))),
+        ),
+        ListTile(
+          leading: Icon(Icons.star_border, color: SpaceColors.text),
+          title: Text('Favoritos', style: TextStyle(color: SpaceColors.text)),
+          subtitle: Text('${state.favorites.length} cuentas', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+          trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => PeopleManageScreen(state: state, mode: PeopleManageMode.favorites))),
+        ),
         Padding(padding: const EdgeInsets.fromLTRB(16, 16, 16, 6), child: Text('Tu app', style: TextStyle(color: SpaceColors.textMuted, fontSize: 13, fontWeight: FontWeight.w600))),
         SwitchListTile(secondary: Icon(Icons.notifications_none, color: SpaceColors.text), title: Text('Notificaciones', style: TextStyle(color: SpaceColors.text)), value: state.notificationsOn, onChanged: (_) => state.toggleNotificationsPref()),
         ListTile(
@@ -759,6 +791,72 @@ class FollowRequestsScreen extends StatelessWidget {
                   ]),
                 ),
             ]),
+    );
+  }
+}
+
+enum PeopleManageMode { closeFriends, blocked, favorites }
+
+class PeopleManageScreen extends StatelessWidget {
+  const PeopleManageScreen({super.key, required this.state, required this.mode});
+  final AppState state;
+  final PeopleManageMode mode;
+
+  @override
+  Widget build(BuildContext context) {
+    final title = switch (mode) {
+      PeopleManageMode.closeFriends => 'Mejores amigos',
+      PeopleManageMode.blocked => 'Cuentas bloqueadas',
+      PeopleManageMode.favorites => 'Favoritos',
+    };
+    return ListenableBuilder(
+      listenable: state,
+      builder: (context, _) {
+        final selected = switch (mode) {
+          PeopleManageMode.closeFriends => state.closeFriends,
+          PeopleManageMode.blocked => state.blocked,
+          PeopleManageMode.favorites => state.favorites,
+        };
+        final pool = mode == PeopleManageMode.blocked
+            ? state.users.where((u) => u.id != state.me.id).toList()
+            : state.users.where((u) => u.id != state.me.id && (state.isFollowing(u.id) || selected.contains(u.id))).toList();
+        return Scaffold(
+          backgroundColor: SpaceColors.bg,
+          appBar: AppBar(backgroundColor: SpaceColors.bg, title: Text(title, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold))),
+          body: pool.isEmpty
+              ? Center(child: Text('Nadie acá todavía', style: TextStyle(color: SpaceColors.textMuted)))
+              : ListView.builder(
+                  itemCount: pool.length,
+                  itemBuilder: (context, i) {
+                    final u = pool[i];
+                    final on = selected.contains(u.id);
+                    return ListTile(
+                      leading: Avatar(u.avatarPath, size: 44),
+                      title: Text(u.username, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w600)),
+                      subtitle: Text(u.name, style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+                      trailing: TextButton(
+                        onPressed: () {
+                          switch (mode) {
+                            case PeopleManageMode.closeFriends:
+                              state.toggleCloseFriend(u.id);
+                            case PeopleManageMode.blocked:
+                              state.toggleBlock(u.id);
+                            case PeopleManageMode.favorites:
+                              state.toggleFavorite(u.id);
+                          }
+                        },
+                        child: Text(
+                          on
+                              ? (mode == PeopleManageMode.blocked ? 'Desbloquear' : 'Quitar')
+                              : (mode == PeopleManageMode.blocked ? 'Bloquear' : 'Agregar'),
+                          style: TextStyle(color: on ? const Color(0xFFED4956) : const Color(0xFF0095F6), fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+        );
+      },
     );
   }
 }

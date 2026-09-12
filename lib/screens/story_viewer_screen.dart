@@ -201,6 +201,52 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
                       child: Text('${story.viewedBy.length} vistas', style: const TextStyle(color: Colors.white70)),
                     ),
                   const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.more_horiz, color: Colors.white),
+                    onPressed: () {
+                      setState(() => _isPaused = true);
+                      showModalBottomSheet(
+                        context: context,
+                        backgroundColor: const Color(0xFF1C1C1C),
+                        builder: (ctx) => SafeArea(
+                          child: Column(mainAxisSize: MainAxisSize.min, children: [
+                            if (story.userId == widget.state.me.id) ...[
+                              ListTile(
+                                leading: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                                title: const Text('Eliminar historia', style: TextStyle(color: Colors.redAccent)),
+                                onTap: () async {
+                                  Navigator.pop(ctx);
+                                  await widget.state.deleteStory(story.id);
+                                  if (context.mounted) Navigator.pop(context);
+                                },
+                              ),
+                              ListTile(
+                                leading: const Icon(Icons.archive_outlined, color: Colors.white),
+                                title: const Text('Archivar', style: TextStyle(color: Colors.white)),
+                                onTap: () => Navigator.pop(ctx),
+                              ),
+                            ] else ...[
+                              ListTile(
+                                leading: const Icon(Icons.volume_off_outlined, color: Colors.white),
+                                title: const Text('Silenciar', style: TextStyle(color: Colors.white)),
+                                onTap: () {
+                                  Navigator.pop(ctx);
+                                  widget.state.toggleMute(widget.userId);
+                                },
+                              ),
+                              ListTile(
+                                leading: const Icon(Icons.flag_outlined, color: Colors.redAccent),
+                                title: const Text('Reportar', style: TextStyle(color: Colors.redAccent)),
+                                onTap: () => Navigator.pop(ctx),
+                              ),
+                            ],
+                          ]),
+                        ),
+                      ).whenComplete(() {
+                        if (mounted) setState(() => _isPaused = false);
+                      });
+                    },
+                  ),
                   IconButton(icon: const Icon(Icons.close, color: Colors.white), onPressed: () => Navigator.of(context).pop()),
                 ]),
               ]),

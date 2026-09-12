@@ -13,6 +13,8 @@ class UserAccount {
     this.privateAccount = false,
     this.isVerified = false,
     this.verificationStatus = 'none',
+    this.pronouns = '',
+    this.category = '',
   });
 
   final String id;
@@ -28,6 +30,8 @@ class UserAccount {
   final bool privateAccount;
   final bool isVerified;
   final String verificationStatus;
+  final String pronouns;
+  final String category;
 
   UserAccount copyWith({
     String? email,
@@ -38,6 +42,8 @@ class UserAccount {
     String? avatarPath,
     String? bio,
     String? website,
+    String? pronouns,
+    String? category,
   }) {
     return UserAccount(
       id: id,
@@ -53,6 +59,8 @@ class UserAccount {
       privateAccount: privateAccount,
       isVerified: isVerified,
       verificationStatus: verificationStatus,
+      pronouns: pronouns ?? this.pronouns,
+      category: category ?? this.category,
     );
   }
 
@@ -70,6 +78,8 @@ class UserAccount {
         'privateAccount': privateAccount,
         'isVerified': isVerified,
         'verificationStatus': verificationStatus,
+        'pronouns': pronouns,
+        'category': category,
       };
 
   factory UserAccount.fromJson(Map<String, dynamic> j) => UserAccount(
@@ -86,6 +96,8 @@ class UserAccount {
         privateAccount: j['privateAccount'] == true,
         isVerified: j['isVerified'] == true,
         verificationStatus: (j['verificationStatus'] as String?) ?? (j['isVerified'] == true ? 'verified' : 'none'),
+        pronouns: j['pronouns'] as String? ?? '',
+        category: j['category'] as String? ?? '',
       );
 }
 

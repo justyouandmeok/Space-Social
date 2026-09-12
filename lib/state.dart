@@ -804,7 +804,7 @@ class AppState extends ChangeNotifier {
 
   Future<void> switchUser(String userId) async {}
 
-  Future<bool> updateProfile({String? name, String? username, String? bio, String? website, File? avatar}) async {
+  Future<bool> updateProfile({String? name, String? username, String? bio, String? website, String? pronouns, String? category, File? avatar}) async {
     if (!isLoggedIn) return false;
     lastError = null;
     try {
@@ -837,6 +837,8 @@ class AppState extends ChangeNotifier {
         'name': (name ?? me.name).trim(),
         'bio': bio ?? me.bio,
         'website': website ?? me.website,
+        'pronouns': pronouns ?? me.pronouns,
+        'category': category ?? me.category,
         'avatarPath': path,
         'passwordHash': '',
         'salt': '',
