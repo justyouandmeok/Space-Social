@@ -27,7 +27,9 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
   bool _holdSpeed = false;
   int _page = 0;
   bool _showHeart = false;
+  bool _captionOpen = false;
   late final AnimationController _spin;
+  late final PageController _pager;
   AppState get state => widget.state;
   bool get playing => widget.playing;
   void Function(String userId) get onOpenProfile => widget.onOpenProfile;
@@ -36,11 +38,19 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
   void initState() {
     super.initState();
     _spin = AnimationController(vsync: this, duration: const Duration(seconds: 6))..repeat();
+    _pager = PageController();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final items = widget.state.reels;
+      if (items.isNotEmpty && _countedViews.add(items.first.id)) {
+        widget.state.recordPostView(items.first.id);
+      }
+    });
   }
 
   @override
   void dispose() {
     _spin.dispose();
+    _pager.dispose();
     super.dispose();
   }
 
@@ -78,6 +88,7 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
     return Scaffold(
       backgroundColor: Colors.black,
       body: PageView.builder(
+        controller: _pager,
         scrollDirection: Axis.vertical,
         itemCount: items.length,
         onPageChanged: (i) {
@@ -92,6 +103,14 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
           final liked = post.likedBy(state.me.id);
           final active = playing && index == _page;
           return GestureDetector(
+            onTapUp: (d) {
+              final w = MediaQuery.of(context).size.width;
+              if (d.localPosition.dx < w * 0.28 && _page > 0) {
+                _pager.previousPage(duration: const Duration(milliseconds: 180), curve: Curves.easeOut);
+              } else if (d.localPosition.dx > w * 0.72 && _page < items.length - 1) {
+                _pager.nextPage(duration: const Duration(milliseconds: 180), curve: Curves.easeOut);
+              }
+            },
             onDoubleTap: () => _like(post.id),
             onLongPressStart: (_) => setState(() => _holdSpeed = true),
             onLongPressEnd: (_) => setState(() => _holdSpeed = false),
@@ -129,14 +148,36 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
                 ]),
               ),
               Positioned(
-                top: 48,
-                right: 16,
-                child: IconButton(
-                  onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                    builder: (_) => PostScreen(state: state, initialMode: 2),
-                  )),
-                  icon: const Icon(Icons.camera_alt_outlined, color: Colors.white, size: 28),
-                ),
+                top: 44,
+                right: 8,
+                child: Row(children: [
+                  IconButton(
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        backgroundColor: const Color(0xFF1C1C1C),
+                        builder: (_) => SafeArea(
+                          child: Column(mainAxisSize: MainAxisSize.min, children: [
+                            const Padding(
+                              padding: EdgeInsets.all(16),
+                              child: Text('Tu algoritmo', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18)),
+                            ),
+                            ListTile(title: const Text('Ver más de este tema', style: TextStyle(color: Colors.white)), onTap: () => Navigator.pop(context)),
+                            ListTile(title: const Text('Ver menos de este tema', style: TextStyle(color: Colors.white)), onTap: () => Navigator.pop(context)),
+                            ListTile(title: const Text('No me interesa', style: TextStyle(color: Colors.white)), onTap: () => Navigator.pop(context)),
+                          ]),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.favorite_border, color: Colors.white),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => PostScreen(state: state, initialMode: 2),
+                    )),
+                    icon: const Icon(Icons.camera_alt_outlined, color: Colors.white, size: 26),
+                  ),
+                ]),
               ),
               Positioned(
                 right: 12,
@@ -225,7 +266,15 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
                     ]),
                     if (post.caption.isNotEmpty) ...[
                       const SizedBox(height: 8),
-                      Text(post.caption, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white)),
+                      GestureDetector(
+                        onTap: () => setState(() => _captionOpen = !_captionOpen),
+                        child: Text(
+                          post.caption,
+                          maxLines: _captionOpen ? 8 : 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
                     ],
                     const SizedBox(height: 8),
                     GestureDetector(
