@@ -11,10 +11,11 @@ import '../widgets/ig_icons.dart';
 import '../widgets/network_photo.dart';
 
 class FeedScreen extends StatelessWidget {
-  const FeedScreen({super.key, required this.state, required this.onOpenCreate, required this.onOpenProfile});
+  const FeedScreen({super.key, required this.state, required this.onOpenCreate, required this.onOpenProfile, this.scrollController});
   final AppState state;
   final void Function(int mode) onOpenCreate;
   final void Function(String userId) onOpenProfile;
+  final ScrollController? scrollController;
 
   @override
   Widget build(BuildContext context) {
@@ -88,6 +89,7 @@ class FeedScreen extends StatelessWidget {
         backgroundColor: SpaceColors.bg,
         onRefresh: () => state.load(),
         child: CustomScrollView(
+          controller: scrollController,
           slivers: [
             SliverToBoxAdapter(
               child: StoryRow(

@@ -127,11 +127,11 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
                   ),
                 ),
               ),
-              if (_holdSpeed)
-                const Center(child: Text('2x', style: TextStyle(color: Colors.white, fontSize: 48, fontWeight: FontWeight.w800))),
+              if (_holdSpeed && index == _page)
+                const Positioned(top: 64, right: 16, child: Text('2x', style: TextStyle(color: Colors.white70, fontSize: 18, fontWeight: FontWeight.w700))),
               if (_showHeart && index == _page)
                 const Center(child: Icon(Icons.favorite, color: Color(0xFFED4956), size: 110)),
-              Positioned(
+              if (!(_holdSpeed && index == _page)) Positioned(
                 top: 48,
                 left: 16,
                 right: 56,
@@ -147,7 +147,7 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
                   ),
                 ]),
               ),
-              Positioned(
+              if (!(_holdSpeed && index == _page)) Positioned(
                 top: 44,
                 right: 8,
                 child: Row(children: [
@@ -179,7 +179,7 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
                   ),
                 ]),
               ),
-              Positioned(
+              if (!(_holdSpeed && index == _page)) Positioned(
                 right: 12,
                 bottom: 24,
                 child: Column(children: [
@@ -223,7 +223,7 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
                   ),
                 ]),
               ),
-              Positioned(
+              if (!(_holdSpeed && index == _page)) Positioned(
                 left: 16,
                 bottom: 24,
                 right: 80,

@@ -12,6 +12,7 @@ import 'direct_messages_screen.dart';
 import '../space_theme.dart';
 import '../widgets/ig_icons.dart';
 import '../widgets/media_view.dart';
+import '../widgets/account_switch_modal.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key, required this.state});
@@ -24,7 +25,9 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   DateTime? _lastBack;
+  DateTime? _lastHomeTap;
   bool _limitShown = false;
+  final _feedScroll = ScrollController();
 
   @override
   void initState() {
@@ -36,7 +39,23 @@ class _MainScreenState extends State<MainScreen> {
 
   AppState get state => widget.state;
 
+  @override
+  void dispose() {
+    _feedScroll.dispose();
+    super.dispose();
+  }
+
   void _onTap(int index) {
+    if (index == 0 && _currentIndex == 0) {
+      final now = DateTime.now();
+      final doubleTap = _lastHomeTap != null && now.difference(_lastHomeTap!) < const Duration(milliseconds: 400);
+      if (_feedScroll.hasClients) {
+        _feedScroll.animateTo(0, duration: const Duration(milliseconds: 280), curve: Curves.easeOut);
+      }
+      if (doubleTap) widget.state.load();
+      _lastHomeTap = now;
+      return;
+    }
     setState(() => _currentIndex = index);
     MediaView.navIndex.value = index;
   }
@@ -53,7 +72,7 @@ class _MainScreenState extends State<MainScreen> {
     }
 
     final pages = [
-      FeedScreen(state: state, onOpenCreate: _openCreate, onOpenProfile: _openProfile),
+      FeedScreen(state: state, onOpenCreate: _openCreate, onOpenProfile: _openProfile, scrollController: _feedScroll),
       ReelsScreen(state: state, playing: _currentIndex == 1, onOpenProfile: _openProfile),
       DirectMessagesScreen(state: state, onOpenProfile: _openProfile),
       SearchScreen(state: state, onOpenProfile: _openProfile),
@@ -103,6 +122,7 @@ class _MainScreenState extends State<MainScreen> {
                   _navItem(3, SearchOutlinePainter(const Color(0xFF262626), bold: _currentIndex == 3)),
                   GestureDetector(
                     onTap: () => _onTap(4),
+                    onLongPress: () => AccountSwitchModal.show(context, state),
                     behavior: HitTestBehavior.opaque,
                     child: SizedBox(
                       width: 56,
