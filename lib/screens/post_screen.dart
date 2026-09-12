@@ -151,10 +151,10 @@ class _PostScreenState extends State<PostScreen> {
     Navigator.of(context).pop();
     if (m == 1) {
       await widget.state.publishStory(f, overlayText: c, closeFriendsOnly: audience == 'Mejores amigos');
-    } else {
-      await widget.state.publishPost(image: f, caption: c, location: place, isReel: m == 2, isVideo: v || m == 2);
-      if (alsoStory) await widget.state.publishStory(f, overlayText: c, closeFriendsOnly: audience == 'Mejores amigos');
+      return;
     }
+    await widget.state.publishPost(image: f, caption: c, location: place, isReel: m == 2, isVideo: v || m == 2);
+    if (alsoStory && m != 2) await widget.state.publishStory(f, overlayText: c, closeFriendsOnly: audience == 'Mejores amigos');
   }
 
   @override

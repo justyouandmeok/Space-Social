@@ -12,16 +12,16 @@ class SpaceColors {
   static const deepSpace = Color(0xFF000000);
   static const like = Color(0xFFFF3040);
 
-  static Color get bg => const Color(0xFFFFFFFF);
-  static Color get surface => const Color(0xFFFAFAFA);
-  static Color get text => const Color(0xFF262626);
-  static Color get textMuted => const Color(0xFF8E8E8E);
-  static Color get hairline => const Color(0xFFDBDBDB);
-  static Color get nav => const Color(0xFFFFFFFF);
-  static Color get icon => const Color(0xFF262626);
+  static Color get bg => dark ? const Color(0xFF000000) : const Color(0xFFFFFFFF);
+  static Color get surface => dark ? const Color(0xFF121212) : const Color(0xFFFAFAFA);
+  static Color get text => dark ? const Color(0xFFF5F5F5) : const Color(0xFF262626);
+  static Color get textMuted => dark ? const Color(0xFFA8A8A8) : const Color(0xFF8E8E8E);
+  static Color get hairline => dark ? const Color(0xFF262626) : const Color(0xFFDBDBDB);
+  static Color get nav => dark ? const Color(0xFF000000) : const Color(0xFFFFFFFF);
+  static Color get icon => dark ? const Color(0xFFF5F5F5) : const Color(0xFF262626);
   static const igBlue = Color(0xFF0095F6);
   static const igRed = Color(0xFFED4956);
-  static const chip = Color(0xFFEFEFEF);
+  static Color get chip => dark ? const Color(0xFF262626) : const Color(0xFFEFEFEF);
 }
 
 const spacePageTransitions = PageTransitionsTheme(

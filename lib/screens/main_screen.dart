@@ -105,9 +105,9 @@ class _MainScreenState extends State<MainScreen> {
           children: pages,
         ),
         bottomNavigationBar: Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            border: Border(top: BorderSide(color: Color(0xFFDBDBDB), width: 0.33)),
+          decoration: BoxDecoration(
+            color: SpaceColors.nav,
+            border: Border(top: BorderSide(color: SpaceColors.hairline, width: 0.33)),
           ),
           child: SafeArea(
             top: false,
@@ -116,10 +116,10 @@ class _MainScreenState extends State<MainScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _navItem(0, HomeOutlinePainter(const Color(0xFF262626), filled: _currentIndex == 0)),
-                  _navItem(1, ReelsPainter(const Color(0xFF262626), filled: _currentIndex == 1)),
-                  _navItem(2, PlaneRightPainter(const Color(0xFF262626)), badge: state.messages.any((m) => m.toId == state.me.id && !m.read)),
-                  _navItem(3, SearchOutlinePainter(const Color(0xFF262626), bold: _currentIndex == 3)),
+                  _navItem(0, HomeOutlinePainter(SpaceColors.icon, filled: _currentIndex == 0)),
+                  _navItem(1, ReelsPainter(SpaceColors.icon, filled: _currentIndex == 1)),
+                  _navItem(2, PlaneRightPainter(SpaceColors.icon), badge: state.messages.any((m) => m.toId == state.me.id && !m.read)),
+                  _navItem(3, SearchOutlinePainter(SpaceColors.icon, bold: _currentIndex == 3)),
                   GestureDetector(
                     onTap: () => _onTap(4),
                     onLongPress: () => AccountSwitchModal.show(context, state),
@@ -135,7 +135,7 @@ class _MainScreenState extends State<MainScreen> {
                               padding: const EdgeInsets.all(1.2),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                border: Border.all(color: _currentIndex == 4 ? const Color(0xFF262626) : Colors.transparent, width: 1.2),
+                                border: Border.all(color: _currentIndex == 4 ? SpaceColors.icon : Colors.transparent, width: 1.2),
                               ),
                               child: Avatar(state.me.avatarPath, size: 24),
                             ),

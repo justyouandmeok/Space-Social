@@ -725,11 +725,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         leading: IconButton(icon: Icon(Icons.close, color: SpaceColors.text), onPressed: () => Navigator.pop(context)),
         title: Text('Editar perfil', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold)),
         actions: [
-          IconButton(
-            icon: busy
-                ? SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: SpaceColors.cosmicCyan))
-                : Icon(Icons.check, color: Color(0xFF0095F6), size: 28),
+          TextButton(
             onPressed: busy ? null : _save,
+            child: busy
+                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF0095F6)))
+                : const Text('Listo', style: TextStyle(color: Color(0xFF0095F6), fontWeight: FontWeight.w700, fontSize: 16)),
           ),
         ],
       ),
@@ -1118,10 +1118,12 @@ class SettingsScreen extends StatelessWidget {
           subtitle: Text('${(state.textScale * 100).round()}%', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
           onTap: () => state.setTextScale(state.textScale >= 1.2 ? 1.0 : (state.textScale + 0.1)),
         ),
-        ListTile(
-          leading: Icon(Icons.palette_outlined, color: SpaceColors.text),
-          title: Text('Tema', style: TextStyle(color: SpaceColors.text)),
-          subtitle: Text('Claro — fondo blanco y texto negro', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+        SwitchListTile(
+          secondary: Icon(Icons.palette_outlined, color: SpaceColors.text),
+          title: Text('Tema oscuro', style: TextStyle(color: SpaceColors.text)),
+          subtitle: Text(state.darkMode ? 'Fondo negro, texto e iconos claros' : 'Fondo blanco, texto e iconos oscuros', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+          value: state.darkMode,
+          onChanged: (_) => state.toggleDarkMode(),
         ),
         const Divider(height: 24),
         ListTile(

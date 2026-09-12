@@ -543,6 +543,13 @@ class AppState extends ChangeNotifier {
       final stSnap = await _db.collection('stories').get();
       stories = stSnap.docs.map((d) => Story.fromJson({...d.data(), 'id': d.id})).where((s) => DateTime.now().difference(s.createdAt) < const Duration(days: 30)).toList()
         ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      final storyPaths = stories.map((s) => s.imagePath.split('?').first).toSet();
+      posts = posts.where((p) {
+        final path = p.imagePath.split('?').first;
+        if (path.contains('/stories/')) return false;
+        if (storyPaths.contains(path)) return false;
+        return true;
+      }).toList();
     } catch (_) {}
 
     final actSnap = await _db.collection('activity').get();

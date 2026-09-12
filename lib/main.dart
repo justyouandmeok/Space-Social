@@ -33,8 +33,8 @@ class _SpaceSocialAppState extends State<SpaceSocialApp> {
 
   @override
   Widget build(BuildContext context) {
-    SpaceColors.dark = false;
-    LumaColors.dark = false;
+    SpaceColors.dark = state.darkMode;
+    LumaColors.dark = state.darkMode;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Space Social',
@@ -43,7 +43,8 @@ class _SpaceSocialAppState extends State<SpaceSocialApp> {
         child: child ?? const SizedBox.shrink(),
       ),
       theme: buildSpaceTheme(dark: false),
-      themeMode: ThemeMode.light,
+      darkTheme: buildSpaceTheme(dark: true),
+      themeMode: state.darkMode ? ThemeMode.dark : ThemeMode.light,
       themeAnimationDuration: const Duration(milliseconds: 280),
       themeAnimationCurve: Curves.easeOutCubic,
       home: !state.ready
