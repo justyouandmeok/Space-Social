@@ -322,6 +322,15 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (caption.contains('MUSIC:'))
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 10),
+                      child: Row(children: [
+                        Icon(Icons.music_note, color: Colors.white, size: 16),
+                        SizedBox(width: 6),
+                        Text('Audio original', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                      ]),
+                    ),
                   if (caption.startsWith('COUNTDOWN:'))
                     Padding(
                       padding: const EdgeInsets.only(bottom: 12),

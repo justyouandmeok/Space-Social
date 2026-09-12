@@ -172,7 +172,24 @@ class ProfileScreen extends StatelessWidget {
                           child: IgFollowButton(
                             following: state.isFollowing(user.id),
                             pending: state.isPendingFollow(user.id),
-                            onTap: () => state.toggleFollow(user.id),
+                            onTap: () async {
+                              if (state.isFollowing(user.id)) {
+                                final ok = await showDialog<bool>(
+                                  context: context,
+                                  builder: (d) => AlertDialog(
+                                    title: const Text('¿Dejar de seguir?'),
+                                    content: Text('Vas a dejar de seguir a @${user.username}'),
+                                    actions: [
+                                      TextButton(onPressed: () => Navigator.pop(d, false), child: const Text('Cancelar')),
+                                      TextButton(onPressed: () => Navigator.pop(d, true), child: const Text('Dejar de seguir')),
+                                    ],
+                                  ),
+                                );
+                                if (ok == true) await state.toggleFollow(user.id);
+                              } else {
+                                await state.toggleFollow(user.id);
+                              }
+                            },
                           ),
                         ),
                         const SizedBox(width: 8),

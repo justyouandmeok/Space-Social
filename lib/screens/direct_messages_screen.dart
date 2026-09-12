@@ -208,7 +208,21 @@ class DirectMessagesScreen extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.all(2),
                           decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                          child: Avatar(u.avatarPath, size: 48),
+                          child: Stack(
+                            children: [
+                              Avatar(u.avatarPath, size: 48),
+                              if (last != null && DateTime.now().difference(last.createdAt).inMinutes < 15)
+                                Positioned(
+                                  right: 0,
+                                  bottom: 0,
+                                  child: Container(
+                                    width: 12,
+                                    height: 12,
+                                    decoration: BoxDecoration(color: const Color(0xFF00C853), shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 2)),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
                       ),
                       title: Text(u.username, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold)),
