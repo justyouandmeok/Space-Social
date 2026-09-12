@@ -485,7 +485,7 @@ class ProfileScreen extends StatelessWidget {
         final p = items[index];
         final pinned = state.pinnedPosts.contains(p.id);
         return GestureDetector(
-          onLongPress: isMe
+          onLongPress: user.id == state.me.id
               ? () => state.togglePin(p.id)
               : null,
           onTap: () => Navigator.of(context).push(MaterialPageRoute(
