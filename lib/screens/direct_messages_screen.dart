@@ -304,10 +304,10 @@ class DirectMessagesScreen extends StatelessWidget {
 
   Widget _chip(String label, bool on) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       decoration: BoxDecoration(
-        color: on ? const Color(0xFF262626) : const Color(0xFFF5F5F5),
-        borderRadius: BorderRadius.circular(16),
+        color: on ? const Color(0xFF262626) : const Color(0xFFEFEFEF),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Text(label, style: TextStyle(color: on ? Colors.white : const Color(0xFF262626), fontSize: 13, fontWeight: FontWeight.w600)),
     );

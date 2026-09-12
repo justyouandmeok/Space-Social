@@ -692,7 +692,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   padding: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: LinearGradient(colors: [SpaceColors.cosmicCyan, SpaceColors.nebulaPurple]),
+                    border: Border.all(color: const Color(0xFFDBDBDB)),
                   ),
                   child: avatar != null
                       ? ClipOval(child: Image.file(avatar!, width: 88, height: 88, fit: BoxFit.cover))
@@ -773,8 +773,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           style: TextStyle(color: SpaceColors.text),
           decoration: InputDecoration(
             prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: SpaceColors.textMuted, size: 20) : null,
-            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: SpaceColors.hairline)),
-            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: SpaceColors.cosmicCyan)),
+            enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFFDBDBDB))),
+            focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF262626))),
           ),
         ),
       ]),
@@ -801,11 +801,15 @@ class SettingsScreen extends StatelessWidget {
               hintStyle: TextStyle(color: SpaceColors.textMuted),
               prefixIcon: Icon(Icons.search, color: SpaceColors.textMuted),
               filled: true,
-              fillColor: SpaceColors.surface,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+              fillColor: const Color(0xFFEFEFEF),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
               contentPadding: const EdgeInsets.symmetric(vertical: 0),
             ),
           ),
+        ),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(16, 4, 16, 6),
+          child: Text('Tu cuenta', style: TextStyle(color: Color(0xFF8E8E8E), fontSize: 13, fontWeight: FontWeight.w600)),
         ),
         ListTile(
           leading: Avatar(state.me.avatarPath, size: 44),
@@ -847,6 +851,10 @@ class SettingsScreen extends StatelessWidget {
           subtitle: Text('Tu uso de hoy', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
           trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => TimeSpentScreen(openedAt: DateTime.now()))),
+        ),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(16, 16, 16, 6),
+          child: Text('Cómo usas la app', style: TextStyle(color: Color(0xFF8E8E8E), fontSize: 13, fontWeight: FontWeight.w600)),
         ),
         ListTile(
           leading: Icon(Icons.history, color: SpaceColors.text),

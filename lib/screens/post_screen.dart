@@ -397,11 +397,11 @@ class _PostScreenState extends State<PostScreen> {
 
   Widget _modesBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      padding: const EdgeInsets.fromLTRB(28, 10, 28, 14),
       child: Container(
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(color: const Color(0xFF262626), borderRadius: BorderRadius.circular(24)),
-        child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+        padding: const EdgeInsets.all(3),
+        decoration: BoxDecoration(color: const Color(0xE61C1C1C), borderRadius: BorderRadius.circular(28)),
+        child: Row(children: [
           _mode('PUBLICACIÓN', 0),
           _mode('HISTORIA', 1),
           _mode('REEL', 2),
@@ -413,11 +413,19 @@ class _PostScreenState extends State<PostScreen> {
 
   Widget _mode(String t, int i) {
     final on = mode == i;
-    return GestureDetector(
-      onTap: () => setState(() { mode = i; step = 0; }),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        child: Text(t, style: TextStyle(color: on ? Colors.white : Colors.white54, fontWeight: FontWeight.w800, fontSize: 11)),
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() { mode = i; step = 0; }),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(vertical: 9),
+          decoration: BoxDecoration(
+            color: on ? Colors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          alignment: Alignment.center,
+          child: Text(t, style: TextStyle(color: on ? Colors.black : Colors.white70, fontWeight: FontWeight.w800, fontSize: 10, letterSpacing: 0.2)),
+        ),
       ),
     );
   }
