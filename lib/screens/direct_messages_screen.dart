@@ -354,13 +354,13 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
     return Scaffold(
       backgroundColor: SpaceColors.bg,
       appBar: AppBar(
-        backgroundColor: SpaceColors.surface,
+        backgroundColor: Colors.white,
         title: Row(children: [
-          Avatar(widget.user.avatarPath, size: 36),
+          Avatar(widget.user.avatarPath, size: 32),
           const SizedBox(width: 10),
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(widget.user.username, style: TextStyle(fontSize: 15, color: SpaceColors.text)),
-            Text(_msgController.text.isNotEmpty ? 'Escribiendo…' : widget.user.name, style: TextStyle(fontSize: 11, color: SpaceColors.textMuted)),
+            Text(widget.user.username, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF262626))),
+            Text(_msgController.text.isNotEmpty ? 'Escribiendo…' : widget.user.name, style: const TextStyle(fontSize: 12, color: Color(0xFF8E8E8E))),
           ]),
         ]),
         actions: [
@@ -445,17 +445,22 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                           );
                         },
                         child: Container(
-                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        margin: const EdgeInsets.symmetric(vertical: 3),
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                         decoration: BoxDecoration(
-                          color: isMe ? const Color(0xFF3797F0) : SpaceColors.surface,
-                          borderRadius: BorderRadius.circular(16),
+                          color: isMe ? const Color(0xFF3797F0) : const Color(0xFFEFEFEF),
+                          borderRadius: BorderRadius.only(
+                            topLeft: const Radius.circular(18),
+                            topRight: const Radius.circular(18),
+                            bottomLeft: Radius.circular(isMe ? 18 : 4),
+                            bottomRight: Radius.circular(isMe ? 4 : 18),
+                          ),
                         ),
                         child: msg.text.startsWith('IMG::')
                           ? SizedBox(width: 180, height: 180, child: MediaView(msg.text.substring(5)))
                           : msg.text.startsWith('POST::')
                               ? _sharedPost(widget.state, msg.text.substring(6))
-                              : Text(msg.text, style: TextStyle(color: SpaceColors.text, fontSize: 14)),
+                              : Text(msg.text, style: TextStyle(color: isMe ? Colors.white : const Color(0xFF262626), fontSize: 15, height: 1.25)),
                       ),
                       ),
                     );
@@ -463,40 +468,47 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                 ),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
-          child: Wrap(spacing: 6, children: [
+          padding: const EdgeInsets.fromLTRB(12, 6, 12, 4),
+          child: Wrap(spacing: 8, children: [
             for (final t in ['Hola!', '¿Cómo estás?', 'Dale', 'Jaja'])
-              ActionChip(label: Text(t, style: const TextStyle(fontSize: 12)), onPressed: () { _msgController.text = t; _sendMessage(); }),
+              ActionChip(
+                backgroundColor: const Color(0xFFEFEFEF),
+                side: BorderSide.none,
+                label: Text(t, style: const TextStyle(fontSize: 13, color: Color(0xFF262626))),
+                onPressed: () { _msgController.text = t; _sendMessage(); },
+              ),
           ]),
         ),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          color: SpaceColors.surface,
+          padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+          color: Colors.white,
           child: Row(children: [
-            IconButton(
-              icon: Icon(Icons.mic_none, color: SpaceColors.textMuted),
-              onPressed: () async {
-                await widget.state.sendMessage(widget.user.id, '🎤 Nota de voz · 0:07');
+            GestureDetector(
+              onTap: () async {
+                final x = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
+                if (x == null) return;
+                await widget.state.sendImage(widget.user.id, File(x.path));
                 if (mounted) setState(() {});
               },
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: const BoxDecoration(color: Color(0xFF0095F6), shape: BoxShape.circle),
+                child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
+              ),
             ),
-            IconButton(icon: Icon(Icons.image_outlined, color: SpaceColors.textMuted), onPressed: () async {
-              final x = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
-              if (x == null) return;
-              await widget.state.sendImage(widget.user.id, File(x.path));
-              if (mounted) setState(() {});
-            }),
+            const SizedBox(width: 8),
             Expanded(
               child: TextField(
                 controller: _msgController,
-                style: TextStyle(color: SpaceColors.text),
+                style: const TextStyle(color: Color(0xFF262626), fontSize: 15),
                 decoration: InputDecoration(
-                  hintText: 'Escribe un mensaje...',
-                  hintStyle: TextStyle(color: SpaceColors.textMuted),
+                  hintText: 'Mensaje...',
+                  hintStyle: const TextStyle(color: Color(0xFF8E8E8E)),
                   filled: true,
-                  fillColor: SpaceColors.bg,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: BorderSide.none),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  fillColor: const Color(0xFFEFEFEF),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(22), borderSide: BorderSide.none),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 ),
                 onChanged: (_) => setState(() {}),
                 onSubmitted: (_) => _sendMessage(),
@@ -504,9 +516,18 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
             ),
             IconButton(
               icon: _sending
-                  ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: SpaceColors.cosmicCyan))
-                  : Icon(Icons.send, color: SpaceColors.cosmicCyan),
-              onPressed: _sending ? null : _sendMessage,
+                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF0095F6)))
+                  : Icon(_msgController.text.trim().isEmpty ? Icons.mic_none : Icons.send, color: const Color(0xFF0095F6)),
+              onPressed: _sending
+                  ? null
+                  : () async {
+                      if (_msgController.text.trim().isEmpty) {
+                        await widget.state.sendMessage(widget.user.id, '🎤 Nota de voz · 0:07');
+                        if (mounted) setState(() {});
+                        return;
+                      }
+                      await _sendMessage();
+                    },
             ),
           ]),
         ),
