@@ -40,14 +40,18 @@ class _MediaViewState extends State<MediaView> {
     MediaView.navIndex.addListener(_onNav);
   }
 
-  void _onNav() {
+  void _onNav() => _syncPlayback();
+
+  double get _wantedVolume => (_muted || MediaView.globalMute) ? 0 : 1;
+
+  void _syncPlayback() {
     if (_c == null) return;
     final tab = MediaView.navIndex.value;
-    final onReels = widget.followGlobalMute && tab == 1;
-    final onFeed = !widget.followGlobalMute && tab == 0;
-    if (onReels || onFeed) {
-      if (widget.autoplay || widget.followGlobalMute) _c!.play();
-      if (widget.followGlobalMute && MediaView.globalMute) _c!.setVolume(0);
+    final isReel = widget.followGlobalMute;
+    final onThisPage = isReel ? tab == 1 : (widget.autoplay || tab == 0);
+    if (widget.active && onThisPage && (widget.autoplay || isReel)) {
+      _c!.play();
+      _c!.setVolume(_wantedVolume);
     } else {
       _c!.pause();
       _c!.setVolume(0);
@@ -67,10 +71,15 @@ class _MediaViewState extends State<MediaView> {
       }
       await c.initialize();
       c.setLooping(true);
-      if (widget.followGlobalMute && MediaView.globalMute) await c.setVolume(0);
       await c.setPlaybackSpeed(widget.speed);
-      if (widget.autoplay && widget.active) await c.play();
-      if (!widget.active) await c.pause();
+      if (widget.autoplay && widget.active) {
+        await c.setVolume((_muted || MediaView.globalMute) ? 0 : 1);
+        await c.play();
+      }
+      if (!widget.active) {
+        await c.pause();
+        await c.setVolume(0);
+      }
       c.addListener(() { if (mounted && widget.progressBar) setState(() {}); });
       if (!mounted) {
         await c.dispose();
@@ -90,11 +99,7 @@ class _MediaViewState extends State<MediaView> {
     if (old.speed != widget.speed) {
       _c!.setPlaybackSpeed(widget.speed);
     }
-    if (!widget.active) {
-      _c!.pause();
-    } else if (widget.autoplay && !_c!.value.isPlaying) {
-      _c!.play();
-    }
+    _syncPlayback();
   }
 
   @override

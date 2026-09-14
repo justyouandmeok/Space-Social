@@ -109,9 +109,7 @@ class _MainScreenState extends State<MainScreen> {
             color: SpaceColors.nav,
             border: Border(top: BorderSide(color: SpaceColors.hairline, width: 0.33)),
           ),
-          child: SafeArea(
-            top: false,
-            child: SizedBox(
+          child: SizedBox(
               height: 48,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -153,7 +151,6 @@ class _MainScreenState extends State<MainScreen> {
                 ],
               ),
             ),
-          ),
         ),
       ),
     );
