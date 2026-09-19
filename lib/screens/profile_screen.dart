@@ -884,7 +884,8 @@ class SettingsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: SpaceColors.bg,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: SpaceColors.bg,
+        foregroundColor: SpaceColors.text,
         title: Text('Configuración y actividad', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w700, fontSize: 18)),
       ),
       body: ListView(children: [

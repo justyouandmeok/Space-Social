@@ -104,26 +104,38 @@ class FeedScreen extends StatelessWidget {
             if (items.isEmpty)
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: EdgeInsets.all(40),
-                  child: Text(
-                    'Todavía no hay publicaciones.\nTocá + para crear la primera.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: SpaceColors.textMuted),
-                  ),
+                  padding: const EdgeInsets.fromLTRB(24, 36, 24, 12),
+                  child: Column(children: [
+                    Icon(Icons.camera_alt_outlined, color: SpaceColors.textMuted, size: 42),
+                    const SizedBox(height: 10),
+                    Text('Todavía no hay publicaciones', textAlign: TextAlign.center, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w700, fontSize: 16)),
+                    const SizedBox(height: 4),
+                    Text('Seguí cuentas o tocá + para publicar la primera.', textAlign: TextAlign.center, style: TextStyle(color: SpaceColors.textMuted, fontSize: 13)),
+                  ]),
                 ),
               )
             else
               SliverList(
                 delegate: SliverChildBuilderDelegate(
-                  (context, index) => SpacePostCard(
-                    post: items[index],
-                    state: state,
-                    onOpenProfile: onOpenProfile,
-                    onOpenComments: (p) => CommentsBottomSheet.show(context, state, p.id),
-                  ),
-                  childCount: items.length,
+                  (context, index) {
+                    final showSuggested = state.suggested.isNotEmpty && items.length >= 2 && index == 2;
+                    if (showSuggested) {
+                      return _SuggestedRow(state: state, onOpenProfile: onOpenProfile);
+                    }
+                    final postIndex = (state.suggested.isNotEmpty && items.length >= 2 && index > 2) ? index - 1 : index;
+                    if (postIndex < 0 || postIndex >= items.length) return const SizedBox.shrink();
+                    return SpacePostCard(
+                      post: items[postIndex],
+                      state: state,
+                      onOpenProfile: onOpenProfile,
+                      onOpenComments: (p) => CommentsBottomSheet.show(context, state, p.id),
+                    );
+                  },
+                  childCount: items.length + (state.suggested.isNotEmpty && items.length >= 2 ? 1 : 0),
                 ),
               ),
+            if (items.length < 2 && state.suggested.isNotEmpty)
+              SliverToBoxAdapter(child: _SuggestedRow(state: state, onOpenProfile: onOpenProfile)),
             if (items.isNotEmpty)
               SliverToBoxAdapter(
                 child: Padding(
@@ -144,6 +156,77 @@ class FeedScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _SuggestedRow extends StatelessWidget {
+  const _SuggestedRow({required this.state, required this.onOpenProfile});
+  final AppState state;
+  final void Function(String userId) onOpenProfile;
+
+  @override
+  Widget build(BuildContext context) {
+    final people = state.suggested.take(8).toList();
+    if (people.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
+          child: Row(children: [
+            Text('Sugerencias para ti', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w700, fontSize: 14)),
+            const Spacer(),
+            Text('Ver todo', style: TextStyle(color: SpaceColors.textMuted, fontSize: 13, fontWeight: FontWeight.w600)),
+          ]),
+        ),
+        SizedBox(
+          height: 196,
+          child: ListView.separated(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+            scrollDirection: Axis.horizontal,
+            itemCount: people.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            itemBuilder: (_, i) {
+              final u = people[i];
+              return Container(
+                width: 148,
+                padding: const EdgeInsets.fromLTRB(10, 14, 10, 10),
+                decoration: BoxDecoration(
+                  color: SpaceColors.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: SpaceColors.hairline),
+                ),
+                child: Column(children: [
+                  GestureDetector(
+                    onTap: () => onOpenProfile(u.id),
+                    child: Avatar(u.avatarPath, size: 72),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(u.username, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w700, fontSize: 13)),
+                  Text(u.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+                  const Spacer(),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 32,
+                    child: FilledButton(
+                      onPressed: () => state.toggleFollow(u.id),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF0095F6),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        padding: EdgeInsets.zero,
+                      ),
+                      child: Text(state.isFollowing(u.id) ? 'Siguiendo' : state.isPendingFollow(u.id) ? 'Solicitado' : 'Seguir', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                    ),
+                  ),
+                ]),
+              );
+            },
+          ),
+        ),
+        Divider(color: SpaceColors.hairline, height: 0.33, thickness: 0.33),
+      ],
     );
   }
 }

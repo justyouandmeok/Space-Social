@@ -40,6 +40,9 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
+    if (widget.post.userId != widget.state.me.id) {
+      unawaited(widget.state.recordPostView(widget.post.id));
+    }
     _heartController = AnimationController(vsync: this, duration: const Duration(milliseconds: 520));
     _heartScale = TweenSequence<double>([
       TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.28).chain(CurveTween(curve: Curves.easeOutBack)), weight: 55),
@@ -409,7 +412,7 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
             children: [
               AspectRatio(
                 aspectRatio: 4 / 5,
-                child: MediaView(live.imagePath, video: live.isVideo),
+                child: MediaView(live.imagePath, video: live.isVideo, onCompleted: live.isVideo ? () => widget.state.recordPostView(live.id, complete: true) : null),
               ),
               if (_showHeartAnimation)
                 ScaleTransition(
@@ -477,10 +480,21 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
                           ListTile(title: Text('Me gusta', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold))),
                           ...live.likes.map((id) {
                             final u = widget.state.tryUser(id);
+                            final following = widget.state.isFollowing(id);
                             return ListTile(
                               leading: Avatar(u?.avatarPath ?? '', size: 36),
-                              title: Text(u?.username ?? id, style: TextStyle(color: SpaceColors.text)),
-                              onTap: () => widget.onOpenProfile(id),
+                              title: Text(u?.username ?? id, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w600)),
+                              subtitle: Text(u?.name ?? '', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+                              trailing: id == widget.state.me.id
+                                  ? null
+                                  : TextButton(
+                                      onPressed: () => widget.state.toggleFollow(id),
+                                      child: Text(following ? 'Siguiendo' : 'Seguir', style: TextStyle(color: following ? SpaceColors.text : const Color(0xFF0095F6), fontWeight: FontWeight.w700)),
+                                    ),
+                              onTap: () {
+                                Navigator.pop(context);
+                                widget.onOpenProfile(id);
+                              },
                             );
                           }),
                         ],
