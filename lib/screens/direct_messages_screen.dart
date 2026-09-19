@@ -95,6 +95,78 @@ class DirectMessagesScreen extends StatelessWidget {
         ],
       ),
       body: Column(children: [
+        SizedBox(
+          height: 96,
+          child: ListView.separated(
+            padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+            scrollDirection: Axis.horizontal,
+            itemCount: state.users.take(12).length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (_, i) {
+              final u = state.users.take(12).toList()[i];
+              final mine = u.id == me;
+              return GestureDetector(
+                onTap: () {
+                  if (mine) {
+                    final c = TextEditingController();
+                    showModalBottomSheet(
+                      context: context,
+                      backgroundColor: SpaceColors.sheet,
+                      builder: (ctx) => SafeArea(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(mainAxisSize: MainAxisSize.min, children: [
+                            Text('Nueva nota', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w700, fontSize: 16)),
+                            TextField(controller: c, style: TextStyle(color: SpaceColors.text), maxLength: 60, decoration: InputDecoration(hintText: 'Dejá una nota...', hintStyle: TextStyle(color: SpaceColors.textMuted))),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton(
+                                onPressed: () {
+                                  state.setProfileMusic(c.text.trim());
+                                  Navigator.pop(ctx);
+                                },
+                                child: const Text('Compartir'),
+                              ),
+                            ),
+                          ]),
+                        ),
+                      ),
+                    );
+                  } else {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => ChatConversationScreen(state: state, user: u)));
+                  }
+                },
+                child: SizedBox(
+                  width: 72,
+                  child: Column(children: [
+                    Stack(clipBehavior: Clip.none, children: [
+                      Avatar(u.avatarPath, size: 56),
+                      if ((mine ? state.profileMusic : u.bio).trim().isNotEmpty)
+                        Positioned(
+                          top: -6,
+                          left: 4,
+                          right: 4,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                            decoration: BoxDecoration(color: SpaceColors.chip, borderRadius: BorderRadius.circular(12), border: Border.all(color: SpaceColors.hairline)),
+                            child: Text(
+                              mine ? (state.profileMusic.isEmpty ? 'Nota...' : state.profileMusic) : (u.bio.split('\n').first),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: SpaceColors.text, fontSize: 9, fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ),
+                    ]),
+                    const SizedBox(height: 6),
+                    Text(mine ? 'Tu nota' : u.username, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: SpaceColors.textMuted, fontSize: 11)),
+                  ]),
+                ),
+              );
+            },
+          ),
+        ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
           child: Container(

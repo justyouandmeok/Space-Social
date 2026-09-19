@@ -52,7 +52,7 @@ class _MainScreenState extends State<MainScreen> {
       if (_feedScroll.hasClients) {
         _feedScroll.animateTo(0, duration: const Duration(milliseconds: 280), curve: Curves.easeOut);
       }
-      if (doubleTap) widget.state.load();
+      if (doubleTap) widget.state.reload();
       _lastHomeTap = now;
       return;
     }

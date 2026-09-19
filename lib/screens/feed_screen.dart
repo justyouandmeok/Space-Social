@@ -87,7 +87,7 @@ class FeedScreen extends StatelessWidget {
       body: RefreshIndicator(
         color: SpaceColors.text,
         backgroundColor: SpaceColors.bg,
-        onRefresh: () => state.load(),
+        onRefresh: () => state.reload(),
         child: CustomScrollView(
           controller: scrollController,
           slivers: [
@@ -100,7 +100,7 @@ class FeedScreen extends StatelessWidget {
                 )),
               ),
             ),
-            SliverToBoxAdapter(child: Divider(color: const Color(0xFFDBDBDB), height: 0.33, thickness: 0.33)),
+            SliverToBoxAdapter(child: Divider(color: SpaceColors.hairline, height: 0.33, thickness: 0.33)),
             if (items.isEmpty)
               SliverToBoxAdapter(
                 child: Padding(

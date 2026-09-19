@@ -47,6 +47,7 @@ class AppState extends ChangeNotifier {
   final _store = LumaStore();
 
   bool ready = false;
+  bool _listening = false;
   String? currentUserId;
   List<UserAccount> users = [];
   List<Post> posts = [];
@@ -339,33 +340,42 @@ class AppState extends ChangeNotifier {
       ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
   }
 
+  Future<void> reload() async {
+    await _refresh();
+    await _saveCache();
+    notifyListeners();
+  }
+
   Future<void> load() async {
     await _loadCache();
     ready = true;
     notifyListeners();
-    _db.collection('users').snapshots().listen((_) {
-      if (ready) _refresh().then((_) { _saveCache(); notifyListeners(); });
-    });
-    _db.collection('stories').snapshots().listen((_) {
-      if (ready) _refresh().then((_) { _saveCache(); notifyListeners(); });
-    });
-    _db.collection('posts').snapshots().listen((_) {
-      if (ready) _refresh().then((_) { _saveCache(); notifyListeners(); });
-    });
-    _db.collection('follows').snapshots().listen((_) {
-      if (ready) _refresh().then((_) { _saveCache(); notifyListeners(); });
-    });
-    _db.collection('messages').snapshots().listen((_) {
-      if (ready && currentUserId != null) _refresh().then((_) { _saveCache(); notifyListeners(); });
-    });
-    _auth.authStateChanges().listen((user) async {
-      currentUserId = user?.uid;
-      if (user != null) await _ensureUserDoc(user);
-      await _refresh();
-      await _saveCache();
-      ready = true;
-      notifyListeners();
-    });
+    if (!_listening) {
+      _listening = true;
+      _db.collection('users').snapshots().listen((_) {
+        if (ready) _refresh().then((_) { _saveCache(); notifyListeners(); });
+      });
+      _db.collection('stories').snapshots().listen((_) {
+        if (ready) _refresh().then((_) { _saveCache(); notifyListeners(); });
+      });
+      _db.collection('posts').snapshots().listen((_) {
+        if (ready) _refresh().then((_) { _saveCache(); notifyListeners(); });
+      });
+      _db.collection('follows').snapshots().listen((_) {
+        if (ready) _refresh().then((_) { _saveCache(); notifyListeners(); });
+      });
+      _db.collection('messages').snapshots().listen((_) {
+        if (ready && currentUserId != null) _refresh().then((_) { _saveCache(); notifyListeners(); });
+      });
+      _auth.authStateChanges().listen((user) async {
+        currentUserId = user?.uid;
+        if (user != null) await _ensureUserDoc(user);
+        await _refresh();
+        await _saveCache();
+        ready = true;
+        notifyListeners();
+      });
+    }
     currentUserId = _auth.currentUser?.uid;
     if (_auth.currentUser != null) await _ensureUserDoc(_auth.currentUser!);
     await _refresh();

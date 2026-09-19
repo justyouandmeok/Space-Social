@@ -72,9 +72,9 @@ class _SearchScreenState extends State<SearchScreen> {
         : widget.state.users.where((u) => u.username.contains(q) || u.name.toLowerCase().contains(q)).toList();
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: SpaceColors.bg,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: SpaceColors.bg,
         elevation: 0,
         titleSpacing: 12,
         title: Container(
@@ -146,19 +146,49 @@ class _SearchScreenState extends State<SearchScreen> {
               ],
             )
           : RefreshIndicator(
-              onRefresh: () => widget.state.load(),
-              child: GridView.builder(
-            padding: EdgeInsets.zero,
-            itemCount: posts.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              crossAxisSpacing: 1,
-              mainAxisSpacing: 1,
-              childAspectRatio: 0.75,
+              onRefresh: () => widget.state.reload(),
+              color: SpaceColors.text,
+              child: CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: 44,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                        itemCount: _categories.length,
+                        itemBuilder: (context, index) {
+                          final on = _selectedCategory == index;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: ChoiceChip(
+                              label: Text(_categories[index], style: TextStyle(color: on ? SpaceColors.bg : SpaceColors.text, fontSize: 13, fontWeight: FontWeight.w600)),
+                              selected: on,
+                              selectedColor: SpaceColors.text,
+                              backgroundColor: SpaceColors.chip,
+                              side: BorderSide(color: SpaceColors.hairline),
+                              onSelected: (_) => setState(() => _selectedCategory = index),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  SliverGrid(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 1.2,
+                      mainAxisSpacing: 1.2,
+                      childAspectRatio: 1,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => _tile(context, posts, index),
+                      childCount: posts.length,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            itemBuilder: (context, index) => _tile(context, posts, index),
-          ),
-        ),
     );
   }
 
