@@ -51,9 +51,9 @@ class ReelInsightsScreen extends StatelessWidget {
           ]),
           const SizedBox(height: 10),
           Row(children: [
-            const Expanded(child: _card('Tiempo promedio', '6 s')),
+            Expanded(child: _card('Tiempo promedio', '6 s')),
             const SizedBox(width: 10),
-            const Expanded(child: _card('Nuevos seguidores', '0')),
+            Expanded(child: _card('Nuevos seguidores', '0')),
           ]),
           const SizedBox(height: 24),
           const Text('Interacción', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
