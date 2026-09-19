@@ -7,6 +7,7 @@ import '../widgets/media_view.dart';
 import '../widgets/network_photo.dart';
 import '../widgets/verified_badge.dart';
 import 'post_detail_feed_screen.dart';
+import 'reels_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key, required this.state, required this.onOpenProfile});
@@ -195,14 +196,20 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget _tile(BuildContext context, List posts, int index) {
     final p = posts[index];
     return GestureDetector(
-      onTap: () => Navigator.of(context).push(MaterialPageRoute(
-        builder: (_) => PostDetailFeedScreen(
-          state: widget.state,
-          posts: List.from(posts),
-          initialIndex: index,
-          onOpenProfile: widget.onOpenProfile,
-        ),
-      )),
+      onTap: () {
+        if (p.isReelLike) {
+          ReelsScreen.open(context, widget.state, postId: p.id, onOpenProfile: widget.onOpenProfile);
+          return;
+        }
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => PostDetailFeedScreen(
+            state: widget.state,
+            posts: List.from(posts),
+            initialIndex: index,
+            onOpenProfile: widget.onOpenProfile,
+          ),
+        ));
+      },
       child: Stack(
         fit: StackFit.expand,
         children: [

@@ -13,6 +13,7 @@ import 'media_view.dart';
 import 'network_photo.dart';
 import 'verified_badge.dart';
 import 'ig_icons.dart';
+import '../screens/reels_screen.dart';
 
 class SpacePostCard extends StatefulWidget {
   const SpacePostCard({
@@ -406,6 +407,9 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
         ]),
         ),
         GestureDetector(
+          onTap: live.isReelLike
+              ? () => ReelsScreen.open(context, widget.state, postId: live.id, onOpenProfile: widget.onOpenProfile)
+              : null,
           onDoubleTap: _handleDoubleTap,
           child: Stack(
             alignment: Alignment.center,

@@ -21,8 +21,8 @@ import 'direct_messages_screen.dart';
 import 'followers_following_screen.dart';
 import 'creator_insights_screen.dart';
 import 'post_detail_feed_screen.dart';
-import 'profile_reel_preview.dart';
 import 'archive_screen.dart';
+import 'reels_screen.dart';
 import 'saved_collections_screen.dart';
 import 'story_viewer_screen.dart';
 
@@ -473,14 +473,12 @@ class ProfileScreen extends StatelessWidget {
         final p = items[index];
         final views = p.likes.length + p.comments.length;
         return GestureDetector(
-          onTap: () => Navigator.of(context).push(MaterialPageRoute(
-            builder: (_) => ProfileReelPreview(
-              state: state,
-              reels: items,
-              initialIndex: index,
-              onOpenProfile: onOpenProfile ?? (_) {},
-            ),
-          )),
+          onTap: () => ReelsScreen.open(
+            context,
+            state,
+            postId: p.id,
+            onOpenProfile: onOpenProfile ?? (_) {},
+          ),
           child: Stack(fit: StackFit.expand, children: [
             MediaView(p.imagePath, video: p.isVideo),
             const DecoratedBox(
@@ -573,14 +571,20 @@ class ProfileScreen extends StatelessWidget {
           onLongPress: user.id == state.me.id
               ? () => state.togglePin(p.id)
               : null,
-          onTap: () => Navigator.of(context).push(MaterialPageRoute(
-            builder: (_) => PostDetailFeedScreen(
-              state: state,
-              posts: items,
-              initialIndex: index,
-              onOpenProfile: onOpenProfile ?? (_) {},
-            ),
-          )),
+          onTap: () {
+            if (p.isReelLike) {
+              ReelsScreen.open(context, state, postId: p.id, onOpenProfile: onOpenProfile ?? (_) {});
+              return;
+            }
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => PostDetailFeedScreen(
+                state: state,
+                posts: items,
+                initialIndex: index,
+                onOpenProfile: onOpenProfile ?? (_) {},
+              ),
+            ));
+          },
           child: Stack(fit: StackFit.expand, children: [
             MediaView(p.imagePath, video: p.isVideo),
             if (pinned)

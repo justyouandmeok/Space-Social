@@ -31,6 +31,23 @@ class ReelsScreen extends StatefulWidget {
 
   @override
   State<ReelsScreen> createState() => _ReelsScreenState();
+
+  static Future<void> open(
+    BuildContext context,
+    AppState state, {
+    required String postId,
+    required void Function(String userId) onOpenProfile,
+  }) {
+    return Navigator.of(context).push(fadeRoute(
+      ReelsScreen(
+        state: state,
+        playing: true,
+        onOpenProfile: onOpenProfile,
+        initialPostId: postId,
+        standalone: true,
+      ),
+    ));
+  }
 }
 
 class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStateMixin {
