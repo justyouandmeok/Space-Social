@@ -21,6 +21,7 @@ import 'direct_messages_screen.dart';
 import 'followers_following_screen.dart';
 import 'creator_insights_screen.dart';
 import 'post_detail_feed_screen.dart';
+import 'profile_reel_preview.dart';
 import 'archive_screen.dart';
 import 'saved_collections_screen.dart';
 import 'story_viewer_screen.dart';
@@ -473,7 +474,12 @@ class ProfileScreen extends StatelessWidget {
         final views = p.likes.length + p.comments.length;
         return GestureDetector(
           onTap: () => Navigator.of(context).push(MaterialPageRoute(
-            builder: (_) => PostDetailFeedScreen(state: state, posts: items, initialIndex: index, onOpenProfile: onOpenProfile ?? (_) {}),
+            builder: (_) => ProfileReelPreview(
+              state: state,
+              reels: items,
+              initialIndex: index,
+              onOpenProfile: onOpenProfile ?? (_) {},
+            ),
           )),
           child: Stack(fit: StackFit.expand, children: [
             MediaView(p.imagePath, video: p.isVideo),

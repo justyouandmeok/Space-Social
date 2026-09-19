@@ -15,10 +15,19 @@ import 'post_screen.dart';
 final _countedViews = <String>{};
 
 class ReelsScreen extends StatefulWidget {
-  const ReelsScreen({super.key, required this.state, required this.playing, required this.onOpenProfile});
+  const ReelsScreen({
+    super.key,
+    required this.state,
+    required this.playing,
+    required this.onOpenProfile,
+    this.initialPostId,
+    this.standalone = false,
+  });
   final AppState state;
   final bool playing;
   final void Function(String userId) onOpenProfile;
+  final String? initialPostId;
+  final bool standalone;
 
   @override
   State<ReelsScreen> createState() => _ReelsScreenState();
@@ -42,7 +51,7 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
     _spin = AnimationController(vsync: this, duration: const Duration(seconds: 6))..repeat();
     _pager = PageController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final items = widget.state.reels;
+      final items = _orderedReels();
       if (items.isNotEmpty && _countedViews.add(items.first.id)) {
         widget.state.recordPostView(items.first.id);
       }
@@ -54,6 +63,26 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
     _spin.dispose();
     _pager.dispose();
     super.dispose();
+  }
+
+  List<Post> _orderedReels() {
+    var items = List<Post>.from(state.reels);
+    if (friends) {
+      items = items.where((p) => p.userId == state.me.id || state.isFollowing(p.userId)).toList();
+    }
+    final id = widget.initialPostId;
+    if (id == null || items.isEmpty) return items;
+    Post? first;
+    for (final p in items) {
+      if (p.id == id) {
+        first = p;
+        break;
+      }
+    }
+    if (first == null) return items;
+    final same = items.where((p) => p.userId == first!.userId && p.id != first.id);
+    final rest = items.where((p) => p.userId != first!.userId && p.id != first.id);
+    return [first, ...same, ...rest];
   }
 
   Future<void> _like(String id) async {
@@ -69,10 +98,7 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
-    var items = state.reels;
-    if (friends) {
-      items = items.where((p) => p.userId == state.me.id || state.isFollowing(p.userId)).toList();
-    }
+    final items = _orderedReels();
     if (items.isEmpty) {
       return Scaffold(
         backgroundColor: Colors.black,
@@ -119,7 +145,7 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
             child: Stack(
             fit: StackFit.expand,
             children: [
-              MediaView(post.imagePath, video: post.isVideo || post.isReelLike, autoplay: active, active: active, followGlobalMute: true, speed: _holdSpeed && index == _page ? 2 : 1, progressBar: active, showMute: false, showPlayButton: false, tapToPause: false),
+              MediaView(post.imagePath, video: post.isVideo || post.isReelLike, autoplay: active, active: active, followGlobalMute: !widget.standalone, speed: _holdSpeed && index == _page ? 2 : 1, progressBar: active, showMute: false, showPlayButton: false, tapToPause: false),
               const DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -139,9 +165,14 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
                 ),
               if (!(_holdSpeed && index == _page)) Positioned(
                 top: MediaQuery.of(context).padding.top + 6,
-                left: 16,
+                left: widget.standalone ? 4 : 16,
                 right: 56,
                 child: Row(children: [
+                  if (widget.standalone)
+                    IconButton(
+                      onPressed: () => Navigator.of(context).maybePop(),
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    ),
                   GestureDetector(
                     onTap: () => setState(() => friends = false),
                     child: Text('Reels', style: TextStyle(color: friends ? Colors.white54 : Colors.white, fontSize: 24, fontWeight: FontWeight.w800, letterSpacing: -0.4)),
