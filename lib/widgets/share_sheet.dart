@@ -21,8 +21,8 @@ class ShareSheet {
               child: Text('Enviar a', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
             ),
             ListTile(
-              leading: Icon(Icons.copy, color: SpaceColors.textMuted),
-              title: Text('Copiar texto', style: TextStyle(color: SpaceColors.text)),
+              leading: Icon(Icons.link, color: SpaceColors.textMuted),
+              title: Text('Copiar enlace', style: TextStyle(color: SpaceColors.text)),
               onTap: () {
                 final body = post != null ? '@${state.tryUser(post.userId)?.username ?? ''} ${post.caption}' : text;
                 Clipboard.setData(ClipboardData(text: body));

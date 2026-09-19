@@ -88,7 +88,13 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
               Divider(color: SpaceColors.hairline, height: 20),
               Expanded(
                 child: comments.isEmpty
-                    ? Center(child: Text('Sé el primero en comentar', style: TextStyle(color: SpaceColors.textMuted)))
+                    ? Center(
+                        child: Column(mainAxisSize: MainAxisSize.min, children: [
+                          Text('Todavía no hay comentarios', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w700, fontSize: 16)),
+                          const SizedBox(height: 6),
+                          Text('Inicia la conversación.', style: TextStyle(color: SpaceColors.textMuted, fontSize: 13)),
+                        ]),
+                      )
                     : ListView.builder(
                         controller: scrollController,
                         padding: const EdgeInsets.symmetric(horizontal: 16),
