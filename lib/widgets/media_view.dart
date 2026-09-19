@@ -4,7 +4,7 @@ import 'package:video_player/video_player.dart';
 import 'network_photo.dart';
 
 class MediaView extends StatefulWidget {
-  const MediaView(this.url, {super.key, this.video = false, this.autoplay = false, this.active = true, this.followGlobalMute = false, this.speed = 1, this.progressBar = false, this.showMute = true, this.showPlayButton = false, this.tapToPause = false});
+  const MediaView(this.url, {super.key, this.video = false, this.autoplay = false, this.active = true, this.followGlobalMute = false, this.speed = 1, this.progressBar = false, this.showMute = true, this.showPlayButton = false, this.tapToPause = false, this.onCompleted});
   final String url;
   final bool video;
   final bool autoplay;
@@ -15,6 +15,7 @@ class MediaView extends StatefulWidget {
   final bool showMute;
   final bool showPlayButton;
   final bool tapToPause;
+  final VoidCallback? onCompleted;
   static bool globalMute = false;
   static final navIndex = ValueNotifier<int>(0);
 
@@ -26,6 +27,7 @@ class _MediaViewState extends State<MediaView> {
   VideoPlayerController? _c;
   bool _ready = false;
   bool _muted = false;
+  bool _completedOnce = false;
 
   bool get _isVideo {
     if (widget.video) return true;
@@ -80,7 +82,16 @@ class _MediaViewState extends State<MediaView> {
         await c.pause();
         await c.setVolume(0);
       }
-      c.addListener(() { if (mounted && widget.progressBar) setState(() {}); });
+      c.addListener(() {
+        if (!mounted) return;
+        if (widget.progressBar) setState(() {});
+        final d = c.value.duration.inMilliseconds;
+        final p = c.value.position.inMilliseconds;
+        if (!_completedOnce && d > 400 && p >= d - 400) {
+          _completedOnce = true;
+          widget.onCompleted?.call();
+        }
+      });
       if (!mounted) {
         await c.dispose();
         return;

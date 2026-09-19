@@ -187,6 +187,7 @@ class Post {
     List<String>? likes,
     List<Comment>? comments,
     List<String>? savedBy,
+    int? views,
   }) {
     return Post(
       id: id,
@@ -200,7 +201,7 @@ class Post {
       savedBy: savedBy ?? this.savedBy,
       isReel: isReel,
       isVideo: isVideo,
-      views: views,
+      views: views ?? this.views,
       taggedUserIds: taggedUserIds,
     );
   }

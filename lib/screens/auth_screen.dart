@@ -69,8 +69,16 @@ class _AuthScreenState extends State<AuthScreen> {
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: () {},
-                child: const Text('¿Olvidaste tu contraseña?', style: TextStyle(color: Color(0xFF00376B), fontSize: 12, fontWeight: FontWeight.w600)),
+                onPressed: busy
+                    ? null
+                    : () async {
+                        final ok = await widget.state.sendReset(email.text.isEmpty ? user.text : email.text);
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text(ok ? 'Te enviamos un mail para cambiar la clave' : (widget.state.lastError ?? 'No se pudo enviar')),
+                        ));
+                      },
+                child: Text('¿Olvidaste tu contraseña?', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12, fontWeight: FontWeight.w600)),
               ),
             ),
             const SizedBox(height: 18),
@@ -101,7 +109,7 @@ class _AuthScreenState extends State<AuthScreen> {
           hintText: hint,
           hintStyle: TextStyle(color: SpaceColors.textMuted),
           filled: true,
-          fillColor: const Color(0xFFFAFAFA),
+          fillColor: SpaceColors.chip,
           enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: SpaceColors.hairline)),
           focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: SpaceColors.textMuted)),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: SpaceColors.hairline)),

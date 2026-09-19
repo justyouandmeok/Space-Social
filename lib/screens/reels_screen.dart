@@ -120,7 +120,8 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
     final bottomPad = MediaQuery.of(context).padding.bottom;
     return Scaffold(
       backgroundColor: Colors.black,
-      body: PageView.builder(
+      body: Stack(children: [
+      PageView.builder(
         controller: _pager,
         scrollDirection: Axis.vertical,
         itemCount: items.length,
@@ -145,7 +146,7 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
             child: Stack(
             fit: StackFit.expand,
             children: [
-              MediaView(post.imagePath, video: post.isVideo || post.isReelLike, autoplay: active, active: active, followGlobalMute: !widget.standalone, speed: _holdSpeed && index == _page ? 2 : 1, progressBar: active, showMute: false, showPlayButton: false, tapToPause: false),
+              MediaView(post.imagePath, video: post.isVideo || post.isReelLike, autoplay: active, active: active, followGlobalMute: !widget.standalone, speed: _holdSpeed && index == _page ? 2 : 1, progressBar: active, showMute: false, showPlayButton: false, tapToPause: false, onCompleted: active ? () => state.recordPostView(post.id, complete: true) : null),
               const DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -163,37 +164,6 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
                     Shadow(color: Color(0x66FF3040), blurRadius: 18),
                   ]),
                 ),
-              if (!(_holdSpeed && index == _page)) Positioned(
-                top: MediaQuery.of(context).padding.top + 6,
-                left: widget.standalone ? 4 : 16,
-                right: 56,
-                child: Row(children: [
-                  if (widget.standalone)
-                    IconButton(
-                      onPressed: () => Navigator.of(context).maybePop(),
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    ),
-                  GestureDetector(
-                    onTap: () => setState(() => friends = false),
-                    child: Text('Reels', style: TextStyle(color: friends ? Colors.white54 : Colors.white, fontSize: 24, fontWeight: FontWeight.w800, letterSpacing: -0.4)),
-                  ),
-                  const SizedBox(width: 18),
-                  GestureDetector(
-                    onTap: () => setState(() => friends = true),
-                    child: Text('Amigos', style: TextStyle(color: friends ? Colors.white : Colors.white54, fontSize: 16, fontWeight: FontWeight.w600)),
-                  ),
-                ]),
-              ),
-              if (!(_holdSpeed && index == _page)) Positioned(
-                top: MediaQuery.of(context).padding.top,
-                right: 4,
-                child: IconButton(
-                  onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                    builder: (_) => PostScreen(state: state, initialMode: 2),
-                  )),
-                  icon: const Icon(Icons.camera_alt_outlined, color: Colors.white, size: 26),
-                ),
-              ),
               if (!(_holdSpeed && index == _page)) Positioned(
                 right: 10,
                 bottom: 16 + bottomPad,
@@ -299,6 +269,38 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
           );
         },
       ),
+      Positioned(
+        top: 0,
+        left: 0,
+        right: 0,
+        child: SafeArea(
+          bottom: false,
+          child: SizedBox(
+            height: 48,
+            child: Row(children: [
+              if (widget.standalone)
+                IconButton(onPressed: () => Navigator.of(context).maybePop(), icon: const Icon(Icons.arrow_back, color: Colors.white))
+              else
+                const SizedBox(width: 16),
+              GestureDetector(
+                onTap: () => setState(() => friends = false),
+                child: Text('Reels', style: TextStyle(color: friends ? Colors.white54 : Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
+              ),
+              const SizedBox(width: 16),
+              GestureDetector(
+                onTap: () => setState(() => friends = true),
+                child: Text('Amigos', style: TextStyle(color: friends ? Colors.white : Colors.white54, fontSize: 16, fontWeight: FontWeight.w600)),
+              ),
+              const Spacer(),
+              IconButton(
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => PostScreen(state: state, initialMode: 2))),
+                icon: const Icon(Icons.camera_alt_outlined, color: Colors.white, size: 26),
+              ),
+            ]),
+          ),
+        ),
+      ),
+    ]),
     );
   }
 

@@ -1806,30 +1806,31 @@ class AppState extends ChangeNotifier {
     await sendMessage(toId, 'IMG::$url');
   }
 
-  Future<void> recordPostView(String postId) async {
+  Future<void> recordPostView(String postId, {bool complete = false}) async {
+    if (!isLoggedIn) return;
+    final uid = me.id;
     try {
-      await _db.collection('posts').doc(postId).update({'views': FieldValue.increment(1)});
-      posts = [
-        for (final p in posts)
-          if (p.id == postId)
-            Post(
-              id: p.id,
-              userId: p.userId,
-              imagePath: p.imagePath,
-              caption: p.caption,
-              createdAt: p.createdAt,
-              location: p.location,
-              likes: p.likes,
-              comments: p.comments,
-              savedBy: p.savedBy,
-              isReel: p.isReel,
-              isVideo: p.isVideo,
-              views: p.views + 1,
-              taggedUserIds: p.taggedUserIds,
-            )
-          else
-            p
-      ];
+      final ref = _db.collection('posts').doc(postId);
+      await _db.runTransaction((tx) async {
+        final snap = await tx.get(ref);
+        if (!snap.exists) return;
+        final data = snap.data() ?? {};
+        final started = List<String>.from((data['viewedBy'] as List?) ?? const []);
+        final finished = List<String>.from((data['completedBy'] as List?) ?? const []);
+        var views = (data['views'] as num?)?.toInt() ?? 0;
+        if (!complete) {
+          if (started.contains(uid)) return;
+          started.add(uid);
+          views += 1;
+          tx.update(ref, {'viewedBy': started, 'views': views});
+        } else {
+          if (!started.contains(uid) || finished.contains(uid)) return;
+          finished.add(uid);
+          views += 1;
+          tx.update(ref, {'completedBy': finished, 'views': views});
+        }
+      });
+      posts = [for (final p in posts) if (p.id == postId) p.copyWith(views: p.views + 1) else p];
     } catch (_) {}
   }
 
