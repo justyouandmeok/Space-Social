@@ -60,12 +60,28 @@ class FeedScreen extends StatelessWidget {
                     trailing: state.feedMode == 2 ? Icon(Icons.check, color: SpaceColors.text) : null,
                     onTap: () { state.setFeedMode(2); Navigator.pop(ctx); },
                   ),
+                  ListTile(
+                    title: Text('Administrar favoritos', style: TextStyle(color: SpaceColors.textMuted)),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      Navigator.of(context).push(MaterialPageRoute(builder: (_) => _FavoritesManager(state: state)));
+                    },
+                  ),
                 ]),
               ),
             );
           },
           child: Row(mainAxisAlignment: MainAxisAlignment.center, mainAxisSize: MainAxisSize.min, children: [
-            Text('Space Social', style: TextStyle(fontFamily: 'GrandHotel', fontSize: 32, height: 1, color: SpaceColors.text, letterSpacing: 0.15)),
+            Text(
+              state.feedMode == 1 ? 'Siguiendo' : state.feedMode == 2 ? 'Favoritos' : 'Space Social',
+              style: TextStyle(
+                fontFamily: state.feedMode == 0 ? 'GrandHotel' : null,
+                fontSize: state.feedMode == 0 ? 32 : 20,
+                fontWeight: state.feedMode == 0 ? FontWeight.w400 : FontWeight.w700,
+                height: 1,
+                color: SpaceColors.text,
+              ),
+            ),
             const SizedBox(width: 2),
             Icon(Icons.keyboard_arrow_down, color: SpaceColors.text, size: 18),
           ]),
@@ -228,5 +244,47 @@ class _SuggestedRow extends StatelessWidget {
         Divider(color: SpaceColors.hairline, height: 0.33, thickness: 0.33),
       ],
     );
+  }
+}
+
+class _FavoritesManager extends StatelessWidget {
+  const _FavoritesManager({required this.state});
+  final AppState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final people = state.users.where((u) => u.id != state.me.id && state.isFollowing(u.id)).toList();
+    return ListenableBuilder(
+      listenable: state,
+      builder: (context, _) => Scaffold(
+      backgroundColor: SpaceColors.bg,
+      appBar: AppBar(
+        backgroundColor: SpaceColors.bg,
+        foregroundColor: SpaceColors.text,
+        title: Text('Favoritos', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w700)),
+      ),
+      body: ListView(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            child: Text('Hasta 50 cuentas. Sus posts aparecen primero en Para ti y solos en Favoritos.', style: TextStyle(color: SpaceColors.textMuted, fontSize: 13)),
+          ),
+          ...people.map((u) {
+            final on = state.favorites.contains(u.id);
+            return ListTile(
+              leading: Avatar(u.avatarPath, size: 44),
+              title: Text(u.username, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w600)),
+              trailing: IconButton(
+                icon: Icon(on ? Icons.star : Icons.star_border, color: on ? const Color(0xFFFFD60A) : SpaceColors.icon),
+                onPressed: () {
+                  if (!on && state.favorites.length >= 50) return;
+                  state.toggleFavorite(u.id);
+                },
+              ),
+            );
+          }),
+        ],
+      ),
+    ));
   }
 }

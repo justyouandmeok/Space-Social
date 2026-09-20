@@ -2012,6 +2012,10 @@ class AppState extends ChangeNotifier {
   Future<void> toggleFavorite(String userId) async {
     if (favorites.contains(userId)) {
       favorites.remove(userId);
+    } else if (favorites.length >= 50) {
+      lastError = 'Podés tener hasta 50 favoritos.';
+      notifyListeners();
+      return;
     } else {
       favorites.add(userId);
     }

@@ -96,19 +96,29 @@ class DirectMessagesScreen extends StatelessWidget {
       ),
       body: Column(children: [
         SizedBox(
-          height: 96,
+          height: 118,
           child: ListView.separated(
-            padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
             scrollDirection: Axis.horizontal,
-            itemCount: state.users.take(12).length,
-            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemCount: notes.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 14),
             itemBuilder: (_, i) {
-              final u = state.users.take(12).toList()[i];
+              final u = notes[i];
               final mine = u.id == me;
+              final raw = noteOf(u.id);
+              DateTime? created;
+              try {
+                final hit = state.notes.where((n) => n['userId'] == u.id);
+                if (hit.isNotEmpty) created = DateTime.tryParse('${hit.first['createdAt'] ?? ''}');
+              } catch (_) {}
+              final fresh = created == null || DateTime.now().difference(created).inHours < 24;
+              final text = mine
+                  ? (fresh && raw.isNotEmpty ? raw : '')
+                  : (fresh ? raw : '');
               return GestureDetector(
                 onTap: () {
                   if (mine) {
-                    final c = TextEditingController();
+                    final c = TextEditingController(text: text);
                     showModalBottomSheet(
                       context: context,
                       backgroundColor: SpaceColors.sheet,
@@ -116,13 +126,14 @@ class DirectMessagesScreen extends StatelessWidget {
                         child: Padding(
                           padding: const EdgeInsets.all(16),
                           child: Column(mainAxisSize: MainAxisSize.min, children: [
-                            Text('Nueva nota', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w700, fontSize: 16)),
+                            Text('Tu nota', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w700, fontSize: 16)),
+                            const SizedBox(height: 8),
                             TextField(controller: c, style: TextStyle(color: SpaceColors.text), maxLength: 60, decoration: InputDecoration(hintText: 'Dejá una nota...', hintStyle: TextStyle(color: SpaceColors.textMuted))),
                             Align(
                               alignment: Alignment.centerRight,
                               child: TextButton(
                                 onPressed: () {
-                                  state.setProfileMusic(c.text.trim());
+                                  state.publishNote(c.text.trim());
                                   Navigator.pop(ctx);
                                 },
                                 child: const Text('Compartir'),
@@ -137,29 +148,35 @@ class DirectMessagesScreen extends StatelessWidget {
                   }
                 },
                 child: SizedBox(
-                  width: 72,
+                  width: 76,
                   child: Column(children: [
-                    Stack(clipBehavior: Clip.none, children: [
-                      Avatar(u.avatarPath, size: 56),
-                      if ((mine ? state.profileMusic : u.bio).trim().isNotEmpty)
-                        Positioned(
-                          top: -6,
-                          left: 4,
-                          right: 4,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                            decoration: BoxDecoration(color: SpaceColors.chip, borderRadius: BorderRadius.circular(12), border: Border.all(color: SpaceColors.hairline)),
-                            child: Text(
-                              mine ? (state.profileMusic.isEmpty ? 'Nota...' : state.profileMusic) : (u.bio.split('\n').first),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: SpaceColors.text, fontSize: 9, fontWeight: FontWeight.w600),
-                            ),
+                    Stack(alignment: Alignment.topCenter, clipBehavior: Clip.none, children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 28),
+                        child: Avatar(u.avatarPath, size: 56),
+                      ),
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: SpaceColors.surface,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: SpaceColors.hairline),
+                          ),
+                          child: Text(
+                            text.isEmpty ? (mine ? 'Nota...' : ' ') : text,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: SpaceColors.text, fontSize: 10, fontWeight: FontWeight.w600, height: 1.15),
                           ),
                         ),
+                      ),
                     ]),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     Text(mine ? 'Tu nota' : u.username, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: SpaceColors.textMuted, fontSize: 11)),
                   ]),
                 ),
