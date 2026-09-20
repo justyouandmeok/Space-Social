@@ -67,7 +67,8 @@ class _SearchScreenState extends State<SearchScreen> {
     };
     if (_selectedCategory != 0) {
       final k = keys[_selectedCategory] ?? [];
-      posts = posts.where((p) => k.any((w) => p.caption.toLowerCase().contains(w))).toList();
+      final filtered = posts.where((p) => k.any((w) => p.caption.toLowerCase().contains(w) || (widget.state.tryUser(p.userId)?.username.contains(w) ?? false))).toList();
+      if (filtered.isNotEmpty) posts = filtered;
     }
     final people = q.isEmpty
         ? widget.state.users.where((u) => u.id != widget.state.me.id).take(8).toList()
@@ -204,6 +205,16 @@ class _SearchScreenState extends State<SearchScreen> {
                       ),
                     ),
                   ),
+                  if (posts.any((p) => p.isReelLike))
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 1),
+                        child: AspectRatio(
+                          aspectRatio: 4 / 5,
+                          child: _tile(context, posts.where((p) => p.isReelLike).toList(), 0),
+                        ),
+                      ),
+                    ),
                   SliverGrid(
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 3,

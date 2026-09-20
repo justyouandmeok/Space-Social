@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models.dart';
 import '../state.dart';
 import '../store.dart';
@@ -68,6 +69,9 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
     super.initState();
     _spin = AnimationController(vsync: this, duration: const Duration(seconds: 6))..repeat();
     _pager = PageController();
+    SharedPreferences.getInstance().then((p) {
+      if (mounted) setState(() => friends = p.getBool('ss_reels_friends') ?? false);
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final items = _orderedReels();
       if (items.isNotEmpty && _countedViews.add(items.first.id)) {
@@ -301,12 +305,18 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
               else
                 const SizedBox(width: 16),
               GestureDetector(
-                onTap: () => setState(() => friends = false),
+                onTap: () {
+                  setState(() => friends = false);
+                  SharedPreferences.getInstance().then((p) => p.setBool('ss_reels_friends', false));
+                },
                 child: Text('Reels', style: TextStyle(color: friends ? Colors.white54 : Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
               ),
               const SizedBox(width: 16),
               GestureDetector(
-                onTap: () => setState(() => friends = true),
+                onTap: () {
+                  setState(() => friends = true);
+                  SharedPreferences.getInstance().then((p) => p.setBool('ss_reels_friends', true));
+                },
                 child: Text('Amigos', style: TextStyle(color: friends ? Colors.white : Colors.white54, fontSize: 16, fontWeight: FontWeight.w600)),
               ),
               const Spacer(),

@@ -411,6 +411,20 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> {
                             isCollapsed: true,
                           ),
                           onTap: () => setState(() => _isPaused = true),
+                          onSubmitted: (_) async {
+                            final text = _reply.text.trim();
+                            if (text.isEmpty) return;
+                            if (caption.startsWith('ASK:')) {
+                              await widget.state.answerStory(story.id, text);
+                            } else {
+                              await widget.state.sendMessage(widget.userId, text);
+                            }
+                            _reply.clear();
+                            if (mounted) {
+                              setState(() => _isPaused = false);
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enviado')));
+                            }
+                          },
                         ),
                       ),
                     ),
