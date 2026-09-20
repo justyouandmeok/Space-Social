@@ -11,6 +11,7 @@ import '../widgets/network_photo.dart';
 import '../widgets/comments_bottom_sheet.dart';
 import '../widgets/share_sheet.dart';
 import 'post_screen.dart';
+import 'algorithm_screen.dart';
 
 final _countedViews = <String>{};
 
@@ -309,6 +310,10 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
                 child: Text('Amigos', style: TextStyle(color: friends ? Colors.white : Colors.white54, fontSize: 16, fontWeight: FontWeight.w600)),
               ),
               const Spacer(),
+              IconButton(
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AlgorithmScreen())),
+                icon: const Icon(Icons.favorite_border, color: Colors.white, size: 22),
+              ),
               IconButton(
                 onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => PostScreen(state: state, initialMode: 2))),
                 icon: const Icon(Icons.camera_alt_outlined, color: Colors.white, size: 26),

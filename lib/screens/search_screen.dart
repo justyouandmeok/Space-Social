@@ -22,6 +22,7 @@ class _SearchScreenState extends State<SearchScreen> {
   final _searchController = TextEditingController();
   final _categories = ['Para ti', 'IA', 'Espacio', 'Tech', 'Arte', 'Gaming', 'Música'];
   int _selectedCategory = 0;
+  int _resultTab = 0;
   List<String> _recent = [];
 
   @override
@@ -103,6 +104,24 @@ class _SearchScreenState extends State<SearchScreen> {
       body: q.isNotEmpty
           ? ListView(
               children: [
+                SizedBox(
+                  height: 40,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    children: [
+                      for (final e in ['Top', 'Cuentas', 'Audio', 'Etiquetas'].asMap().entries)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                          child: ChoiceChip(
+                            label: Text(e.value, style: const TextStyle(fontSize: 13)),
+                            selected: _resultTab == e.key,
+                            onSelected: (_) => setState(() => _resultTab = e.key),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
                 if (_recent.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
@@ -119,6 +138,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       ),
                     ]),
                   ),
+                if (_resultTab == 0 || _resultTab == 1)
                 ...people.map((u) => ListTile(
                       leading: Avatar(u.avatarPath, size: 44),
                       title: Row(children: [
@@ -131,7 +151,16 @@ class _SearchScreenState extends State<SearchScreen> {
                         widget.onOpenProfile(u.id);
                       },
                     )),
-                const SizedBox(height: 8),
+                if (_resultTab == 3)
+                  ...posts
+                      .expand((p) => RegExp(r'#(\w+)').allMatches(p.caption))
+                      .map((m) => m.group(0)!)
+                      .toSet()
+                      .map((tag) => ListTile(
+                            leading: CircleAvatar(backgroundColor: SpaceColors.chip, child: Icon(Icons.tag, color: SpaceColors.text)),
+                            title: Text(tag, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w600)),
+                          )),
+                if (_resultTab == 0 || _resultTab == 2)
                 GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),

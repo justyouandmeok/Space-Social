@@ -87,7 +87,7 @@ class ProfileScreen extends StatelessWidget {
         ],
       ),
       body: DefaultTabController(
-        length: 4,
+        length: 5,
         child: NestedScrollView(
           headerSliverBuilder: (context, _) => [
             SliverToBoxAdapter(
@@ -338,18 +338,7 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ),
                     ],
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      height: 92,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        children: [
-                          if (isMe) _highlightAdd(context),
-                          ...highlights.take(8).map((s) => _highlight(context, s, user)),
-                          if (isMe) _SavedHighlights(state: state),
-                        ],
-                      ),
-                    ),
+                    const SizedBox(height: 8),
                   ],
                 ),
               ),
@@ -368,6 +357,7 @@ class ProfileScreen extends StatelessWidget {
                     Tab(icon: Icon(Icons.movie_outlined, size: 22)),
                     Tab(icon: Icon(Icons.repeat, size: 22)),
                     Tab(icon: Icon(Icons.assignment_ind_outlined, size: 22)),
+                    Tab(icon: Icon(Icons.bookmark_border, size: 22)),
                   ],
                 ),
               ),
@@ -379,6 +369,7 @@ class ProfileScreen extends StatelessWidget {
               _reelsGrid(reels),
               _repostsGrid(),
               _taggedGrid(),
+              _highlightsTab(context, highlights, user, isMe),
             ],
           ),
         ),
@@ -455,6 +446,46 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+
+  Widget _highlightsTab(BuildContext context, List highlights, UserAccount user, bool isMe) {
+    return GridView.builder(
+      padding: const EdgeInsets.all(8),
+      itemCount: highlights.length + (isMe ? 1 : 0),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 6,
+        mainAxisSpacing: 6,
+        childAspectRatio: 3 / 4,
+      ),
+      itemBuilder: (context, index) {
+        if (isMe && index == 0) {
+          return GestureDetector(
+            onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CreateHighlightScreen(state: state))),
+            child: Container(
+              decoration: BoxDecoration(color: SpaceColors.surface, borderRadius: BorderRadius.circular(8), border: Border.all(color: SpaceColors.hairline)),
+              child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                Icon(Icons.add, color: SpaceColors.text, size: 28),
+                const SizedBox(height: 6),
+                Text('Nueva', style: TextStyle(color: SpaceColors.text, fontSize: 12)),
+              ]),
+            ),
+          );
+        }
+        final s = highlights[isMe ? index - 1 : index];
+        return GestureDetector(
+          onTap: () => Navigator.of(context).push(fadeRoute(StoryViewerScreen(state: state, userId: user.id))),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Stack(fit: StackFit.expand, children: [
+              MediaView(s.imagePath, video: false),
+              const DecoratedBox(decoration: BoxDecoration(gradient: LinearGradient(colors: [Colors.transparent, Colors.black54], begin: Alignment.center, end: Alignment.bottomCenter))),
+              Positioned(left: 8, bottom: 8, child: Text(user.username, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600))),
+            ]),
+          ),
+        );
+      },
+    );
+  }
 
   Widget _reelsGrid(List<Post> items) {
     if (items.isEmpty) {
@@ -562,7 +593,7 @@ class ProfileScreen extends StatelessWidget {
         crossAxisCount: 3,
         crossAxisSpacing: 1.5,
         mainAxisSpacing: 1.5,
-        childAspectRatio: 1,
+        childAspectRatio: 3 / 4,
       ),
       itemBuilder: (context, index) {
         final p = items[index];
@@ -972,6 +1003,35 @@ class SettingsScreen extends StatelessWidget {
           subtitle: Text('${state.incomingFollows.length} pendientes', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
           trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => FollowRequestsScreen(state: state))),
+        ),
+        ListTile(
+          leading: Icon(Icons.chat_bubble_outline, color: SpaceColors.text),
+          title: Text('Mensajes y respuestas a historias', style: TextStyle(color: SpaceColors.text)),
+          subtitle: Text('Quién puede escribirte', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+          trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
+          onTap: () => showModalBottomSheet(
+            context: context,
+            backgroundColor: SpaceColors.surface,
+            builder: (c) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
+              ListTile(title: Text('Todos', style: TextStyle(color: SpaceColors.text)), onTap: () => Navigator.pop(c)),
+              ListTile(title: Text('Personas que seguís', style: TextStyle(color: SpaceColors.text)), onTap: () => Navigator.pop(c)),
+              ListTile(title: Text('Nadie', style: TextStyle(color: SpaceColors.text)), onTap: () => Navigator.pop(c)),
+            ])),
+          ),
+        ),
+        ListTile(
+          leading: Icon(Icons.alternate_email, color: SpaceColors.text),
+          title: Text('Etiquetas y menciones', style: TextStyle(color: SpaceColors.text)),
+          subtitle: Text('Aprobar etiquetas', style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
+          trailing: Icon(Icons.chevron_right, color: SpaceColors.textMuted),
+          onTap: () => showModalBottomSheet(
+            context: context,
+            backgroundColor: SpaceColors.surface,
+            builder: (c) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
+              ListTile(title: Text('Permitir de todos', style: TextStyle(color: SpaceColors.text)), onTap: () => Navigator.pop(c)),
+              ListTile(title: Text('Solo personas que seguís', style: TextStyle(color: SpaceColors.text)), onTap: () => Navigator.pop(c)),
+            ])),
+          ),
         ),
         Padding(padding: const EdgeInsets.fromLTRB(16, 16, 16, 6), child: Text('Quién puede ver tu contenido', style: TextStyle(color: SpaceColors.textMuted, fontSize: 13, fontWeight: FontWeight.w600))),
         ListTile(
