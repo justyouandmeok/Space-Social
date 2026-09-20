@@ -169,7 +169,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     crossAxisCount: 3,
                     crossAxisSpacing: 1,
                     mainAxisSpacing: 1,
-                    childAspectRatio: 0.75,
+                    childAspectRatio: 3 / 4,
                   ),
                   itemBuilder: (context, index) => _tile(context, posts, index),
                 ),
@@ -207,9 +207,9 @@ class _SearchScreenState extends State<SearchScreen> {
                   SliverGrid(
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 3,
-                      crossAxisSpacing: 1.2,
-                      mainAxisSpacing: 1.2,
-                      childAspectRatio: 1,
+                      crossAxisSpacing: 1,
+                      mainAxisSpacing: 1,
+                      childAspectRatio: 3 / 4,
                     ),
                     delegate: SliverChildBuilderDelegate(
                       (context, index) => _tile(context, posts, index),
@@ -243,30 +243,22 @@ class _SearchScreenState extends State<SearchScreen> {
         fit: StackFit.expand,
         children: [
           MediaView(p.imagePath, video: p.isVideo),
-          const DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.center,
-                end: Alignment.bottomCenter,
-                colors: [Colors.transparent, Colors.black54],
-              ),
-            ),
-          ),
-          if (p.isReel || p.isVideo)
+          if (p.isReelLike)
             const Positioned(
               top: 6,
               right: 6,
-              child: Icon(Icons.play_arrow, color: Colors.white, size: 18),
+              child: Icon(Icons.play_arrow, color: Colors.white, size: 16, shadows: [Shadow(blurRadius: 6, color: Colors.black54)]),
             ),
+          if (p.views > 0)
           Positioned(
-            left: 6,
-            bottom: 6,
+            left: 5,
+            bottom: 5,
             child: Row(children: [
-              const Icon(Icons.visibility, color: Colors.white, size: 13),
-              const SizedBox(width: 3),
+              const Icon(Icons.play_arrow, color: Colors.white, size: 12),
+              const SizedBox(width: 2),
               Text(
-                compact(p.views < 1 ? 1 : p.views),
-                style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),
+                compact(p.views),
+                style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700, shadows: [Shadow(blurRadius: 6, color: Colors.black54)]),
               ),
             ]),
           ),
