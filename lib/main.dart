@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config.dart';
 import 'screens/main_screen.dart';
+import 'screens/splash_screen.dart';
 import 'space_theme.dart';
 import 'state.dart';
 import 'theme.dart';
@@ -67,12 +68,7 @@ class _SpaceSocialAppState extends State<SpaceSocialApp> {
       themeMode: state.darkMode ? ThemeMode.dark : ThemeMode.light,
       themeAnimationDuration: const Duration(milliseconds: 280),
       themeAnimationCurve: Curves.easeOutCubic,
-      home: !state.ready
-          ? Scaffold(
-              backgroundColor: SpaceColors.bg,
-              body: Center(child: CircularProgressIndicator(color: SpaceColors.cosmicCyan)),
-            )
-          : MainScreen(state: state),
+      home: SplashGate(ready: state.ready, child: MainScreen(state: state)),
     );
   }
 }

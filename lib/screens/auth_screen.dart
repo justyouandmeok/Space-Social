@@ -17,6 +17,7 @@ class _AuthScreenState extends State<AuthScreen> {
   final pass = TextEditingController();
   bool register = false;
   bool busy = false;
+  bool hidePass = true;
 
   @override
   void dispose() {
@@ -28,6 +29,28 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Future<void> _go() async {
+    final mail = email.text.trim();
+    final pwd = pass.text;
+    if (register) {
+      if (!mail.contains('@')) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Usa un email válido.')));
+        return;
+      }
+      if (user.text.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Elegí un nombre de usuario.')));
+        return;
+      }
+      if (pwd.length < 6) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('La contraseña debe tener al menos 6 caracteres.')));
+        return;
+      }
+    } else if (mail.isEmpty && user.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Escribe tu email o usuario.')));
+      return;
+    } else if (pwd.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Escribe tu contraseña.')));
+      return;
+    }
     setState(() => busy = true);
     final ok = register
         ? await widget.state.register(email: email.text, username: user.text, name: name.text, password: pass.text)
@@ -48,13 +71,24 @@ class _AuthScreenState extends State<AuthScreen> {
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
           children: [
-            const SizedBox(height: 48),
-            Text('Space Social', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'GrandHotel', fontSize: 56, color: SpaceColors.text, height: 1)),
-            const SizedBox(height: 40),
+            const SizedBox(height: 24),
+            Center(
+              child: Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: SpaceColors.text, width: 1.2)),
+                child: Icon(Icons.auto_awesome, color: SpaceColors.text, size: 34),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text('Space Social', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'GrandHotel', fontSize: 52, color: SpaceColors.text, height: 1)),
+            const SizedBox(height: 6),
+            Text('Comparte lo que te hace brillar.', textAlign: TextAlign.center, style: TextStyle(color: SpaceColors.textMuted, fontSize: 13)),
+            const SizedBox(height: 32),
             _field(email, register ? 'Correo' : 'Correo, usuario o teléfono'),
             if (register) _field(user, 'Nombre de usuario'),
             if (register) _field(name, 'Nombre'),
-            _field(pass, 'Contraseña', hide: true),
+            _field(pass, 'Contraseña', hide: hidePass, onToggle: () => setState(() => hidePass = !hidePass)),
             const SizedBox(height: 12),
             SizedBox(
               height: 44,
@@ -98,7 +132,7 @@ class _AuthScreenState extends State<AuthScreen> {
     );
   }
 
-  Widget _field(TextEditingController c, String hint, {bool hide = false}) {
+  Widget _field(TextEditingController c, String hint, {bool hide = false, VoidCallback? onToggle}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: TextField(
@@ -113,6 +147,12 @@ class _AuthScreenState extends State<AuthScreen> {
           enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: SpaceColors.hairline)),
           focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: SpaceColors.textMuted)),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: SpaceColors.hairline)),
+          suffixIcon: onToggle == null
+              ? null
+              : IconButton(
+                  icon: Icon(hide ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: SpaceColors.textMuted, size: 20),
+                  onPressed: onToggle,
+                ),
         ),
       ),
     );
