@@ -193,7 +193,29 @@ class _SuggestedRow extends StatelessWidget {
           child: Row(children: [
             Text('Sugerencias para ti', style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w700, fontSize: 14)),
             const Spacer(),
-            Text('Ver todo', style: TextStyle(color: SpaceColors.textMuted, fontSize: 13, fontWeight: FontWeight.w600)),
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => Scaffold(
+                    backgroundColor: SpaceColors.bg,
+                    appBar: AppBar(backgroundColor: SpaceColors.bg, title: const Text('Sugerencias')),
+                    body: ListView(
+                      children: [
+                        for (final u in state.suggested)
+                          ListTile(
+                            leading: Avatar(u.avatarPath, size: 44),
+                            title: Text(u.username, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w700)),
+                            subtitle: Text(u.name, style: TextStyle(color: SpaceColors.textMuted)),
+                            trailing: FilledButton(onPressed: () => state.toggleFollow(u.id), child: Text(state.isFollowing(u.id) ? 'Siguiendo' : 'Seguir')),
+                            onTap: () => onOpenProfile(u.id),
+                          ),
+                      ],
+                    ),
+                  ),
+                ));
+              },
+              child: Text('Ver todo', style: TextStyle(color: SpaceColors.textMuted, fontSize: 13, fontWeight: FontWeight.w600)),
+            ),
           ]),
         ),
         SizedBox(
@@ -213,7 +235,8 @@ class _SuggestedRow extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: SpaceColors.hairline),
                 ),
-                child: Column(children: [
+                child: Stack(children: [
+                  Column(children: [
                   GestureDetector(
                     onTap: () => onOpenProfile(u.id),
                     child: Avatar(u.avatarPath, size: 72),
@@ -234,6 +257,15 @@ class _SuggestedRow extends StatelessWidget {
                         padding: EdgeInsets.zero,
                       ),
                       child: Text(state.isFollowing(u.id) ? 'Siguiendo' : state.isPendingFollow(u.id) ? 'Solicitado' : 'Seguir', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                    ),
+                  ),
+                ]),
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: GestureDetector(
+                      onTap: () => state.dismissSuggested(u.id),
+                      child: Icon(Icons.close, size: 16, color: SpaceColors.textMuted),
                     ),
                   ),
                 ]),

@@ -76,6 +76,7 @@ class AppState extends ChangeNotifier {
   List<String> gridOrder = [];
   List<String> algoMore = [];
   List<String> algoLess = [];
+  Set<String> dismissedSuggested = {};
   Set<String> hiddenPosts = {};
   Set<String> restricted = {};
   Set<String> commentsOff = {};
@@ -319,7 +320,7 @@ class AppState extends ChangeNotifier {
   List<UserAccount> get suggested {
     if (!isLoggedIn) return users.take(12).toList();
     final mine = followingOf(me.id).toSet();
-    return users.where((u) => u.id != me.id && !mine.contains(u.id) && !u.username.startsWith('_merged_')).take(12).toList();
+    return users.where((u) => u.id != me.id && !mine.contains(u.id) && !dismissedSuggested.contains(u.id) && !u.username.startsWith('_merged_')).take(12).toList();
   }
 
   List<UserAccount> get searchUsers {
@@ -532,6 +533,7 @@ class AppState extends ChangeNotifier {
         recentProfiles = List<String>.from(data['recentProfiles'] ?? const []);
         textScale = (data['textScale'] as num?)?.toDouble() ?? 1.0;
         hideSuggested = data['hideSuggested'] == true;
+        dismissedSuggested = {...List<String>.from(data['dismissedSuggested'] ?? const [])};
         usedMinutes = (data['usedMinutes'] as num?)?.toInt() ?? 0;
         savedAudios = {...List<String>.from(data['savedAudios'] ?? const [])};
         activitySeenAt = DateTime.tryParse(data['activitySeenAt'] as String? ?? '');
@@ -1329,6 +1331,12 @@ class AppState extends ChangeNotifier {
     await _savePrefs();
   }
 
+  Future<void> dismissSuggested(String userId) async {
+    dismissedSuggested.add(userId);
+    notifyListeners();
+    await _saveCache();
+  }
+
   Future<void> tickUsage() async {
     usedMinutes += 1;
     await _savePrefs();
@@ -1924,6 +1932,7 @@ class AppState extends ChangeNotifier {
       'recentProfiles': recentProfiles,
       'textScale': textScale,
       'hideSuggested': hideSuggested,
+      'dismissedSuggested': dismissedSuggested.toList(),
       'usedMinutes': usedMinutes,
       'savedAudios': savedAudios.toList(),
       if (activitySeenAt != null) 'activitySeenAt': activitySeenAt!.toIso8601String(),

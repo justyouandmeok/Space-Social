@@ -463,7 +463,33 @@ class _SpacePostCardState extends State<SpacePostCard> with SingleTickerProvider
             IconButton(
               visualDensity: VisualDensity.compact,
               icon: CustomPaint(size: const Size(26, 26), painter: BookmarkPainter(SpaceColors.icon, filled: saved)),
-              onPressed: () => widget.state.toggleSave(live.id),
+              onPressed: () async {
+                final was = live.savedFor(widget.state.me.id);
+                await widget.state.toggleSave(live.id);
+                if (!context.mounted) return;
+                if (!was) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: const Text('Guardado'),
+                    action: SnackBarAction(
+                      label: 'Colección',
+                      onPressed: () {
+                        final c = TextEditingController();
+                        showDialog(
+                          context: context,
+                          builder: (d) => AlertDialog(
+                            title: const Text('Colección'),
+                            content: TextField(controller: c, decoration: const InputDecoration(hintText: 'Nombre')),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(d), child: const Text('Cancelar')),
+                              TextButton(onPressed: () { widget.state.addToCollection(c.text, live.id); Navigator.pop(d); }, child: const Text('Guardar')),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ));
+                }
+              },
             ),
           ]),
         ),
