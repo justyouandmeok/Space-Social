@@ -205,16 +205,6 @@ class _SearchScreenState extends State<SearchScreen> {
                       ),
                     ),
                   ),
-                  if (posts.any((p) => p.isReelLike))
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 1),
-                        child: AspectRatio(
-                          aspectRatio: 4 / 5,
-                          child: _tile(context, posts.where((p) => p.isReelLike).toList(), 0),
-                        ),
-                      ),
-                    ),
                   SliverGrid(
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 3,
@@ -253,7 +243,7 @@ class _SearchScreenState extends State<SearchScreen> {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          MediaView(p.imagePath, video: p.isVideo),
+          MediaView(p.imagePath, video: p.isVideo, autoplay: false, active: false, showMute: false, showPlayButton: false),
           if (p.isReelLike)
             const Positioned(
               top: 6,
