@@ -23,6 +23,9 @@ class _PostScreenState extends State<PostScreen> {
   bool video = false;
   final cap = TextEditingController();
   final loc = TextEditingController();
+  final link = TextEditingController();
+  String audioName = 'Audio original';
+  String themeTag = '';
   bool grokBusy = false;
   bool sharing = false;
   bool alsoStory = false;
@@ -48,6 +51,7 @@ class _PostScreenState extends State<PostScreen> {
   void dispose() {
     cap.dispose();
     loc.dispose();
+    link.dispose();
     super.dispose();
   }
 
@@ -146,6 +150,8 @@ class _PostScreenState extends State<PostScreen> {
       final names = widget.state.users.where((u) => tagged.contains(u.id)).map((u) => '@${u.username}').join(' ');
       c = '$c $names'.trim();
     }
+    if (link.text.trim().isNotEmpty) c = '$c ${link.text.trim()}'.trim();
+    if (audioName != 'Audio original') c = '$c ♪ $audioName'.trim();
     final v = video;
     final place = loc.text;
     Navigator.of(context).pop();
@@ -397,7 +403,29 @@ class _PostScreenState extends State<PostScreen> {
                   _chipBtn('Pregunta', () { cap.text = 'ASK:${cap.text.isEmpty ? 'Respondé esto' : cap.text}'; setState(() {}); }),
                   _chipBtn('Add yours', () { cap.text = '${cap.text} ADDYOURS:sumate'.trim(); setState(() {}); }),
                   _chipBtn('# Hashtags', () { cap.text = '${cap.text} #'; cap.selection = TextSelection.collapsed(offset: cap.text.length); }),
-                  _chipBtn('Vincular un reel', () {}),
+                  _chipBtn('Vincular un reel', () {
+                    final reels = widget.state.postsOf(widget.state.me.id).where((p) => p.isReelLike).toList();
+                    showModalBottomSheet(
+                      context: context,
+                      backgroundColor: const Color(0xFF1A1A1A),
+                      builder: (c) => SafeArea(
+                        child: Column(mainAxisSize: MainAxisSize.min, children: [
+                          const ListTile(title: Text('Vincular un reel', style: TextStyle(color: Colors.white))),
+                          if (reels.isEmpty)
+                            const ListTile(title: Text('Todavía no tenés reels', style: TextStyle(color: Colors.white54)))
+                          else
+                            ...reels.take(8).map((p) => ListTile(
+                                  title: Text(p.caption.isEmpty ? p.id : p.caption, maxLines: 1, style: const TextStyle(color: Colors.white)),
+                                  onTap: () {
+                                    cap.text = '${cap.text} reel:${p.id}'.trim();
+                                    Navigator.pop(c);
+                                    setState(() {});
+                                  },
+                                )),
+                        ]),
+                      ),
+                    );
+                  }),
                   _chipBtn('Encuesta', () {
                     final q = TextEditingController();
                     final a = TextEditingController(text: 'Sí');
@@ -427,7 +455,27 @@ class _PostScreenState extends State<PostScreen> {
                       ),
                     );
                   }),
-                  _chipBtn('Tema', () {}),
+                  _chipBtn('Tema', () {
+                    showModalBottomSheet(
+                      context: context,
+                      backgroundColor: const Color(0xFF1A1A1A),
+                      builder: (c) => SafeArea(
+                        child: Wrap(children: [
+                          for (final t in ['Música', 'Arte', 'Deporte', 'Comida', 'Viajes', 'Tech', 'Humor'])
+                            ListTile(
+                              title: Text(t, style: const TextStyle(color: Colors.white)),
+                              trailing: themeTag == t ? const Icon(Icons.check, color: Colors.white) : null,
+                              onTap: () {
+                                themeTag = t;
+                                if (!cap.text.contains('#$t')) cap.text = '${cap.text} #$t'.trim();
+                                Navigator.pop(c);
+                                setState(() {});
+                              },
+                            ),
+                        ]),
+                      ),
+                    );
+                  }),
                   _chipBtn('Programar', () async {
                     await widget.state.schedulePost(image: file!, caption: cap.text, delay: const Duration(minutes: 5), location: loc.text, isReel: mode == 2, isVideo: video);
                     if (mounted) {
@@ -438,7 +486,20 @@ class _PostScreenState extends State<PostScreen> {
                 ]),
                 const SizedBox(height: 8),
                 _row(Icons.person_outline, 'Etiquetar personas', tagged.isEmpty ? '' : '${tagged.length}', _pickPeople),
-                _row(Icons.place_outlined, 'Agregar ubicación', loc.text, () {}),
+                _row(Icons.place_outlined, 'Agregar ubicación', loc.text, () {
+                  final c = TextEditingController(text: loc.text);
+                  showDialog(
+                    context: context,
+                    builder: (d) => AlertDialog(
+                      title: const Text('Ubicación'),
+                      content: TextField(controller: c, decoration: const InputDecoration(hintText: 'Ciudad o lugar')),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(d), child: const Text('Cancelar')),
+                        TextButton(onPressed: () { loc.text = c.text.trim(); Navigator.pop(d); setState(() {}); }, child: const Text('Listo')),
+                      ],
+                    ),
+                  );
+                }),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -451,8 +512,34 @@ class _PostScreenState extends State<PostScreen> {
                     ),
                   )).toList(),
                 ),
-                _row(Icons.link, 'Agregar enlace', 'NUEVO', () {}),
-                _row(Icons.music_note_outlined, 'Renombrar audio', 'Audio original', () {}),
+                _row(Icons.link, 'Agregar enlace', link.text.isEmpty ? 'NUEVO' : link.text, () {
+                  final c = TextEditingController(text: link.text);
+                  showDialog(
+                    context: context,
+                    builder: (d) => AlertDialog(
+                      title: const Text('Enlace'),
+                      content: TextField(controller: c, decoration: const InputDecoration(hintText: 'https://')),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(d), child: const Text('Cancelar')),
+                        TextButton(onPressed: () { link.text = c.text.trim(); Navigator.pop(d); setState(() {}); }, child: const Text('Listo')),
+                      ],
+                    ),
+                  );
+                }),
+                _row(Icons.music_note_outlined, 'Renombrar audio', audioName, () {
+                  final c = TextEditingController(text: audioName);
+                  showDialog(
+                    context: context,
+                    builder: (d) => AlertDialog(
+                      title: const Text('Audio'),
+                      content: TextField(controller: c),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(d), child: const Text('Cancelar')),
+                        TextButton(onPressed: () { audioName = c.text.trim().isEmpty ? 'Audio original' : c.text.trim(); Navigator.pop(d); setState(() {}); }, child: const Text('Listo')),
+                      ],
+                    ),
+                  );
+                }),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
                   title: const Text('Agregar etiqueta de IA', style: TextStyle(color: Colors.white, fontSize: 14)),
