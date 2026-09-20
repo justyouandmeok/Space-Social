@@ -73,6 +73,9 @@ class AppState extends ChangeNotifier {
   Set<String> closeFriends = {};
   Set<String> archived = {};
   Set<String> pinnedPosts = {};
+  List<String> gridOrder = [];
+  List<String> algoMore = [];
+  List<String> algoLess = [];
   Set<String> hiddenPosts = {};
   Set<String> restricted = {};
   Set<String> commentsOff = {};
@@ -271,7 +274,25 @@ class AppState extends ChangeNotifier {
   }
 
   List<Post> get reels {
-    return posts.where((p) => p.isReelLike).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final list = posts.where((p) => p.isReelLike).toList();
+    int score(Post p) {
+      final c = p.caption.toLowerCase();
+      var s = 0;
+      for (final t in algoMore) {
+        if (c.contains(t.toLowerCase())) s += 3;
+      }
+      for (final t in algoLess) {
+        if (c.contains(t.toLowerCase())) s -= 4;
+      }
+      s += (p.likes.length + p.views / 10).round();
+      return s;
+    }
+    list.sort((a, b) {
+      final d = score(b).compareTo(score(a));
+      if (d != 0) return d;
+      return b.createdAt.compareTo(a.createdAt);
+    });
+    return list;
   }
 
   List<Post> get explorePosts =>
@@ -406,6 +427,9 @@ class AppState extends ChangeNotifier {
         darkMode = prefs.getBool('ss_dark_mode') ?? darkMode;
         LumaColors.dark = darkMode;
         SpaceColors.dark = darkMode;
+        gridOrder = prefs.getStringList('ss_grid_order') ?? gridOrder;
+        algoMore = prefs.getStringList('ss_algo_more') ?? algoMore;
+        algoLess = prefs.getStringList('ss_algo_less') ?? algoLess;
       } catch (_) {}
     } catch (_) {}
   }
@@ -1549,6 +1573,17 @@ class AppState extends ChangeNotifier {
     }());
   }
 
+  Future<void> addCommentImage(String postId, File file) async {
+    if (!isLoggedIn) return;
+    try {
+      final url = await _upload(file, SpaceConfig.postsBucket, 'comments/${me.id}');
+      await addComment(postId, 'IMG::$url');
+    } catch (_) {
+      lastError = 'No se pudo subir la foto del comentario.';
+      notifyListeners();
+    }
+  }
+
   Future<void> addComment(String postId, String text) async {
     if (!isLoggedIn || text.trim().isEmpty) return;
     if (commentsOff.contains(postId)) {
@@ -2029,6 +2064,16 @@ class AppState extends ChangeNotifier {
       closeFriends.add(userId);
     }
     await _savePrefs();
+  }
+
+  Future<void> bringPostForward(String postId) async {
+    gridOrder.remove(postId);
+    gridOrder.insert(0, postId);
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.setStringList('ss_grid_order', gridOrder);
+    } catch (_) {}
+    notifyListeners();
   }
 
   Future<void> togglePin(String postId) async {

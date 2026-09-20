@@ -1,4 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'media_view.dart';
 import '../models.dart';
 import '../space_theme.dart';
 import '../state.dart';
@@ -144,7 +147,10 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                                       Text(timeAgo(c.createdAt), style: TextStyle(color: SpaceColors.textMuted, fontSize: 12)),
                                     ]),
                                     const SizedBox(height: 3),
-                                    Text(c.text, style: TextStyle(color: SpaceColors.text, fontSize: 14)),
+                                    if (c.text.startsWith('IMG::'))
+                                      SizedBox(width: 160, height: 160, child: MediaView(c.text.substring(5)))
+                                    else
+                                      Text(c.text, style: TextStyle(color: SpaceColors.text, fontSize: 14)),
                                     const SizedBox(height: 6),
                                     GestureDetector(
                                       onTap: () {
@@ -188,7 +194,19 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                 ),
                 child: Row(children: [
                   Avatar(widget.state.me.avatarPath, size: 32),
-                  const SizedBox(width: 10),
+                  IconButton(
+                    icon: Icon(Icons.image_outlined, color: SpaceColors.icon),
+                    onPressed: _sending
+                        ? null
+                        : () async {
+                            final x = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 80);
+                            if (x == null) return;
+                            setState(() => _sending = true);
+                            await widget.state.addCommentImage(widget.postId, File(x.path));
+                            if (mounted) setState(() => _sending = false);
+                          },
+                  ),
+                  const SizedBox(width: 4),
                   Expanded(
                     child: TextField(
                       controller: _commentController,

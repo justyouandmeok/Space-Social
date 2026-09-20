@@ -311,7 +311,7 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
               ),
               const Spacer(),
               IconButton(
-                onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AlgorithmScreen())),
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => AlgorithmScreen(state: state))),
                 icon: const Icon(Icons.favorite_border, color: Colors.white, size: 22),
               ),
               IconButton(

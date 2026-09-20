@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../space_theme.dart';
+import '../state.dart';
 
 class AlgorithmScreen extends StatefulWidget {
-  const AlgorithmScreen({super.key});
+  const AlgorithmScreen({super.key, this.state});
+  final AppState? state;
 
   @override
   State<AlgorithmScreen> createState() => _AlgorithmScreenState();
@@ -30,6 +32,9 @@ class _AlgorithmScreenState extends State<AlgorithmScreen> {
     final p = await SharedPreferences.getInstance();
     await p.setStringList('ss_algo_more', more.toList());
     await p.setStringList('ss_algo_less', less.toList());
+    widget.state?.algoMore = more.toList();
+    widget.state?.algoLess = less.toList();
+    widget.state?.notifyListeners();
   }
 
   @override

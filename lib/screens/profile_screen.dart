@@ -40,6 +40,13 @@ class ProfileScreen extends StatelessWidget {
         final ap = state.pinnedPosts.contains(a.id) ? 0 : 1;
         final bp = state.pinnedPosts.contains(b.id) ? 0 : 1;
         if (ap != bp) return ap.compareTo(bp);
+        final ao = state.gridOrder.indexOf(a.id);
+        final bo = state.gridOrder.indexOf(b.id);
+        if (ao >= 0 || bo >= 0) {
+          final ai = ao < 0 ? 9999 : ao;
+          final bi = bo < 0 ? 9999 : bo;
+          return ai.compareTo(bi);
+        }
         return b.createdAt.compareTo(a.createdAt);
       });
     final reels = state.postsOf(user.id).where((p) => p.isReelLike).toList();
@@ -600,7 +607,16 @@ class ProfileScreen extends StatelessWidget {
         final pinned = state.pinnedPosts.contains(p.id);
         return GestureDetector(
           onLongPress: user.id == state.me.id
-              ? () => state.togglePin(p.id)
+              ? () => showModalBottomSheet(
+                    context: context,
+                    backgroundColor: SpaceColors.surface,
+                    builder: (c) => SafeArea(
+                      child: Column(mainAxisSize: MainAxisSize.min, children: [
+                        ListTile(title: Text(state.pinnedPosts.contains(p.id) ? 'Desfijar' : 'Fijar', style: TextStyle(color: SpaceColors.text)), onTap: () { Navigator.pop(c); state.togglePin(p.id); }),
+                        ListTile(title: Text('Traer al frente', style: TextStyle(color: SpaceColors.text)), onTap: () { Navigator.pop(c); state.bringPostForward(p.id); }),
+                      ]),
+                    ),
+                  )
               : null,
           onTap: () {
             if (p.isReelLike) {
