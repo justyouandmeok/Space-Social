@@ -9,6 +9,7 @@ import 'post_screen.dart';
 import '../space_theme.dart';
 import '../widgets/ig_icons.dart';
 import '../widgets/network_photo.dart';
+import '../widgets/empty_state.dart';
 
 class FeedScreen extends StatelessWidget {
   const FeedScreen({super.key, required this.state, required this.onOpenCreate, required this.onOpenProfile, this.scrollController});
@@ -118,16 +119,11 @@ class FeedScreen extends StatelessWidget {
             ),
             SliverToBoxAdapter(child: Divider(color: SpaceColors.hairline, height: 0.33, thickness: 0.33)),
             if (items.isEmpty)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 36, 24, 12),
-                  child: Column(children: [
-                    Icon(Icons.camera_alt_outlined, color: SpaceColors.textMuted, size: 42),
-                    const SizedBox(height: 10),
-                    Text('Todavía no hay publicaciones', textAlign: TextAlign.center, style: TextStyle(color: SpaceColors.text, fontWeight: FontWeight.w700, fontSize: 16)),
-                    const SizedBox(height: 4),
-                    Text('Seguí cuentas o tocá + para publicar la primera.', textAlign: TextAlign.center, style: TextStyle(color: SpaceColors.textMuted, fontSize: 13)),
-                  ]),
+              const SliverToBoxAdapter(
+                child: EmptyState(
+                  icon: Icons.photo_library_outlined,
+                  title: 'Tu feed está esperando',
+                  message: 'Sé la primera persona en compartir algo con tu comunidad.',
                 ),
               )
             else

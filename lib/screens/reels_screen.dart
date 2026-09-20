@@ -13,6 +13,7 @@ import '../widgets/comments_bottom_sheet.dart';
 import '../widgets/share_sheet.dart';
 import 'post_screen.dart';
 import 'algorithm_screen.dart';
+import '../widgets/empty_state.dart';
 
 final _countedViews = <String>{};
 
@@ -124,17 +125,16 @@ class _ReelsScreenState extends State<ReelsScreen> with SingleTickerProviderStat
     if (items.isEmpty) {
       return Scaffold(
         backgroundColor: Colors.black,
-        body: Center(
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            const Text('Todavía no hay Reels', style: TextStyle(color: Colors.white70, fontSize: 16)),
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                builder: (_) => PostScreen(state: state, initialMode: 2),
-              )),
-              child: const Text('Crear un reel'),
-            ),
-          ]),
+        body: EmptyState(
+          icon: Icons.movie_outlined,
+          title: 'Todavía no hay Reels',
+          message: 'Publicá un video vertical y aparece acá.',
+          action: TextButton(
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => PostScreen(state: state, initialMode: 2),
+            )),
+            child: const Text('Crear un reel'),
+          ),
         ),
       );
     }

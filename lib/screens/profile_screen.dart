@@ -16,6 +16,7 @@ import '../widgets/profile_drawer_modal.dart';
 import '../widgets/links_bottom_sheet.dart';
 import '../widgets/verified_badge.dart';
 import '../widgets/ig_button.dart';
+import '../widgets/empty_state.dart';
 import 'create_highlight_screen.dart';
 import 'direct_messages_screen.dart';
 import 'followers_following_screen.dart';
@@ -583,14 +584,11 @@ class ProfileScreen extends StatelessWidget {
   }
   Widget _grid(List<Post> items) {
     if (items.isEmpty) {
-      return Center(
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Icon(Icons.camera_alt_outlined, size: 48, color: SpaceColors.icon),
-          const SizedBox(height: 12),
-          const Text('Todavía no hay publicaciones', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20)),
-          if (user.id == state.me.id)
-            TextButton(onPressed: onOpenCreate, child: const Text('Compartir tu primera foto')),
-        ]),
+      return EmptyState(
+        icon: Icons.camera_alt_outlined,
+        title: 'Todavía no hay publicaciones',
+        message: 'Cuando publiques una foto, aparece en la grilla.',
+        action: user.id == state.me.id ? TextButton(onPressed: onOpenCreate, child: const Text('Compartir tu primera foto')) : null,
       );
     }
     return GridView.builder(
