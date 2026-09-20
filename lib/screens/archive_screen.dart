@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../space_theme.dart';
 import '../state.dart';
 import '../widgets/media_view.dart';
@@ -77,6 +78,14 @@ class QrProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text('Mostrá este código para que te encuentren', style: TextStyle(color: SpaceColors.textMuted)),
+          const SizedBox(height: 16),
+          TextButton(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: 'https://spacesocial.app/$username'));
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enlace copiado')));
+            },
+            child: const Text('Copiar enlace del perfil'),
+          ),
         ]),
       ),
     );

@@ -7,10 +7,19 @@ import '../widgets/media_view.dart';
 import '../widgets/network_photo.dart';
 import '../widgets/ig_button.dart';
 
-class NotificationsScreen extends StatelessWidget {
+class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key, required this.state, this.onOpenProfile});
   final AppState state;
   final void Function(String userId)? onOpenProfile;
+
+  @override
+  State<NotificationsScreen> createState() => _NotificationsScreenState();
+}
+
+class _NotificationsScreenState extends State<NotificationsScreen> {
+  int _filter = 0;
+  AppState get state => widget.state;
+  void Function(String userId)? get onOpenProfile => widget.onOpenProfile;
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +34,8 @@ class NotificationsScreen extends StatelessWidget {
       if (!state.notifLikes && (t.contains('gustó') || t.contains('gusta'))) return false;
       if (!state.notifComments && t.contains('coment')) return false;
       if (!state.notifFollows && (t.contains('seguir') || a.isFollow)) return false;
+      if (_filter == 1 && !state.isFollowing(a.actorId)) return false;
+      if (_filter == 2 && !a.text.toLowerCase().contains('coment') && !a.text.toLowerCase().contains('respond')) return false;
       return true;
     }).toList()
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -48,7 +59,27 @@ class NotificationsScreen extends StatelessWidget {
           TextButton(onPressed: () => state.clearActivity(), child: const Text('Limpiar', style: TextStyle(color: Color(0xFF0095F6), fontWeight: FontWeight.w600))),
         ],
       ),
-      body: items.isEmpty
+      body: Column(children: [
+        SizedBox(
+          height: 44,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
+            children: [
+              for (final e in ['Todos', 'Siguiendo', 'Respuestas'].asMap().entries)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: ChoiceChip(
+                    label: Text(e.value, style: const TextStyle(fontSize: 13)),
+                    selected: _filter == e.key,
+                    onSelected: (_) => setState(() => _filter = e.key),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: items.isEmpty
           ? Center(child: Text('Todavía no hay actividad', style: TextStyle(color: SpaceColors.textMuted)))
           : ListView(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -69,6 +100,8 @@ class NotificationsScreen extends StatelessWidget {
                 ],
               ],
             ),
+        ),
+      ]),
     );
   }
 

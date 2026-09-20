@@ -8,15 +8,40 @@ import '../store.dart';
 import '../widgets/network_photo.dart';
 import '../widgets/media_view.dart';
 
-class DirectMessagesScreen extends StatelessWidget {
+class DirectMessagesScreen extends StatefulWidget {
   const DirectMessagesScreen({super.key, required this.state, this.onOpenProfile});
   final AppState state;
   final void Function(String userId)? onOpenProfile;
 
   @override
+  State<DirectMessagesScreen> createState() => _DirectMessagesScreenState();
+}
+
+class _DirectMessagesScreenState extends State<DirectMessagesScreen> {
+  final _q = TextEditingController();
+  String _folder = 'main';
+
+  AppState get state => widget.state;
+
+  @override
+  void dispose() {
+    _q.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final me = state.me.id;
     var others = state.users.where((u) => u.id != me && state.threadWith(u.id).isNotEmpty).toList();
+    if (_folder == 'requests') {
+      others = state.users.where((u) => state.incomingFollows.contains(u.id) || (state.threadWith(u.id).isNotEmpty && !state.isFollowing(u.id) && u.id != me)).toList();
+    } else if (_folder == 'general') {
+      others = state.users.where((u) => u.id != me && state.threadWith(u.id).isEmpty).take(20).toList();
+    }
+    final query = _q.text.trim().toLowerCase();
+    if (query.isNotEmpty) {
+      others = others.where((u) => u.username.contains(query) || u.name.toLowerCase().contains(query)).toList();
+    }
     if (state.inboxFilter == 'unread') {
       others = others.where((u) => state.threadWith(u.id).any((m) => m.toId == me && !m.read)).toList();
     } else if (state.inboxFilter == 'verified') {
@@ -189,12 +214,19 @@ class DirectMessagesScreen extends StatelessWidget {
           child: Container(
             height: 40,
             decoration: BoxDecoration(color: SpaceColors.chip, borderRadius: BorderRadius.circular(10)),
-            child: Row(children: [
-              const SizedBox(width: 10),
-              Icon(Icons.search, color: SpaceColors.textMuted, size: 20),
-              const SizedBox(width: 8),
-              Text('Buscar', style: TextStyle(color: SpaceColors.textMuted, fontSize: 16)),
-            ]),
+            child: TextField(
+              controller: _q,
+              onChanged: (_) => setState(() {}),
+              style: TextStyle(color: SpaceColors.text, fontSize: 16),
+              decoration: InputDecoration(
+                prefixIcon: Icon(Icons.search, color: SpaceColors.textMuted, size: 20),
+                hintText: 'Buscar',
+                hintStyle: TextStyle(color: SpaceColors.textMuted, fontSize: 16),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(vertical: 10),
+              ),
+            ),
           ),
         ),
         Padding(
@@ -230,11 +262,11 @@ class DirectMessagesScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              _chip('Principal', true),
+              _chip('Principal', _folder == 'main', () => setState(() => _folder = 'main')),
               const SizedBox(width: 8),
-              _chip('Solicitudes', false),
+              _chip('Solicitudes', _folder == 'requests', () => setState(() => _folder = 'requests')),
               const SizedBox(width: 8),
-              _chip('General', false),
+              _chip('General', _folder == 'general', () => setState(() => _folder = 'general')),
             ]),
           ),
         ),
@@ -391,14 +423,17 @@ class DirectMessagesScreen extends StatelessWidget {
     );
   }
 
-  Widget _chip(String label, bool on) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-      decoration: BoxDecoration(
-        color: on ? SpaceColors.text : SpaceColors.chip,
-        borderRadius: BorderRadius.circular(18),
+  Widget _chip(String label, bool on, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          color: on ? SpaceColors.text : SpaceColors.chip,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Text(label, style: TextStyle(color: on ? SpaceColors.bg : SpaceColors.text, fontSize: 13, fontWeight: FontWeight.w600)),
       ),
-      child: Text(label, style: TextStyle(color: on ? SpaceColors.bg : SpaceColors.text, fontSize: 13, fontWeight: FontWeight.w600)),
     );
   }
 }
